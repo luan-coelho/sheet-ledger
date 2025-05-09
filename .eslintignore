@@ -1,0 +1,4 @@
+# Arquivos gerados automaticamente
+src/generated/**
+.next/
+node_modules/ 
