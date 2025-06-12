@@ -26,12 +26,12 @@ export const meses = [
 ]
 
 export const spreadsheetFormSchema = z.object({
-  professional: z.string().min(3, 'Profissional é obrigatório'),
+  professionalId: z.string().uuid('Selecione um profissional válido'),
   licenseNumber: z.string().min(1, 'Nº conselho do profissional é obrigatório'),
   authorizedSession: z.string().min(1, 'Sessão autorizada é obrigatório'),
-  patientName: z.string().min(3, 'Nome do paciente é obrigatório'),
-  responsible: z.string().min(3, 'Responsável é obrigatório'),
-  healthPlan: z.string().min(1, 'Plano de saúde é obrigatório'),
+  patientId: z.string().uuid('Selecione um paciente válido'),
+  guardianId: z.string().uuid('Selecione um responsável válido'),
+  healthPlanId: z.string().uuid('Selecione um plano de saúde válido'),
   weekDays: z.array(z.nativeEnum(WeekDays)).min(1, 'Selecione pelo menos um dia da semana'),
   competencia: z.object({
     mes: z.string(),

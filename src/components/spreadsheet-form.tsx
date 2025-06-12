@@ -11,6 +11,10 @@ import { Input } from '@/components/ui/input'
 import { WeekDays, meses, spreadsheetFormSchema, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 import { WeekdaySelector } from './weekdays-selector'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { ProfessionalSelector } from './professional-selector'
+import { PatientSelector } from './patient-selector'
+import { GuardianSelector } from './guardian-selector'
+import { HealthPlanSelector } from './health-plan-selector'
 
 export function SpreadsheetForm() {
   const [isGenerating, setIsGenerating] = useState(false)
@@ -23,12 +27,12 @@ export function SpreadsheetForm() {
   const form = useForm<SpreadsheetFormValues>({
     resolver: zodResolver(spreadsheetFormSchema),
     defaultValues: {
-      professional: '',
+      professionalId: '',
       licenseNumber: '',
       authorizedSession: '',
-      patientName: '',
-      responsible: '',
-      healthPlan: '',
+      patientId: '',
+      guardianId: '',
+      healthPlanId: '',
       weekDays: [WeekDays.MONDAY],
       competencia: {
         mes: new Date().getMonth().toString(),
@@ -89,12 +93,16 @@ export function SpreadsheetForm() {
             <div className="grid gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="professional"
+                name="professionalId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome do Profissional</FormLabel>
+                    <FormLabel>Profissional</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nome do profissional" {...field} />
+                      <ProfessionalSelector
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Selecione um profissional..."
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -133,12 +141,16 @@ export function SpreadsheetForm() {
 
               <FormField
                 control={form.control}
-                name="patientName"
+                name="patientId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome do paciente</FormLabel>
+                    <FormLabel>Paciente</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nome completo do paciente" {...field} />
+                      <PatientSelector
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Selecione um paciente..."
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -149,12 +161,16 @@ export function SpreadsheetForm() {
             <div className="grid gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
-                name="responsible"
+                name="guardianId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Responsável</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nome do responsável" {...field} />
+                      <GuardianSelector
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Selecione um responsável..."
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
