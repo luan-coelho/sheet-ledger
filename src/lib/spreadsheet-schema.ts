@@ -25,6 +25,12 @@ export const meses = [
   { value: '11', label: 'Dezembro' },
 ]
 
+// Type for weekday sessions configuration
+export type WeekdaySession = {
+  day: WeekDays
+  sessions: number
+}
+
 export const spreadsheetFormSchema = z.object({
   professionalId: z.string().uuid('Selecione um profissional válido'),
   licenseNumber: z.string().min(1, 'Nº conselho do profissional é obrigatório'),
@@ -32,7 +38,10 @@ export const spreadsheetFormSchema = z.object({
   patientId: z.string().uuid('Selecione um paciente válido'),
   guardianId: z.string().uuid('Selecione um responsável válido'),
   healthPlanId: z.string().uuid('Selecione um plano de saúde válido'),
-  weekDays: z.array(z.nativeEnum(WeekDays)).min(1, 'Selecione pelo menos um dia da semana'),
+  weekDaySessions: z.array(z.object({
+    day: z.nativeEnum(WeekDays),
+    sessions: z.number().min(1, 'Mínimo 1 sessão').max(10, 'Máximo 10 sessões')
+  })).min(1, 'Selecione pelo menos um dia da semana'),
   competencia: z.object({
     mes: z.string(),
     ano: z.string().regex(/^\d{4}$/, 'Formato de ano inválido')

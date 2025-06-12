@@ -5,14 +5,10 @@ export default function PlanilhasPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Gerador de Planilhas</h1>
-        <p className="text-muted-foreground">
-          Crie e configure suas planilhas de atendimento
-        </p>
+        <p className="text-muted-foreground">Crie e configure suas planilhas de atendimento</p>
       </div>
-      
-      <div className="max-w-2xl">
-        <SpreadsheetForm />
-      </div>
+
+      <SpreadsheetForm />
     </div>
   )
 }

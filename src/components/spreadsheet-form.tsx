@@ -9,17 +9,30 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { WeekDays, meses, spreadsheetFormSchema, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
-import { WeekdaySelector } from './weekdays-selector'
+import { WeekdaySessionSelector } from './weekday-session-selector'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { ProfessionalSelector } from './professional-selector'
 import { PatientSelector } from './patient-selector'
 import { GuardianSelector } from './guardian-selector'
 import { HealthPlanSelector } from './health-plan-selector'
+import { SpreadsheetPreview } from './spreadsheet-preview'
+import { Eye, FileText } from 'lucide-react'
+import { useProfessionals } from '@/hooks/use-professionals'
+import { usePatients } from '@/hooks/use-patients'
+import { useGuardians } from '@/hooks/use-guardians'
+import { useHealthPlans } from '@/hooks/use-health-plans'
 
 export function SpreadsheetForm() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  
+  const [showPreview, setShowPreview] = useState(false)
+
+  // Hooks para buscar dados das entidades
+  const { data: professionals } = useProfessionals()
+  const { data: patients } = usePatients()
+  const { data: guardians } = useGuardians()
+  const { data: healthPlans } = useHealthPlans()
+
   // Obter o ano atual para as opções de ano
   const anoAtual = new Date().getFullYear()
   const anos = Array.from({ length: 3 }, (_, i) => (anoAtual + i).toString())
@@ -33,7 +46,7 @@ export function SpreadsheetForm() {
       patientId: '',
       guardianId: '',
       healthPlanId: '',
-      weekDays: [WeekDays.MONDAY],
+      weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }],
       competencia: {
         mes: new Date().getMonth().toString(),
         ano: anoAtual.toString()
@@ -41,10 +54,38 @@ export function SpreadsheetForm() {
     },
   })
 
+  // Watch form values for real-time preview updates
+  const formValues = form.watch()
+
+  async function handlePreview() {
+    const isValid = await form.trigger()
+    if (isValid) {
+      setShowPreview(true)
+      setError(null)
+    }
+  }
+
   async function handleSubmit(values: SpreadsheetFormValues) {
     try {
       setIsGenerating(true)
       setError(null)
+
+      // Transform form data to API format
+      const professional = professionals?.find(p => p.id === values.professionalId)
+      const patient = patients?.find(p => p.id === values.patientId)
+      const guardian = guardians?.find(g => g.id === values.guardianId)
+      const healthPlan = healthPlans?.find(h => h.id === values.healthPlanId)
+
+      const apiData = {
+        professional: professional?.name || '',
+        licenseNumber: values.licenseNumber,
+        authorizedSession: values.authorizedSession,
+        patientName: patient?.name || '',
+        responsible: guardian?.name || '',
+        healthPlan: healthPlan?.name || '',
+        weekDaySessions: values.weekDaySessions,
+        competencia: values.competencia
+      }
 
       // Make API request
       const response = await fetch('/api/generate-spreadsheet', {
@@ -52,7 +93,7 @@ export function SpreadsheetForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify(apiData),
       })
 
       if (!response.ok) {
@@ -80,7 +121,7 @@ export function SpreadsheetForm() {
   }
 
   return (
-    <Card className="w-full max-w-3xl mx-auto">
+    <Card className="w-full">
       <CardHeader>
         <CardTitle>Gerador de Planilha de Atendimento</CardTitle>
         <CardDescription>
@@ -179,12 +220,16 @@ export function SpreadsheetForm() {
 
               <FormField
                 control={form.control}
-                name="healthPlan"
+                name="healthPlanId"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Plano de saúde</FormLabel>
                     <FormControl>
-                      <Input placeholder="Plano de saúde" {...field} />
+                      <HealthPlanSelector
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Selecione um plano de saúde..."
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -246,15 +291,15 @@ export function SpreadsheetForm() {
 
             <FormField
               control={form.control}
-              name="weekDays"
+              name="weekDaySessions"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Dias da semana</FormLabel>
+                  <FormLabel>Dias da semana e sessões</FormLabel>
                   <FormDescription>
-                    Selecione os dias de atendimento da semana
+                    Selecione os dias de atendimento e configure a quantidade de sessões por dia
                   </FormDescription>
                   <FormControl>
-                    <WeekdaySelector
+                    <WeekdaySessionSelector
                       value={field.value}
                       onChange={field.onChange}
                     />
@@ -266,11 +311,34 @@ export function SpreadsheetForm() {
 
             {error && <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600">{error}</div>}
 
-            <Button type="submit" className="w-full" disabled={isGenerating}>
-              {isGenerating ? 'Gerando planilha...' : 'Gerar planilha'}
-            </Button>
+            <div className="flex gap-3">
+              <Button
+                type="button"
+                variant="outline"
+                className="flex-1"
+                onClick={handlePreview}
+                disabled={isGenerating}
+              >
+                <Eye className="mr-2 h-4 w-4" />
+                Visualizar Preview
+              </Button>
+
+              <Button type="submit" className="flex-1" disabled={isGenerating}>
+                <FileText className="mr-2 h-4 w-4" />
+                {isGenerating ? 'Gerando planilha...' : 'Gerar planilha'}
+              </Button>
+            </div>
           </form>
         </Form>
+
+        {showPreview && (
+          <div className="mt-6">
+            <SpreadsheetPreview
+              formData={formValues}
+              onClose={() => setShowPreview(false)}
+            />
+          </div>
+        )}
       </CardContent>
     </Card>
   )

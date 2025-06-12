@@ -1,6 +1,11 @@
 import ExcelJS from 'exceljs'
 import path from 'path'
-import { WeekDays, meses } from './spreadsheet-schema'
+import { WeekDays, meses, WeekdaySession } from './spreadsheet-schema'
+
+type SessionRecord = {
+  date: Date
+  sessions: number
+}
 
 /**
  * Service for generating Excel spreadsheets based on a template
@@ -18,7 +23,7 @@ export class ExcelService {
     patientName: string
     responsible: string
     healthPlan: string
-    weekDays: WeekDays[]
+    weekDaySessions: WeekdaySession[]
     competencia: {
       mes: string
       ano: string
@@ -45,7 +50,7 @@ export class ExcelService {
     worksheet.getCell('C8').value = data.healthPlan
 
     // Format weekdays to SEG Á SEX format
-    const weekDaysString = this.formatWeekDaysRange(data.weekDays)
+    const weekDaysString = this.formatWeekDaysRangeWithSessions(data.weekDaySessions)
 
     // Fill row 14 with weekdays
     worksheet.getCell('H14').value = weekDaysString
@@ -60,12 +65,11 @@ export class ExcelService {
     // Generate records for the selected month and year
     const mesCompetencia = parseInt(data.competencia.mes)
     const anoCompetencia = parseInt(data.competencia.ano)
-    const daysOfWeekIndices = data.weekDays.map(day => this.getDayIndex(day))
-    
-    const records = this.generateRecordsForMonth(
+
+    const records = this.generateRecordsForMonthWithSessions(
       anoCompetencia,
       mesCompetencia,
-      daysOfWeekIndices
+      data.weekDaySessions
     )
 
     // Initial row for records
@@ -82,19 +86,19 @@ export class ExcelService {
     }
 
     // Fill the records only for the current month
-    records.forEach((date, index) => {
+    records.forEach((record, index) => {
       // Garante que não excedemos a linha 32
       if (startRow + index <= endRow) {
         const row = startRow + index
-        
+
         // Sequential number
         worksheet.getCell(`A${row}`).value = index + 1
 
         // Date in DD/MM/YYYY format
-        worksheet.getCell(`B${row}`).value = this.formatDate(date)
+        worksheet.getCell(`B${row}`).value = this.formatDate(record.date)
 
-        // Fixed value 4 (session/day)
-        worksheet.getCell(`C${row}`).value = 4
+        // Sessions per day (dynamic value)
+        worksheet.getCell(`C${row}`).value = record.sessions
 
         // Fixed value "Presencial"
         worksheet.getCell(`D${row}`).value = 'Presencial'
@@ -233,5 +237,96 @@ export class ExcelService {
     const year = date.getFullYear()
 
     return `${day}/${month}/${year}`
+  }
+
+  /**
+   * Formats weekdays range with sessions for display
+   * @param weekDaySessions Array of weekday sessions configuration
+   * @returns Formatted string like "SEG(4), TER(4), QUA(4)"
+   */
+  private static formatWeekDaysRangeWithSessions(weekDaySessions: WeekdaySession[]): string {
+    if (weekDaySessions.length === 0) return ''
+
+    // Map weekdays to abbreviations
+    const dayAbbreviations: Record<WeekDays, string> = {
+      [WeekDays.MONDAY]: 'SEG',
+      [WeekDays.TUESDAY]: 'TER',
+      [WeekDays.WEDNESDAY]: 'QUA',
+      [WeekDays.THURSDAY]: 'QUI',
+      [WeekDays.FRIDAY]: 'SEX',
+      [WeekDays.SATURDAY]: 'SAB',
+      [WeekDays.SUNDAY]: 'DOM',
+    }
+
+    // Sort weekdays by their index
+    const sortedSessions = [...weekDaySessions].sort((a, b) => this.getDayIndex(a.day) - this.getDayIndex(b.day))
+
+    return sortedSessions.map(({ day, sessions }) =>
+      `${dayAbbreviations[day]}(${sessions})`
+    ).join(', ')
+  }
+
+  /**
+   * Generates records with sessions for a specific month and year
+   * @param year Year
+   * @param month Month (0-11)
+   * @param weekDaySessions Array of weekday sessions configuration
+   * @returns Array of session records
+   */
+  private static generateRecordsForMonthWithSessions(
+    year: number,
+    month: number,
+    weekDaySessions: WeekdaySession[]
+  ): SessionRecord[] {
+    const sessionRecords: SessionRecord[] = []
+    const startDate = new Date(year, month, 1)
+    const endDate = new Date(year, month + 1, 0)
+
+    // Create a map for quick lookup of sessions by day
+    const sessionsMap = new Map<WeekDays, number>()
+    weekDaySessions.forEach(({ day, sessions }) => {
+      sessionsMap.set(day, sessions)
+    })
+
+    // Garante que temos o ano correto para a competência
+    const currentYear = new Date().getFullYear()
+
+    // Se o ano solicitado for muito no futuro (mais de 10 anos), ajusta para o ano atual
+    if (year < currentYear - 10 || year > currentYear + 10) {
+      year = currentYear
+    }
+
+    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+      // Convert JS day (0 = Sunday) to our day enum
+      const jsDay = d.getDay() // 0 = Sunday, 1 = Monday, etc.
+      const ourDay = this.getWeekDayFromJSDay(jsDay)
+
+      if (sessionsMap.has(ourDay)) {
+        sessionRecords.push({
+          date: new Date(d),
+          sessions: sessionsMap.get(ourDay)!
+        })
+      }
+    }
+
+    return sessionRecords
+  }
+
+  /**
+   * Converts JS day index to WeekDays enum
+   * @param jsDay JS day index (0 = Sunday, 1 = Monday, etc.)
+   * @returns WeekDays enum value
+   */
+  private static getWeekDayFromJSDay(jsDay: number): WeekDays {
+    switch (jsDay) {
+      case 1: return WeekDays.MONDAY
+      case 2: return WeekDays.TUESDAY
+      case 3: return WeekDays.WEDNESDAY
+      case 4: return WeekDays.THURSDAY
+      case 5: return WeekDays.FRIDAY
+      case 6: return WeekDays.SATURDAY
+      case 0: return WeekDays.SUNDAY
+      default: return WeekDays.MONDAY
+    }
   }
 }
