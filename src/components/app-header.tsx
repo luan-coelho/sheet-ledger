@@ -1,9 +1,10 @@
 "use client"
 
-import { Bell, Search, User } from "lucide-react"
+import { Bell, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { UserMenu } from "@/components/auth/user-menu"
 
 export function AppHeader() {
   return (
@@ -27,11 +28,8 @@ export function AppHeader() {
             <Bell className="h-4 w-4" />
             <span className="sr-only">Notificações</span>
           </Button>
-          
-          <Button variant="ghost" size="icon">
-            <User className="h-4 w-4" />
-            <span className="sr-only">Perfil do usuário</span>
-          </Button>
+
+          <UserMenu />
         </div>
       </div>
     </header>

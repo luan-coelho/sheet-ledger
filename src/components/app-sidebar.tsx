@@ -1,10 +1,7 @@
 "use client"
 
 import {
-  Calendar,
   Home,
-  Inbox,
-  Search,
   Settings,
   Users,
   FileText,
@@ -12,6 +9,8 @@ import {
   Shield,
   BarChart3,
 } from "lucide-react"
+import { useSession } from 'next-auth/react'
+import { UserAvatar } from '@/components/auth/user-avatar'
 
 import {
   Sidebar,
@@ -76,6 +75,8 @@ const configItems = [
 ]
 
 export function AppSidebar() {
+  const { data: session } = useSession()
+
   return (
     <div className="dark">
       <Sidebar className="bg-sidebar" variant="inset">
@@ -136,13 +137,13 @@ export function AppSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton>
               <div className="flex items-center gap-2">
-                <div className="flex h-6 w-6 items-center justify-center rounded-full bg-muted">
-                  <span className="text-xs font-medium">U</span>
-                </div>
+                <UserAvatar size="sm" />
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-semibold">Usuário</span>
+                  <span className="truncate font-semibold">
+                    {session?.user?.name || 'Usuário'}
+                  </span>
                   <span className="truncate text-xs text-muted-foreground">
-                    usuario@exemplo.com
+                    {session?.user?.email || 'Faça login'}
                   </span>
                 </div>
               </div>
