@@ -9,7 +9,9 @@ The authentication system includes:
 - **Google OAuth** as the authentication provider
 - **Drizzle ORM** for database integration
 - **Session management** with database storage
+- **Route protection** with middleware
 - **UI components** for sign-in/sign-out functionality
+- **Automatic redirects** for unauthenticated users
 
 ## Prerequisites
 
@@ -83,41 +85,87 @@ npm run db:push
 
 ## Features Implemented
 
+### Route Protection
+
+1. **Middleware** (`middleware.ts`) - Protects all routes automatically
+2. **Server-side protection** - Using `requireAuth()` utility
+3. **Client-side protection** - Using `useRequireAuth()` hook
+4. **Automatic redirects** - Unauthenticated users → sign-in page
+5. **Return URL handling** - Redirects back to original page after login
+
 ### Authentication Components
 
-1. **SignInButton** - Google sign-in button
-2. **SignOutButton** - Sign-out functionality
-3. **UserAvatar** - User profile picture display
-4. **UserMenu** - Dropdown menu with user options
+1. **SignInButton** - Google sign-in button with callback URL support
+2. **SignInForm** - Enhanced form with loading states and error handling
+3. **SignOutButton** - Sign-out functionality
+4. **UserAvatar** - User profile picture display
+5. **UserMenu** - Dropdown menu with user options
+6. **ProtectedPage** - Client-side page wrapper for protection
 
 ### Pages
 
-1. **Sign-in page** (`/auth/signin`) - Custom sign-in page
+1. **Sign-in page** (`/auth/signin`) - Enhanced with branding and UX
 2. **Error page** (`/auth/error`) - Authentication error handling
+3. **Auth layout** - Dedicated layout for authentication pages
 
 ### Integration Points
 
 1. **Header** - User menu in the top navigation
 2. **Sidebar** - User info in the sidebar footer
 3. **Session Provider** - Wraps the entire application
+4. **Middleware** - Global route protection
 
 ## Usage
 
-### Protecting Routes
+### Route Protection Methods
 
-To protect routes, use the `auth` function:
+#### 1. Automatic Protection (Recommended)
+All routes are automatically protected by middleware. No additional code needed.
+
+#### 2. Server-side Protection
+For server components, use the `requireAuth()` utility:
+
+```typescript
+import { requireAuth } from '@/lib/auth-utils'
+
+export default async function ProtectedPage() {
+  const session = await requireAuth() // Automatically redirects if not authenticated
+
+  return <div>Hello {session.user?.name}</div>
+}
+```
+
+#### 3. Client-side Protection
+For client components, use the `useRequireAuth()` hook:
+
+```typescript
+'use client'
+
+import { useRequireAuth } from '@/hooks/use-auth-guard'
+
+export default function ProtectedClientPage() {
+  const { session, isLoading } = useRequireAuth()
+
+  if (isLoading) return <div>Loading...</div>
+
+  return <div>Hello {session?.user?.name}</div>
+}
+```
+
+#### 4. Manual Protection (Legacy)
+For custom logic, use the `auth` function:
 
 ```typescript
 import { auth } from '@/lib/auth'
 import { redirect } from 'next/navigation'
 
-export default async function ProtectedPage() {
+export default async function CustomProtectedPage() {
   const session = await auth()
-  
+
   if (!session) {
     redirect('/auth/signin')
   }
-  
+
   return <div>Protected content</div>
 }
 ```

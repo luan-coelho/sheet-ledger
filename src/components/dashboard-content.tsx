@@ -2,28 +2,21 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { FileText, Users, CreditCard, BarChart3, Shield } from "lucide-react"
+import { FileText, Users, CreditCard, Shield } from "lucide-react"
 import { useProfessionals } from "@/hooks/use-professionals"
 import { usePatients } from "@/hooks/use-patients"
 import { useGuardians } from "@/hooks/use-guardians"
 import { useHealthPlans } from "@/hooks/use-health-plans"
 import Link from "next/link"
 
-export default function Home() {
+export function DashboardContent() {
   const { data: professionals } = useProfessionals()
   const { data: patients } = usePatients()
   const { data: guardians } = useGuardians()
   const { data: healthPlans } = useHealthPlans()
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">
-          Bem-vindo ao Sheet Ledger - Sistema de Gestão de Planilhas
-        </p>
-      </div>
-
+    <>
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -192,6 +185,6 @@ export default function Home() {
           </CardContent>
         </Card>
       </div>
-    </div>
+    </>
   )
 }

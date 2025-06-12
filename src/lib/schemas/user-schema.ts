@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, primaryKey, integer } from 'drizzle-orm/pg-core'
+import { pgTable, text, timestamp, primaryKey, integer, boolean } from 'drizzle-orm/pg-core'
 import { createInsertSchema, createSelectSchema } from 'drizzle-zod'
 import { z } from 'zod'
 
@@ -9,6 +9,10 @@ export const users = pgTable('users', {
   email: text('email').notNull(),
   emailVerified: timestamp('emailVerified', { mode: 'date' }),
   image: text('image'),
+  active: boolean('active').notNull().default(true),
+  role: text('role').notNull().default('user'),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+  updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
 
 // Accounts table for Auth.js integration (OAuth providers)

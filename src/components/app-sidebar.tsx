@@ -25,37 +25,38 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
+import { routes } from "@/lib/routes"
 
 // Menu items principais
 const items = [
   {
     title: "Dashboard",
-    url: "/",
+    url: routes.frontend.admin.home,
     icon: Home,
   },
   {
     title: "Planilhas",
-    url: "/planilhas",
+    url: routes.frontend.admin.sheets,
     icon: FileText,
   },
   {
     title: "Profissionais",
-    url: "/profissionais",
+    url: routes.frontend.admin.professionals.index,
     icon: Users,
   },
   {
     title: "Pacientes",
-    url: "/pacientes",
+    url: routes.frontend.admin.patients.index,
     icon: Users,
   },
   {
     title: "Responsáveis",
-    url: "/responsaveis",
+    url: routes.frontend.admin.guardians.index,
     icon: Shield,
   },
   {
     title: "Planos de Saúde",
-    url: "/planos-saude",
+    url: routes.frontend.admin.healthPlans.index,
     icon: CreditCard,
   },
 ]
@@ -64,12 +65,12 @@ const items = [
 const configItems = [
   {
     title: "Relatórios",
-    url: "/relatorios",
+    url: routes.frontend.admin.home,
     icon: BarChart3,
   },
   {
     title: "Configurações",
-    url: "/configuracoes",
+    url: routes.frontend.admin.settings,
     icon: Settings,
   },
 ]
