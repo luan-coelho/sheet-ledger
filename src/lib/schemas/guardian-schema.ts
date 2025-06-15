@@ -1,7 +1,7 @@
 import { pgTable, text, uuid, timestamp } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
 
-export const guardians = pgTable('guardians', {
+export const guardiansTable = pgTable('guardians', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -21,6 +21,6 @@ export const selectGuardianSchema = z.object({
 })
 
 // TypeScript types
-export type Guardian = typeof guardians.$inferSelect
-export type NewGuardian = typeof guardians.$inferInsert
+export type Guardian = typeof guardiansTable.$inferSelect
+export type NewGuardian = typeof guardiansTable.$inferInsert
 export type GuardianFormValues = z.infer<typeof insertGuardianSchema>

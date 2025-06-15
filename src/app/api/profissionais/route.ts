@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { professionals, insertProfessionalSchema } from '@/lib/schemas/professional-schema'
+import { professionalsTable, insertProfessionalSchema } from '@/lib/schemas/professional-schema'
 import { desc } from 'drizzle-orm'
 
 // GET /api/profissionais - Listar todos os profissionais
@@ -8,8 +8,8 @@ export async function GET() {
   try {
     const allProfessionals = await db
       .select()
-      .from(professionals)
-      .orderBy(desc(professionals.createdAt))
+      .from(professionalsTable)
+      .orderBy(desc(professionalsTable.createdAt))
 
     return NextResponse.json({
       success: true,
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     
     // Inserir no banco de dados
     const [newProfessional] = await db
-      .insert(professionals)
+      .insert(professionalsTable)
       .values({
         name: validatedData.name,
         createdAt: new Date(),

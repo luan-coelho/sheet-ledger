@@ -6,19 +6,16 @@ export * from './health-plan-schema'
 export * from './user-schema'
 
 // Re-export for convenience
-import { professionals } from './professional-schema'
-import { patients } from './patient-schema'
-import { guardians } from './guardian-schema'
-import { healthPlans } from './health-plan-schema'
-import { users, accounts, sessions, verificationTokens } from './user-schema'
+import { professionalsTable } from './professional-schema'
+import { patientsTable } from './patient-schema'
+import { guardiansTable } from './guardian-schema'
+import { healthPlansTable } from './health-plan-schema'
+import { usersTable } from './user-schema'
 
 export const schema = {
-  professionals,
-  patients,
-  guardians,
-  healthPlans,
-  users,
-  accounts,
-  sessions,
-  verificationTokens,
+  professionalsTable,
+  patientsTable,
+  guardiansTable,
+  healthPlansTable,
+  usersTable,
 }

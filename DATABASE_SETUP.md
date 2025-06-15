@@ -313,3 +313,19 @@ const professionals = await professionalOperations.getAll()
 // Get all seeded patients for selection
 const patients = await patientOperations.getAll()
 ```
+
+# Rodar o container postgres, se ainda não estiver
+docker run -d \
+  --name db-postgres \
+  --network neon-net \
+  -e POSTGRES_PASSWORD=postgres \
+  -e POSTGRES_DB=sheet-ledger \
+  -p 5432:5432
+  postgres
+
+docker run -d \
+  --name neon-proxy \
+  --network neon-net \
+  -e PG_CONNECTION_STRING=postgres://postgres:postgres@db-postgres:5432/sheet-ledger \
+  -p 4444:4444 \
+  ghcr.io/timowilhelm/local-neon-http-proxy:main

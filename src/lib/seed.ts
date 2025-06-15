@@ -1,9 +1,9 @@
 import { db } from './db'
 import { 
-  professionals, 
-  patients, 
-  guardians, 
-  healthPlans,
+  professionalsTable,
+  patientsTable,
+  guardiansTable,
+  healthPlansTable,
   type NewProfessional,
   type NewPatient,
   type NewGuardian,
@@ -65,12 +65,12 @@ export async function seedDatabase() {
     for (const patient of samplePatients) {
       const existing = await db
         .select()
-        .from(patients)
-        .where(eq(patients.name, patient.name))
+        .from(patientsTable)
+        .where(eq(patientsTable.name, patient.name))
         .limit(1)
 
       if (existing.length === 0) {
-        await db.insert(patients).values(patient)
+        await db.insert(patientsTable).values(patient)
         patientsCreated++
         console.log(`  ✓ Created patient: ${patient.name}`)
       } else {
@@ -84,12 +84,12 @@ export async function seedDatabase() {
     for (const professional of sampleProfessionals) {
       const existing = await db
         .select()
-        .from(professionals)
-        .where(eq(professionals.name, professional.name))
+        .from(professionalsTable)
+        .where(eq(professionalsTable.name, professional.name))
         .limit(1)
 
       if (existing.length === 0) {
-        await db.insert(professionals).values(professional)
+        await db.insert(professionalsTable).values(professional)
         professionalsCreated++
         console.log(`  ✓ Created professional: ${professional.name}`)
       } else {
@@ -103,12 +103,12 @@ export async function seedDatabase() {
     for (const guardian of sampleGuardians) {
       const existing = await db
         .select()
-        .from(guardians)
-        .where(eq(guardians.name, guardian.name))
+        .from(guardiansTable)
+        .where(eq(guardiansTable.name, guardian.name))
         .limit(1)
 
       if (existing.length === 0) {
-        await db.insert(guardians).values(guardian)
+        await db.insert(guardiansTable).values(guardian)
         guardiansCreated++
         console.log(`  ✓ Created guardian: ${guardian.name}`)
       } else {
@@ -122,12 +122,12 @@ export async function seedDatabase() {
     for (const healthPlan of sampleHealthPlans) {
       const existing = await db
         .select()
-        .from(healthPlans)
-        .where(eq(healthPlans.name, healthPlan.name))
+        .from(healthPlansTable)
+        .where(eq(healthPlansTable.name, healthPlan.name))
         .limit(1)
 
       if (existing.length === 0) {
-        await db.insert(healthPlans).values(healthPlan)
+        await db.insert(healthPlansTable).values(healthPlan)
         healthPlansCreated++
         console.log(`  ✓ Created health plan: ${healthPlan.name}`)
       } else {
@@ -181,22 +181,22 @@ export async function clearSeedData() {
 
     // Clear health plans
     for (const name of healthPlanNames) {
-      await db.delete(healthPlans).where(eq(healthPlans.name, name))
+      await db.delete(healthPlansTable).where(eq(healthPlansTable.name, name))
     }
 
     // Clear guardians
     for (const name of guardianNames) {
-      await db.delete(guardians).where(eq(guardians.name, name))
+      await db.delete(guardiansTable).where(eq(guardiansTable.name, name))
     }
 
     // Clear professionals
     for (const name of professionalNames) {
-      await db.delete(professionals).where(eq(professionals.name, name))
+      await db.delete(professionalsTable).where(eq(professionalsTable.name, name))
     }
 
     // Clear patients
     for (const name of patientNames) {
-      await db.delete(patients).where(eq(patients.name, name))
+      await db.delete(patientsTable).where(eq(patientsTable.name, name))
     }
 
     console.log('✅ Seed data cleared successfully!')

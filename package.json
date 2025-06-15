@@ -11,10 +11,8 @@
     "db:migrate": "drizzle-kit migrate",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
-    "db:test": "node scripts/test-db.js",
     "db:seed": "tsx scripts/seed-db.ts",
-    "db:seed:clear": "tsx scripts/seed-db.ts --clear",
-    "db:seed:test": "tsx scripts/test-seed-data.ts"
+    "db:seed:create-admin-user": "tsx scripts/create-admin-user.ts"
   },
   "dependencies": {
     "@auth/drizzle-adapter": "^1.9.1",

@@ -1,7 +1,7 @@
 import { pgTable, text, uuid, timestamp } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
 
-export const professionals = pgTable('professionals', {
+export const professionalsTable = pgTable('professionals', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
   createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -21,6 +21,6 @@ export const selectProfessionalSchema = z.object({
 })
 
 // TypeScript types
-export type Professional = typeof professionals.$inferSelect
-export type NewProfessional = typeof professionals.$inferInsert
+export type Professional = typeof professionalsTable.$inferSelect
+export type NewProfessional = typeof professionalsTable.$inferInsert
 export type ProfessionalFormValues = z.infer<typeof insertProfessionalSchema>

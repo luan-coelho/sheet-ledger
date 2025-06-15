@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { healthPlans, insertHealthPlanSchema } from '@/lib/schemas/health-plan-schema'
+import { healthPlansTable, insertHealthPlanSchema } from '@/lib/schemas/health-plan-schema'
 import { eq } from 'drizzle-orm'
 
 // GET /api/planos-saude/[id] - Buscar plano de saúde por ID
@@ -13,8 +13,8 @@ export async function GET(
 
     const [healthPlan] = await db
       .select()
-      .from(healthPlans)
-      .where(eq(healthPlans.id, id))
+      .from(healthPlansTable)
+      .where(eq(healthPlansTable.id, id))
       .limit(1)
 
     if (!healthPlan) {
@@ -61,8 +61,8 @@ export async function PUT(
     // Verificar se o plano de saúde existe
     const [existingHealthPlan] = await db
       .select()
-      .from(healthPlans)
-      .where(eq(healthPlans.id, id))
+      .from(healthPlansTable)
+      .where(eq(healthPlansTable.id, id))
       .limit(1)
 
     if (!existingHealthPlan) {
@@ -78,12 +78,12 @@ export async function PUT(
 
     // Atualizar no banco de dados
     const [updatedHealthPlan] = await db
-      .update(healthPlans)
+      .update(healthPlansTable)
       .set({
         name: validatedData.name,
         updatedAt: new Date(),
       })
-      .where(eq(healthPlans.id, id))
+      .where(eq(healthPlansTable.id, id))
       .returning()
 
     return NextResponse.json({
@@ -129,8 +129,8 @@ export async function DELETE(
     // Verificar se o plano de saúde existe
     const [existingHealthPlan] = await db
       .select()
-      .from(healthPlans)
-      .where(eq(healthPlans.id, id))
+      .from(healthPlansTable)
+      .where(eq(healthPlansTable.id, id))
       .limit(1)
 
     if (!existingHealthPlan) {
@@ -146,8 +146,8 @@ export async function DELETE(
 
     // Excluir do banco de dados
     await db
-      .delete(healthPlans)
-      .where(eq(healthPlans.id, id))
+      .delete(healthPlansTable)
+      .where(eq(healthPlansTable.id, id))
 
     return NextResponse.json({
       success: true,

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { professionals, insertProfessionalSchema } from '@/lib/schemas/professional-schema'
+import { professionalsTable, insertProfessionalSchema } from '@/lib/schemas/professional-schema'
 import { eq } from 'drizzle-orm'
 
 // GET /api/profissionais/[id] - Buscar profissional por ID
@@ -13,8 +13,8 @@ export async function GET(
 
     const [professional] = await db
       .select()
-      .from(professionals)
-      .where(eq(professionals.id, id))
+      .from(professionalsTable)
+      .where(eq(professionalsTable.id, id))
       .limit(1)
 
     if (!professional) {
@@ -61,8 +61,8 @@ export async function PUT(
     // Verificar se o profissional existe
     const [existingProfessional] = await db
       .select()
-      .from(professionals)
-      .where(eq(professionals.id, id))
+      .from(professionalsTable)
+      .where(eq(professionalsTable.id, id))
       .limit(1)
 
     if (!existingProfessional) {
@@ -78,12 +78,12 @@ export async function PUT(
 
     // Atualizar no banco de dados
     const [updatedProfessional] = await db
-      .update(professionals)
+      .update(professionalsTable)
       .set({
         name: validatedData.name,
         updatedAt: new Date(),
       })
-      .where(eq(professionals.id, id))
+      .where(eq(professionalsTable.id, id))
       .returning()
 
     return NextResponse.json({
@@ -129,8 +129,8 @@ export async function DELETE(
     // Verificar se o profissional existe
     const [existingProfessional] = await db
       .select()
-      .from(professionals)
-      .where(eq(professionals.id, id))
+      .from(professionalsTable)
+      .where(eq(professionalsTable.id, id))
       .limit(1)
 
     if (!existingProfessional) {
@@ -146,8 +146,8 @@ export async function DELETE(
 
     // Excluir do banco de dados
     await db
-      .delete(professionals)
-      .where(eq(professionals.id, id))
+      .delete(professionalsTable)
+      .where(eq(professionalsTable.id, id))
 
     return NextResponse.json({
       success: true,

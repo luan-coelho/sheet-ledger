@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { patients, insertPatientSchema } from '@/lib/schemas/patient-schema'
+import { patientsTable, insertPatientSchema } from '@/lib/schemas/patient-schema'
 import { eq } from 'drizzle-orm'
 
 // GET /api/pacientes/[id] - Buscar paciente por ID
@@ -13,8 +13,8 @@ export async function GET(
 
     const [patient] = await db
       .select()
-      .from(patients)
-      .where(eq(patients.id, id))
+      .from(patientsTable)
+      .where(eq(patientsTable.id, id))
       .limit(1)
 
     if (!patient) {
@@ -61,8 +61,8 @@ export async function PUT(
     // Verificar se o paciente existe
     const [existingPatient] = await db
       .select()
-      .from(patients)
-      .where(eq(patients.id, id))
+      .from(patientsTable)
+      .where(eq(patientsTable.id, id))
       .limit(1)
 
     if (!existingPatient) {
@@ -78,12 +78,12 @@ export async function PUT(
 
     // Atualizar no banco de dados
     const [updatedPatient] = await db
-      .update(patients)
+      .update(patientsTable)
       .set({
         name: validatedData.name,
         updatedAt: new Date(),
       })
-      .where(eq(patients.id, id))
+      .where(eq(patientsTable.id, id))
       .returning()
 
     return NextResponse.json({
@@ -129,8 +129,8 @@ export async function DELETE(
     // Verificar se o paciente existe
     const [existingPatient] = await db
       .select()
-      .from(patients)
-      .where(eq(patients.id, id))
+      .from(patientsTable)
+      .where(eq(patientsTable.id, id))
       .limit(1)
 
     if (!existingPatient) {
@@ -146,8 +146,8 @@ export async function DELETE(
 
     // Excluir do banco de dados
     await db
-      .delete(patients)
-      .where(eq(patients.id, id))
+      .delete(patientsTable)
+      .where(eq(patientsTable.id, id))
 
     return NextResponse.json({
       success: true,

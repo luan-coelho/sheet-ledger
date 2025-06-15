@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { guardians, insertGuardianSchema } from '@/lib/schemas/guardian-schema'
+import { guardiansTable, insertGuardianSchema } from '@/lib/schemas/guardian-schema'
 import { eq } from 'drizzle-orm'
 
 // GET /api/responsaveis/[id] - Buscar responsável por ID
@@ -13,8 +13,8 @@ export async function GET(
 
     const [guardian] = await db
       .select()
-      .from(guardians)
-      .where(eq(guardians.id, id))
+      .from(guardiansTable)
+      .where(eq(guardiansTable.id, id))
       .limit(1)
 
     if (!guardian) {
@@ -61,8 +61,8 @@ export async function PUT(
     // Verificar se o responsável existe
     const [existingGuardian] = await db
       .select()
-      .from(guardians)
-      .where(eq(guardians.id, id))
+      .from(guardiansTable)
+      .where(eq(guardiansTable.id, id))
       .limit(1)
 
     if (!existingGuardian) {
@@ -78,12 +78,12 @@ export async function PUT(
 
     // Atualizar no banco de dados
     const [updatedGuardian] = await db
-      .update(guardians)
+      .update(guardiansTable)
       .set({
         name: validatedData.name,
         updatedAt: new Date(),
       })
-      .where(eq(guardians.id, id))
+      .where(eq(guardiansTable.id, id))
       .returning()
 
     return NextResponse.json({
@@ -129,8 +129,8 @@ export async function DELETE(
     // Verificar se o responsável existe
     const [existingGuardian] = await db
       .select()
-      .from(guardians)
-      .where(eq(guardians.id, id))
+      .from(guardiansTable)
+      .where(eq(guardiansTable.id, id))
       .limit(1)
 
     if (!existingGuardian) {
@@ -146,8 +146,8 @@ export async function DELETE(
 
     // Excluir do banco de dados
     await db
-      .delete(guardians)
-      .where(eq(guardians.id, id))
+      .delete(guardiansTable)
+      .where(eq(guardiansTable.id, id))
 
     return NextResponse.json({
       success: true,

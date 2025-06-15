@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { guardians, insertGuardianSchema } from '@/lib/schemas/guardian-schema'
+import { guardiansTable, insertGuardianSchema } from '@/lib/schemas/guardian-schema'
 import { desc } from 'drizzle-orm'
 
 // GET /api/responsaveis - Listar todos os responsáveis
@@ -8,8 +8,8 @@ export async function GET() {
   try {
     const allGuardians = await db
       .select()
-      .from(guardians)
-      .orderBy(desc(guardians.createdAt))
+      .from(guardiansTable)
+      .orderBy(desc(guardiansTable.createdAt))
 
     return NextResponse.json({
       success: true,
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     
     // Inserir no banco de dados
     const [newGuardian] = await db
-      .insert(guardians)
+      .insert(guardiansTable)
       .values({
         name: validatedData.name,
         createdAt: new Date(),

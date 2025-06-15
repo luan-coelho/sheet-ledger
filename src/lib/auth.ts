@@ -1,9 +1,9 @@
-import { db } from '@/lib/db'
 import { routes } from '@/lib/routes'
+import { User, usersTable } from '@/lib/schemas'
 import { eq } from 'drizzle-orm'
 import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
-import { users } from './schemas'
+import { db } from './db'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   debug: true,
@@ -30,13 +30,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     async signIn({ user, account }) {
       if (account?.provider === 'google') {
         // Verifica se o usuário existe no banco de dados
-        const existingUser = await db
+        const [existingUser]: User[] | [] = await db
           .select()
-          .from(users)
-          .where({
-            email: user.email ?? '',
-          })
-
+          .from(usersTable)
+          .where(eq(usersTable.email, user.email || ''))
+          .limit(1)
         // Se o usuário não existir no sistema, bloqueia o acesso
         if (!existingUser) {
           throw new Error(
@@ -51,18 +49,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           )
         }
 
-        // Atualiza informações do usuário caso necessário
-        if ((!existingUser.name && user.name) || (!existingUser.image && user.image)) {
-          await db
-            .update(tableUsers)
-            .set({
-              name: existingUser.name || user.name,
-              image: existingUser.image || user.image,
-              updatedAt: new Date(),
-            })
-            .where(eq(tableUsers.id, existingUser.id))
-        }
-
         // Atribui os dados do banco de dados ao usuário
         user.id = existingUser.id
         return true
@@ -71,8 +57,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     },
     async jwt({ token, user, trigger, session }) {
       if (trigger === 'update' && session?.user) {
-        // Se a sessão for atualizada, atualiza também o token
-        token.role = session.user.role
         return token
       }
 

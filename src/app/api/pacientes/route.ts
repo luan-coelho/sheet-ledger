@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { patients, insertPatientSchema } from '@/lib/schemas/patient-schema'
+import { patientsTable, insertPatientSchema } from '@/lib/schemas/patient-schema'
 import { desc } from 'drizzle-orm'
 
 // GET /api/pacientes - Listar todos os pacientes
@@ -8,8 +8,8 @@ export async function GET() {
   try {
     const allPatients = await db
       .select()
-      .from(patients)
-      .orderBy(desc(patients.createdAt))
+      .from(patientsTable)
+      .orderBy(desc(patientsTable.createdAt))
 
     return NextResponse.json({
       success: true,
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     
     // Inserir no banco de dados
     const [newPatient] = await db
-      .insert(patients)
+      .insert(patientsTable)
       .values({
         name: validatedData.name,
         createdAt: new Date(),

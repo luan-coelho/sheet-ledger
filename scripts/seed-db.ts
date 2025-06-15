@@ -25,7 +25,7 @@ async function main() {
 
   try {
     // Import TypeScript modules directly with tsx
-    const { seedDatabase, clearSeedData } = await import('../src/lib/seed.ts')
+    const { seedDatabase, clearSeedData } = await import('../src/lib/seed')
     
     let result
     if (shouldClear) {
@@ -39,9 +39,6 @@ async function main() {
         console.log('\n🎉 Seed data cleared successfully!')
       } else {
         console.log('\n🎉 Database seeded successfully!')
-        if (result.created) {
-          console.log(`\n📈 Total records created: ${result.created.total}`)
-        }
       }
       process.exit(0)
     } else {
@@ -52,7 +49,7 @@ async function main() {
   } catch (error) {
     console.error('❌ Script execution failed:', error)
     
-    if (error.message?.includes('Cannot resolve')) {
+    if (error instanceof Error && error.message?.includes('Cannot resolve')) {
       console.error('\n💡 Tip: Make sure your database is set up and environment variables are configured.')
       console.error('   Run "pnpm db:push" first if you haven\'t set up the database schema.')
     }

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/lib/db'
-import { healthPlans, insertHealthPlanSchema } from '@/lib/schemas/health-plan-schema'
+import { healthPlansTable, insertHealthPlanSchema } from '@/lib/schemas/health-plan-schema'
 import { desc } from 'drizzle-orm'
 
 // GET /api/planos-saude - Listar todos os planos de saúde
@@ -8,8 +8,8 @@ export async function GET() {
   try {
     const allHealthPlans = await db
       .select()
-      .from(healthPlans)
-      .orderBy(desc(healthPlans.createdAt))
+      .from(healthPlansTable)
+      .orderBy(desc(healthPlansTable.createdAt))
 
     return NextResponse.json({
       success: true,
@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
     
     // Inserir no banco de dados
     const [newHealthPlan] = await db
-      .insert(healthPlans)
+      .insert(healthPlansTable)
       .values({
         name: validatedData.name,
         createdAt: new Date(),
