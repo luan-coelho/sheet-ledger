@@ -1,12 +1,12 @@
 import { routes } from '@/lib/routes'
-import { User, usersTable } from '@/lib/schemas'
+import { User, usersTable } from '@/app/db/schemas'
 import { eq } from 'drizzle-orm'
 import NextAuth from 'next-auth'
 import Google from 'next-auth/providers/google'
-import { db } from './db'
+import { db } from '../app/db'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  debug: true,
+  debug: false,
   trustHost: true,
   providers: [
     Google({

@@ -54,11 +54,11 @@ export class ExcelService {
 
     // Fill row 14 with weekdays
     worksheet.getCell('H14').value = weekDaysString
-    
+
     // Get month name from the number
     const mesIndex = parseInt(data.competencia.mes)
     const mesNome = meses.find(m => parseInt(m.value) === mesIndex)?.label || 'Janeiro'
-    
+
     // Fill the competência field in row 17 (cells H17, I17, J17, K17 are merged)
     worksheet.getCell('H17').value = `${mesNome.toUpperCase()}/${data.competencia.ano}`
 
@@ -66,16 +66,12 @@ export class ExcelService {
     const mesCompetencia = parseInt(data.competencia.mes)
     const anoCompetencia = parseInt(data.competencia.ano)
 
-    const records = this.generateRecordsForMonthWithSessions(
-      anoCompetencia,
-      mesCompetencia,
-      data.weekDaySessions
-    )
+    const records = this.generateRecordsForMonthWithSessions(anoCompetencia, mesCompetencia, data.weekDaySessions)
 
     // Initial row for records
     const startRow = 12
     const endRow = 32 // Última linha a ser usada (inclusive)
-    
+
     // Limpa apenas as linhas necessárias (da linha 12 até a 32 inclusive)
     for (let row = startRow; row <= endRow; row++) {
       worksheet.getCell(`A${row}`).value = null
@@ -118,7 +114,7 @@ export class ExcelService {
    */
   private static formatWeekDaysRange(weekdays: WeekDays[]): string {
     if (weekdays.length === 0) return ''
-    
+
     // Define day abbreviations
     const dayAbbreviations: Record<WeekDays, string> = {
       [WeekDays.MONDAY]: 'SEG',
@@ -129,31 +125,25 @@ export class ExcelService {
       [WeekDays.SATURDAY]: 'SAB',
       [WeekDays.SUNDAY]: 'DOM',
     }
-    
+
     // Sort weekdays to find continuous ranges
-    const sortedDayIndices = weekdays
-      .map(day => this.getDayIndex(day))
-      .sort((a, b) => a - b)
-    
+    const sortedDayIndices = weekdays.map(day => this.getDayIndex(day)).sort((a, b) => a - b)
+
     // Check if weekdays are consecutive
-    const isConsecutive = sortedDayIndices.every(
-      (dayIndex, i, array) => i === 0 || dayIndex === array[i - 1] + 1
-    )
-    
+    const isConsecutive = sortedDayIndices.every((dayIndex, i, array) => i === 0 || dayIndex === array[i - 1] + 1)
+
     if (isConsecutive && sortedDayIndices.length > 1) {
       // Get first and last day
       const firstDay = this.getDayByIndex(sortedDayIndices[0])
       const lastDay = this.getDayByIndex(sortedDayIndices[sortedDayIndices.length - 1])
-      
+
       return `${dayAbbreviations[firstDay]} Á ${dayAbbreviations[lastDay]}`
     } else {
       // Return comma-separated list of days if not consecutive
-      return weekdays
-        .map(day => dayAbbreviations[day])
-        .join(', ')
+      return weekdays.map(day => dayAbbreviations[day]).join(', ')
     }
   }
-  
+
   /**
    * Gets the numerical index of a weekday (0-6)
    */
@@ -167,10 +157,10 @@ export class ExcelService {
       [WeekDays.SATURDAY]: 5,
       [WeekDays.SUNDAY]: 6,
     }
-    
+
     return dayIndices[day]
   }
-  
+
   /**
    * Gets the weekday by its numeric index
    */
@@ -184,7 +174,7 @@ export class ExcelService {
       WeekDays.SATURDAY,
       WeekDays.SUNDAY,
     ]
-    
+
     return days[index]
   }
 
@@ -195,34 +185,30 @@ export class ExcelService {
    * @param daysOfWeek Array of day indices (0 = Monday, 6 = Sunday)
    * @returns Array of dates representing selected days
    */
-  private static generateRecordsForMonth(
-    year: number,
-    month: number,
-    daysOfWeek: number[]
-  ): Date[] {
+  private static generateRecordsForMonth(year: number, month: number, daysOfWeek: number[]): Date[] {
     const selectedDays: Date[] = []
     const startDate = new Date(year, month, 1)
     const endDate = new Date(year, month + 1, 0)
-    
+
     // Garante que temos o ano correto para a competência
     const currentYear = new Date().getFullYear()
-    
+
     // Se o ano solicitado for muito no futuro (mais de 10 anos), ajusta para o ano atual
     // Esta verificação evita problemas com datas inválidas
     if (year < currentYear - 10 || year > currentYear + 10) {
       year = currentYear
     }
-    
+
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
       // Convert JS day (0 = Sunday) to our day (0 = Monday)
       const jsDay = d.getDay() // 0 = Sunday, 1 = Monday, etc.
       const ourDay = jsDay === 0 ? 6 : jsDay - 1 // Convert to 0 = Monday, 6 = Sunday
-      
+
       if (daysOfWeek.includes(ourDay)) {
         selectedDays.push(new Date(d))
       }
     }
-    
+
     return selectedDays
   }
 
@@ -261,9 +247,7 @@ export class ExcelService {
     // Sort weekdays by their index
     const sortedSessions = [...weekDaySessions].sort((a, b) => this.getDayIndex(a.day) - this.getDayIndex(b.day))
 
-    return sortedSessions.map(({ day, sessions }) =>
-      `${dayAbbreviations[day]}(${sessions})`
-    ).join(', ')
+    return sortedSessions.map(({ day, sessions }) => `${dayAbbreviations[day]}(${sessions})`).join(', ')
   }
 
   /**
@@ -276,7 +260,7 @@ export class ExcelService {
   private static generateRecordsForMonthWithSessions(
     year: number,
     month: number,
-    weekDaySessions: WeekdaySession[]
+    weekDaySessions: WeekdaySession[],
   ): SessionRecord[] {
     const sessionRecords: SessionRecord[] = []
     const startDate = new Date(year, month, 1)
@@ -304,7 +288,7 @@ export class ExcelService {
       if (sessionsMap.has(ourDay)) {
         sessionRecords.push({
           date: new Date(d),
-          sessions: sessionsMap.get(ourDay)!
+          sessions: sessionsMap.get(ourDay)!,
         })
       }
     }
@@ -319,14 +303,22 @@ export class ExcelService {
    */
   private static getWeekDayFromJSDay(jsDay: number): WeekDays {
     switch (jsDay) {
-      case 1: return WeekDays.MONDAY
-      case 2: return WeekDays.TUESDAY
-      case 3: return WeekDays.WEDNESDAY
-      case 4: return WeekDays.THURSDAY
-      case 5: return WeekDays.FRIDAY
-      case 6: return WeekDays.SATURDAY
-      case 0: return WeekDays.SUNDAY
-      default: return WeekDays.MONDAY
+      case 1:
+        return WeekDays.MONDAY
+      case 2:
+        return WeekDays.TUESDAY
+      case 3:
+        return WeekDays.WEDNESDAY
+      case 4:
+        return WeekDays.THURSDAY
+      case 5:
+        return WeekDays.FRIDAY
+      case 6:
+        return WeekDays.SATURDAY
+      case 0:
+        return WeekDays.SUNDAY
+      default:
+        return WeekDays.MONDAY
     }
   }
 }

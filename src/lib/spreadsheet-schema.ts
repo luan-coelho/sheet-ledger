@@ -38,16 +38,23 @@ export const spreadsheetFormSchema = z.object({
   patientId: z.string().uuid('Selecione um paciente válido'),
   guardianId: z.string().uuid('Selecione um responsável válido'),
   healthPlanId: z.string().uuid('Selecione um plano de saúde válido'),
-  weekDaySessions: z.array(z.object({
-    day: z.nativeEnum(WeekDays),
-    sessions: z.number().min(1, 'Mínimo 1 sessão').max(10, 'Máximo 10 sessões')
-  })).min(1, 'Selecione pelo menos um dia da semana'),
-  competencia: z.object({
-    mes: z.string(),
-    ano: z.string().regex(/^\d{4}$/, 'Formato de ano inválido')
-  }, {
-    required_error: 'Selecione a competência'
-  })
+  weekDaySessions: z
+    .array(
+      z.object({
+        day: z.nativeEnum(WeekDays),
+        sessions: z.number().min(1, 'Mínimo 1 sessão').max(10, 'Máximo 10 sessões'),
+      }),
+    )
+    .min(1, 'Selecione pelo menos um dia da semana'),
+  competencia: z.object(
+    {
+      mes: z.string(),
+      ano: z.string().regex(/^\d{4}$/, 'Formato de ano inválido'),
+    },
+    {
+      required_error: 'Selecione a competência',
+    },
+  ),
 })
 
 export type SpreadsheetFormValues = z.infer<typeof spreadsheetFormSchema>

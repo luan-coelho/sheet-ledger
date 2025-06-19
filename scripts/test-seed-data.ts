@@ -13,12 +13,9 @@ async function main() {
 
   try {
     // Import database operations
-    const { 
-      professionalOperations, 
-      patientOperations, 
-      guardianOperations, 
-      healthPlanOperations 
-    } = await import('../src/lib/db-utils.js')
+    const { professionalOperations, patientOperations, guardianOperations, healthPlanOperations } = await import(
+      '../src/lib/db-utils.js'
+    )
 
     // Test retrieving all entities
     console.log('📊 Retrieving seeded data...\n')
@@ -59,7 +56,6 @@ async function main() {
 
     console.log('\n✅ All data retrieval tests passed!')
     console.log('\n💡 You can now use this data in your application forms and dropdowns.')
-
   } catch (error) {
     console.error('❌ Test failed:', error)
     process.exit(1)

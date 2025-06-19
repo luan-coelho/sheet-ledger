@@ -13,11 +13,7 @@ export type WeekdaySessionSelectorProps = {
   onChange?: (value: WeekdaySession[]) => void
 }
 
-export function WeekdaySessionSelector({ 
-  className, 
-  value = [], 
-  onChange 
-}: WeekdaySessionSelectorProps) {
+export function WeekdaySessionSelector({ className, value = [], onChange }: WeekdaySessionSelectorProps) {
   const [selectedDays, setSelectedDays] = useState<WeekdaySession[]>(value)
 
   const weekdayItems = [
@@ -52,10 +48,8 @@ export function WeekdaySessionSelector({
   }
 
   function handleSessionsChange(day: WeekDays, sessions: number) {
-    const newSelectedDays = selectedDays.map(item => 
-      item.day === day ? { ...item, sessions } : item
-    )
-    
+    const newSelectedDays = selectedDays.map(item => (item.day === day ? { ...item, sessions } : item))
+
     setSelectedDays(newSelectedDays)
     onChange?.(newSelectedDays)
   }
@@ -75,9 +69,7 @@ export function WeekdaySessionSelector({
     <div className={cn('space-y-4', className)}>
       {/* Day Selection */}
       <div>
-        <Label className="text-sm font-medium mb-2 block">
-          Selecione os dias da semana
-        </Label>
+        <Label className="text-sm font-medium mb-2 block">Selecione os dias da semana</Label>
         <div className="flex justify-center space-x-2">
           {weekdayItems.map(item => {
             const isSelected = isDaySelected(item.key)
@@ -89,7 +81,9 @@ export function WeekdaySessionSelector({
                 className={cn(
                   'flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors',
                   'border border-input hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
-                  isSelected ? 'bg-primary text-primary-foreground hover:bg-primary' : 'bg-background hover:bg-background',
+                  isSelected
+                    ? 'bg-primary text-primary-foreground hover:bg-primary'
+                    : 'bg-background hover:bg-background',
                 )}
                 title={item.fullName}
                 aria-label={item.fullName}
@@ -105,23 +99,17 @@ export function WeekdaySessionSelector({
       {selectedDays.length > 0 && (
         <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <Label className="text-sm font-medium">
-              Sessões por dia
-            </Label>
-            <Badge variant="secondary">
-              Total: {totalSessions} sessões
-            </Badge>
+            <Label className="text-sm font-medium">Sessões por dia</Label>
+            <Badge variant="secondary">Total: {totalSessions} sessões</Badge>
           </div>
-          
+
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {selectedDays.map(({ day, sessions }) => {
               const dayItem = weekdayItems.find(item => item.key === day)
               return (
                 <div key={day} className="flex items-center space-x-2 p-3 border rounded-lg bg-muted/30">
                   <div className="flex-1">
-                    <Label className="text-sm font-medium">
-                      {dayItem?.fullName}
-                    </Label>
+                    <Label className="text-sm font-medium">{dayItem?.fullName}</Label>
                   </div>
                   <div className="w-20">
                     <Input
@@ -129,7 +117,7 @@ export function WeekdaySessionSelector({
                       min="1"
                       max="10"
                       value={sessions}
-                      onChange={(e) => {
+                      onChange={e => {
                         const value = parseInt(e.target.value) || 1
                         const clampedValue = Math.max(1, Math.min(10, value))
                         handleSessionsChange(day, clampedValue)
@@ -147,7 +135,8 @@ export function WeekdaySessionSelector({
       {/* Summary */}
       {selectedDays.length > 0 && (
         <div className="text-sm text-muted-foreground text-center">
-          {selectedDays.length} dia{selectedDays.length > 1 ? 's' : ''} selecionado{selectedDays.length > 1 ? 's' : ''} • {totalSessions} sessões no total
+          {selectedDays.length} dia{selectedDays.length > 1 ? 's' : ''} selecionado{selectedDays.length > 1 ? 's' : ''}{' '}
+          • {totalSessions} sessões no total
         </div>
       )}
     </div>

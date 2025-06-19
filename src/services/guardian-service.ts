@@ -1,4 +1,4 @@
-import { Guardian, GuardianFormValues } from '@/lib/schemas/guardian-schema'
+import { Guardian, GuardianFormValues } from '@/app/db/schemas/guardian-schema'
 
 // Tipos para as respostas da API
 export interface ApiResponse<T = any> {
@@ -13,10 +13,7 @@ export interface ApiResponse<T = any> {
 const API_BASE_URL = '/api/responsaveis'
 
 // Função auxiliar para fazer requisições
-async function apiRequest<T>(
-  url: string,
-  options: RequestInit = {}
-): Promise<ApiResponse<T>> {
+async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   try {
     const response = await fetch(url, {
       headers: {
@@ -55,35 +52,30 @@ export async function getGuardianById(id: string): Promise<Guardian> {
 }
 
 // Criar novo responsável
-export async function createGuardian(
-  data: GuardianFormValues
-): Promise<Guardian> {
+export async function createGuardian(data: GuardianFormValues): Promise<Guardian> {
   const response = await apiRequest<Guardian>(API_BASE_URL, {
     method: 'POST',
     body: JSON.stringify(data),
   })
-  
+
   if (!response.data) {
     throw new Error('Erro ao criar responsável')
   }
-  
+
   return response.data
 }
 
 // Atualizar responsável
-export async function updateGuardian(
-  id: string,
-  data: GuardianFormValues
-): Promise<Guardian> {
+export async function updateGuardian(id: string, data: GuardianFormValues): Promise<Guardian> {
   const response = await apiRequest<Guardian>(`${API_BASE_URL}/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   })
-  
+
   if (!response.data) {
     throw new Error('Erro ao atualizar responsável')
   }
-  
+
   return response.data
 }
 

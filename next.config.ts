@@ -1,3 +1,4 @@
+import { routes } from '@/lib/routes'
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
@@ -6,6 +7,11 @@ const nextConfig: NextConfig = {
       {
         source: '/',
         destination: '/admin',
+        permanent: true,
+      },
+      {
+        source: routes.frontend.admin.home,
+        destination: routes.frontend.admin.sheets,
         permanent: true,
       },
     ]

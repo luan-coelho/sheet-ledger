@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import { usePatients } from "@/hooks/use-patients"
-import { Combobox, ComboboxOption } from "@/components/ui/combobox"
-import { Skeleton } from "@/components/ui/skeleton"
+import { usePatients } from '@/hooks/use-patients'
+import { Combobox, ComboboxOption } from '@/components/ui/combobox'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface PatientSelectorProps {
   value?: string
@@ -15,7 +15,7 @@ interface PatientSelectorProps {
 export function PatientSelector({
   value,
   onValueChange,
-  placeholder = "Selecione um paciente...",
+  placeholder = 'Selecione um paciente...',
   className,
   disabled = false,
 }: PatientSelectorProps) {
@@ -26,17 +26,14 @@ export function PatientSelector({
   }
 
   if (error) {
-    return (
-      <div className="text-sm text-destructive">
-        Erro ao carregar pacientes
-      </div>
-    )
+    return <div className="text-sm text-destructive">Erro ao carregar pacientes</div>
   }
 
-  const options: ComboboxOption[] = patients?.map((patient) => ({
-    value: patient.id,
-    label: patient.name,
-  })) || []
+  const options: ComboboxOption[] =
+    patients?.map(patient => ({
+      value: patient.id,
+      label: patient.name,
+    })) || []
 
   return (
     <Combobox

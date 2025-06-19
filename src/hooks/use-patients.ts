@@ -8,7 +8,7 @@ import {
   deletePatient,
   patientQueryKeys,
 } from '@/services/patient-service'
-import { Patient, PatientFormValues } from '@/lib/schemas/patient-schema'
+import { Patient, PatientFormValues } from '@/app/db/schemas/patient-schema'
 
 // Hook para listar todos os pacientes
 export function usePatients() {
@@ -40,7 +40,7 @@ export function useCreatePatient() {
       })
       toast.success('Paciente criado com sucesso!')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Erro ao criar paciente: ${error.message}`)
     },
   })
@@ -51,22 +51,18 @@ export function useUpdatePatient() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: PatientFormValues }) =>
-      updatePatient(id, data),
-    onSuccess: (updatedPatient) => {
+    mutationFn: ({ id, data }: { id: string; data: PatientFormValues }) => updatePatient(id, data),
+    onSuccess: updatedPatient => {
       // Invalidar a lista de pacientes
       queryClient.invalidateQueries({
         queryKey: patientQueryKeys.lists(),
       })
-      
+
       // Atualizar o cache do paciente específico
-      queryClient.setQueryData(
-        patientQueryKeys.detail(updatedPatient.id),
-        updatedPatient
-      )
+      queryClient.setQueryData(patientQueryKeys.detail(updatedPatient.id), updatedPatient)
       toast.success('Paciente atualizado com sucesso!')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Erro ao atualizar paciente: ${error.message}`)
     },
   })
@@ -83,14 +79,14 @@ export function useDeletePatient() {
       queryClient.invalidateQueries({
         queryKey: patientQueryKeys.lists(),
       })
-      
+
       // Remover o paciente específico do cache
       queryClient.removeQueries({
         queryKey: patientQueryKeys.detail(deletedId),
       })
       toast.success('Paciente excluído com sucesso!')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Erro ao excluir paciente: ${error.message}`)
     },
   })

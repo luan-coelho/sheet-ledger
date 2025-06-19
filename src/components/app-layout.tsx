@@ -15,7 +15,7 @@ export function AppLayout({ children }: AppLayoutProps) {
       <AppSidebar />
       <SidebarInset className="flex flex-col min-h-screen">
         <AppHeader />
-        <main className="flex-1 flex flex-col gap-4 p-4 pt-4 pb-20 bg-gray-100">
+        <main className="flex-1 flex flex-col gap-4 p-4 pt-4 pb-20 bg-background/95">
           <div className="flex-1 rounded-xl">
             <div className="p-6">{children}</div>
           </div>

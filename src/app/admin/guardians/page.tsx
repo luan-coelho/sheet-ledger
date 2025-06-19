@@ -1,22 +1,10 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
 import { Plus, MoreHorizontal, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,17 +15,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { GuardianForm } from '@/components/guardian-form'
 import { useGuardians, useDeleteGuardian } from '@/hooks/use-guardians'
-import { Guardian } from '@/lib/schemas/guardian-schema'
+import { Guardian } from '@/app/db/schemas/guardian-schema'
 
 export default function ResponsaveisPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -88,16 +70,12 @@ export default function ResponsaveisPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Responsáveis</h1>
-          <p className="text-muted-foreground">
-            Gerencie os responsáveis do sistema
-          </p>
+          <p className="text-muted-foreground">Gerencie os responsáveis do sistema</p>
         </div>
-        
+
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center text-destructive">
-              Erro ao carregar responsáveis: {error.message}
-            </div>
+            <div className="text-center text-destructive">Erro ao carregar responsáveis: {error.message}</div>
           </CardContent>
         </Card>
       </div>
@@ -109,11 +87,9 @@ export default function ResponsaveisPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Responsáveis</h1>
-          <p className="text-muted-foreground">
-            Gerencie os responsáveis do sistema
-          </p>
+          <p className="text-muted-foreground">Gerencie os responsáveis do sistema</p>
         </div>
-        
+
         <Button onClick={handleNewGuardian}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Responsável
@@ -123,9 +99,7 @@ export default function ResponsaveisPage() {
       <Card>
         <CardHeader>
           <CardTitle>Lista de Responsáveis</CardTitle>
-          <CardDescription>
-            {guardians?.length || 0} responsável(is) cadastrado(s)
-          </CardDescription>
+          <CardDescription>{guardians?.length || 0} responsável(is) cadastrado(s)</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -144,17 +118,11 @@ export default function ResponsaveisPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {guardians.map((guardian) => (
+                {guardians.map(guardian => (
                   <TableRow key={guardian.id}>
-                    <TableCell className="font-medium">
-                      {guardian.name}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(guardian.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(guardian.updatedAt)}
-                    </TableCell>
+                    <TableCell className="font-medium">{guardian.name}</TableCell>
+                    <TableCell>{formatDate(guardian.createdAt)}</TableCell>
+                    <TableCell>{formatDate(guardian.updatedAt)}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -168,10 +136,7 @@ export default function ResponsaveisPage() {
                             <Pencil className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setDeletingGuardian(guardian)}
-                            className="text-destructive"
-                          >
+                          <DropdownMenuItem onClick={() => setDeletingGuardian(guardian)} className="text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
                             Excluir
                           </DropdownMenuItem>
@@ -184,9 +149,7 @@ export default function ResponsaveisPage() {
             </Table>
           ) : (
             <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                Nenhum responsável cadastrado ainda.
-              </p>
+              <p className="text-muted-foreground mb-4">Nenhum responsável cadastrado ainda.</p>
               <Button onClick={handleNewGuardian}>
                 <Plus className="mr-2 h-4 w-4" />
                 Cadastrar Primeiro Responsável
@@ -199,34 +162,22 @@ export default function ResponsaveisPage() {
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>
-              {editingGuardian ? 'Editar Responsável' : 'Novo Responsável'}
-            </DialogTitle>
+            <DialogTitle>{editingGuardian ? 'Editar Responsável' : 'Novo Responsável'}</DialogTitle>
             <DialogDescription>
-              {editingGuardian
-                ? 'Atualize as informações do responsável.'
-                : 'Adicione um novo responsável ao sistema.'}
+              {editingGuardian ? 'Atualize as informações do responsável.' : 'Adicione um novo responsável ao sistema.'}
             </DialogDescription>
           </DialogHeader>
-          
-          <GuardianForm
-            guardian={editingGuardian}
-            onSuccess={handleModalClose}
-            onCancel={handleModalClose}
-          />
+
+          <GuardianForm guardian={editingGuardian} onSuccess={handleModalClose} onCancel={handleModalClose} />
         </DialogContent>
       </Dialog>
 
-      <AlertDialog
-        open={!!deletingGuardian}
-        onOpenChange={() => setDeletingGuardian(null)}
-      >
+      <AlertDialog open={!!deletingGuardian} onOpenChange={() => setDeletingGuardian(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o responsável "{deletingGuardian?.name}"?
-              Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir o responsável "{deletingGuardian?.name}"? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -234,11 +185,8 @@ export default function ResponsaveisPage() {
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>

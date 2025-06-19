@@ -17,23 +17,20 @@ export function useAuthGuard(options: UseAuthGuardOptions = {}) {
   const { data: session, status } = useSession()
   const router = useRouter()
   const pathname = usePathname()
-  
-  const {
-    redirectTo = '/auth/signin',
-    redirectIfAuthenticated = false,
-  } = options
+
+  const { redirectTo = '/auth/signin', redirectIfAuthenticated = false } = options
 
   useEffect(() => {
     if (status === 'loading') return // Still loading
 
     const isAuthenticated = !!session
-    
+
     if (redirectIfAuthenticated && isAuthenticated) {
       // Redirect authenticated users away from auth pages
       router.push('/')
       return
     }
-    
+
     if (!redirectIfAuthenticated && !isAuthenticated) {
       // Redirect unauthenticated users to sign-in
       const callbackUrl = encodeURIComponent(pathname)

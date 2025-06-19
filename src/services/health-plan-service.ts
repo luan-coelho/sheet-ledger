@@ -1,4 +1,4 @@
-import { HealthPlan, HealthPlanFormValues } from '@/lib/schemas/health-plan-schema'
+import { HealthPlan, HealthPlanFormValues } from '@/app/db/schemas/health-plan-schema'
 
 // Tipos para as respostas da API
 export interface ApiResponse<T = any> {
@@ -13,10 +13,7 @@ export interface ApiResponse<T = any> {
 const API_BASE_URL = '/api/planos-saude'
 
 // Função auxiliar para fazer requisições
-async function apiRequest<T>(
-  url: string,
-  options: RequestInit = {}
-): Promise<ApiResponse<T>> {
+async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   try {
     const response = await fetch(url, {
       headers: {
@@ -55,35 +52,30 @@ export async function getHealthPlanById(id: string): Promise<HealthPlan> {
 }
 
 // Criar novo plano de saúde
-export async function createHealthPlan(
-  data: HealthPlanFormValues
-): Promise<HealthPlan> {
+export async function createHealthPlan(data: HealthPlanFormValues): Promise<HealthPlan> {
   const response = await apiRequest<HealthPlan>(API_BASE_URL, {
     method: 'POST',
     body: JSON.stringify(data),
   })
-  
+
   if (!response.data) {
     throw new Error('Erro ao criar plano de saúde')
   }
-  
+
   return response.data
 }
 
 // Atualizar plano de saúde
-export async function updateHealthPlan(
-  id: string,
-  data: HealthPlanFormValues
-): Promise<HealthPlan> {
+export async function updateHealthPlan(id: string, data: HealthPlanFormValues): Promise<HealthPlan> {
   const response = await apiRequest<HealthPlan>(`${API_BASE_URL}/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   })
-  
+
   if (!response.data) {
     throw new Error('Erro ao atualizar plano de saúde')
   }
-  
+
   return response.data
 }
 

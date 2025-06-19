@@ -1,22 +1,10 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
 import { Plus, MoreHorizontal, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +18,7 @@ import {
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ProfessionalModal } from '@/components/professional-modal'
 import { useProfessionals, useDeleteProfessional } from '@/hooks/use-professionals'
-import { Professional } from '@/lib/schemas/professional-schema'
+import { Professional } from '@/app/db/schemas/professional-schema'
 
 export default function ProfissionaisPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -81,16 +69,12 @@ export default function ProfissionaisPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Profissionais</h1>
-          <p className="text-muted-foreground">
-            Gerencie os profissionais do sistema
-          </p>
+          <p className="text-muted-foreground">Gerencie os profissionais do sistema</p>
         </div>
-        
+
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center text-destructive">
-              Erro ao carregar profissionais: {error.message}
-            </div>
+            <div className="text-center text-destructive">Erro ao carregar profissionais: {error.message}</div>
           </CardContent>
         </Card>
       </div>
@@ -102,11 +86,9 @@ export default function ProfissionaisPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Profissionais</h1>
-          <p className="text-muted-foreground">
-            Gerencie os profissionais do sistema
-          </p>
+          <p className="text-muted-foreground">Gerencie os profissionais do sistema</p>
         </div>
-        
+
         <Button onClick={handleNewProfessional}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Profissional
@@ -116,9 +98,7 @@ export default function ProfissionaisPage() {
       <Card>
         <CardHeader>
           <CardTitle>Lista de Profissionais</CardTitle>
-          <CardDescription>
-            {professionals?.length || 0} profissional(is) cadastrado(s)
-          </CardDescription>
+          <CardDescription>{professionals?.length || 0} profissional(is) cadastrado(s)</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -137,17 +117,11 @@ export default function ProfissionaisPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {professionals.map((professional) => (
+                {professionals.map(professional => (
                   <TableRow key={professional.id}>
-                    <TableCell className="font-medium">
-                      {professional.name}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(professional.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(professional.updatedAt)}
-                    </TableCell>
+                    <TableCell className="font-medium">{professional.name}</TableCell>
+                    <TableCell>{formatDate(professional.createdAt)}</TableCell>
+                    <TableCell>{formatDate(professional.updatedAt)}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -163,8 +137,7 @@ export default function ProfissionaisPage() {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeletingProfessional(professional)}
-                            className="text-destructive"
-                          >
+                            className="text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
                             Excluir
                           </DropdownMenuItem>
@@ -177,9 +150,7 @@ export default function ProfissionaisPage() {
             </Table>
           ) : (
             <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                Nenhum profissional cadastrado ainda.
-              </p>
+              <p className="text-muted-foreground mb-4">Nenhum profissional cadastrado ainda.</p>
               <Button onClick={handleNewProfessional}>
                 <Plus className="mr-2 h-4 w-4" />
                 Cadastrar Primeiro Profissional
@@ -189,22 +160,15 @@ export default function ProfissionaisPage() {
         </CardContent>
       </Card>
 
-      <ProfessionalModal
-        open={isModalOpen}
-        onOpenChange={handleModalClose}
-        professional={editingProfessional}
-      />
+      <ProfessionalModal open={isModalOpen} onOpenChange={handleModalClose} professional={editingProfessional} />
 
-      <AlertDialog
-        open={!!deletingProfessional}
-        onOpenChange={() => setDeletingProfessional(null)}
-      >
+      <AlertDialog open={!!deletingProfessional} onOpenChange={() => setDeletingProfessional(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o profissional "{deletingProfessional?.name}"?
-              Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir o profissional "{deletingProfessional?.name}"? Esta ação não pode ser
+              desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -212,11 +176,8 @@ export default function ProfissionaisPage() {
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>

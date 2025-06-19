@@ -1,14 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
+import { ProfessionalFormValues } from '@/app/db/schemas/professional-schema'
 import {
+  createProfessional,
+  deleteProfessional,
   getAllProfessionals,
   getProfessionalById,
-  createProfessional,
-  updateProfessional,
-  deleteProfessional,
   professionalQueryKeys,
+  updateProfessional,
 } from '@/services/professional-service'
-import { Professional, ProfessionalFormValues } from '@/lib/schemas/professional-schema'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 // Hook para listar todos os profissionais
 export function useProfessionals() {
@@ -40,7 +40,7 @@ export function useCreateProfessional() {
       })
       toast.success('Profissional criado com sucesso!')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Erro ao criar profissional: ${error.message}`)
     },
   })
@@ -51,22 +51,18 @@ export function useUpdateProfessional() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: ProfessionalFormValues }) =>
-      updateProfessional(id, data),
-    onSuccess: (updatedProfessional) => {
+    mutationFn: ({ id, data }: { id: string; data: ProfessionalFormValues }) => updateProfessional(id, data),
+    onSuccess: updatedProfessional => {
       // Invalidar a lista de profissionais
       queryClient.invalidateQueries({
         queryKey: professionalQueryKeys.lists(),
       })
-      
+
       // Atualizar o cache do profissional específico
-      queryClient.setQueryData(
-        professionalQueryKeys.detail(updatedProfessional.id),
-        updatedProfessional
-      )
+      queryClient.setQueryData(professionalQueryKeys.detail(updatedProfessional.id), updatedProfessional)
       toast.success('Profissional atualizado com sucesso!')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Erro ao atualizar profissional: ${error.message}`)
     },
   })
@@ -83,14 +79,14 @@ export function useDeleteProfessional() {
       queryClient.invalidateQueries({
         queryKey: professionalQueryKeys.lists(),
       })
-      
+
       // Remover o profissional específico do cache
       queryClient.removeQueries({
         queryKey: professionalQueryKeys.detail(deletedId),
       })
       toast.success('Profissional excluído com sucesso!')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Erro ao excluir profissional: ${error.message}`)
     },
   })

@@ -1,14 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
+import { GuardianFormValues } from '@/app/db/schemas/guardian-schema'
 import {
+  createGuardian,
+  deleteGuardian,
   getAllGuardians,
   getGuardianById,
-  createGuardian,
-  updateGuardian,
-  deleteGuardian,
   guardianQueryKeys,
+  updateGuardian,
 } from '@/services/guardian-service'
-import { Guardian, GuardianFormValues } from '@/lib/schemas/guardian-schema'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 // Hook para listar todos os responsáveis
 export function useGuardians() {
@@ -40,7 +40,7 @@ export function useCreateGuardian() {
       })
       toast.success('Responsável criado com sucesso!')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Erro ao criar responsável: ${error.message}`)
     },
   })
@@ -51,22 +51,18 @@ export function useUpdateGuardian() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: GuardianFormValues }) =>
-      updateGuardian(id, data),
-    onSuccess: (updatedGuardian) => {
+    mutationFn: ({ id, data }: { id: string; data: GuardianFormValues }) => updateGuardian(id, data),
+    onSuccess: updatedGuardian => {
       // Invalidar a lista de responsáveis
       queryClient.invalidateQueries({
         queryKey: guardianQueryKeys.lists(),
       })
-      
+
       // Atualizar o cache do responsável específico
-      queryClient.setQueryData(
-        guardianQueryKeys.detail(updatedGuardian.id),
-        updatedGuardian
-      )
+      queryClient.setQueryData(guardianQueryKeys.detail(updatedGuardian.id), updatedGuardian)
       toast.success('Responsável atualizado com sucesso!')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Erro ao atualizar responsável: ${error.message}`)
     },
   })
@@ -83,14 +79,14 @@ export function useDeleteGuardian() {
       queryClient.invalidateQueries({
         queryKey: guardianQueryKeys.lists(),
       })
-      
+
       // Remover o responsável específico do cache
       queryClient.removeQueries({
         queryKey: guardianQueryKeys.detail(deletedId),
       })
       toast.success('Responsável excluído com sucesso!')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Erro ao excluir responsável: ${error.message}`)
     },
   })

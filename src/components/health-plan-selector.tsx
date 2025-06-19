@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import { useHealthPlans } from "@/hooks/use-health-plans"
-import { Combobox, ComboboxOption } from "@/components/ui/combobox"
-import { Skeleton } from "@/components/ui/skeleton"
+import { useHealthPlans } from '@/hooks/use-health-plans'
+import { Combobox, ComboboxOption } from '@/components/ui/combobox'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface HealthPlanSelectorProps {
   value?: string
@@ -15,7 +15,7 @@ interface HealthPlanSelectorProps {
 export function HealthPlanSelector({
   value,
   onValueChange,
-  placeholder = "Selecione um plano de saúde...",
+  placeholder = 'Selecione um plano de saúde...',
   className,
   disabled = false,
 }: HealthPlanSelectorProps) {
@@ -26,17 +26,14 @@ export function HealthPlanSelector({
   }
 
   if (error) {
-    return (
-      <div className="text-sm text-destructive">
-        Erro ao carregar planos de saúde
-      </div>
-    )
+    return <div className="text-sm text-destructive">Erro ao carregar planos de saúde</div>
   }
 
-  const options: ComboboxOption[] = healthPlans?.map((healthPlan) => ({
-    value: healthPlan.id,
-    label: healthPlan.name,
-  })) || []
+  const options: ComboboxOption[] =
+    healthPlans?.map(healthPlan => ({
+      value: healthPlan.id,
+      label: healthPlan.name,
+    })) || []
 
   return (
     <Combobox

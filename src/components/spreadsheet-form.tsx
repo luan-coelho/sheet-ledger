@@ -49,8 +49,8 @@ export function SpreadsheetForm() {
       weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }],
       competencia: {
         mes: new Date().getMonth().toString(),
-        ano: anoAtual.toString()
-      }
+        ano: anoAtual.toString(),
+      },
     },
   })
 
@@ -84,7 +84,7 @@ export function SpreadsheetForm() {
         responsible: guardian?.name || '',
         healthPlan: healthPlan?.name || '',
         weekDaySessions: values.weekDaySessions,
-        competencia: values.competencia
+        competencia: values.competencia,
       }
 
       // Make API request
@@ -124,9 +124,7 @@ export function SpreadsheetForm() {
     <Card className="w-full">
       <CardHeader>
         <CardTitle>Gerador de Planilha de Atendimento</CardTitle>
-        <CardDescription>
-          Preencha os dados para gerar a planilha de atendimento baseada no template.
-        </CardDescription>
+        <CardDescription>Preencha os dados para gerar a planilha de atendimento baseada no template.</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -246,11 +244,11 @@ export function SpreadsheetForm() {
                     <FormLabel>Mês de competência</FormLabel>
                     <FormControl>
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className='w-full'>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Selecione o mês" />
                         </SelectTrigger>
-                        <SelectContent className='w-full'>
-                          {meses.map((mes) => (
+                        <SelectContent className="w-full">
+                          {meses.map(mes => (
                             <SelectItem key={mes.value} value={mes.value}>
                               {mes.label}
                             </SelectItem>
@@ -271,11 +269,11 @@ export function SpreadsheetForm() {
                     <FormLabel>Ano de competência</FormLabel>
                     <FormControl>
                       <Select value={field.value} onValueChange={field.onChange}>
-                        <SelectTrigger className='w-full'>
+                        <SelectTrigger className="w-full">
                           <SelectValue placeholder="Selecione o ano" />
                         </SelectTrigger>
-                        <SelectContent className='w-full'>
-                          {anos.map((ano) => (
+                        <SelectContent className="w-full">
+                          {anos.map(ano => (
                             <SelectItem key={ano} value={ano}>
                               {ano}
                             </SelectItem>
@@ -299,10 +297,7 @@ export function SpreadsheetForm() {
                     Selecione os dias de atendimento e configure a quantidade de sessões por dia
                   </FormDescription>
                   <FormControl>
-                    <WeekdaySessionSelector
-                      value={field.value}
-                      onChange={field.onChange}
-                    />
+                    <WeekdaySessionSelector value={field.value} onChange={field.onChange} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -317,8 +312,7 @@ export function SpreadsheetForm() {
                 variant="outline"
                 className="flex-1"
                 onClick={handlePreview}
-                disabled={isGenerating}
-              >
+                disabled={isGenerating}>
                 <Eye className="mr-2 h-4 w-4" />
                 Visualizar Preview
               </Button>
@@ -333,10 +327,7 @@ export function SpreadsheetForm() {
 
         {showPreview && (
           <div className="mt-6">
-            <SpreadsheetPreview
-              formData={formValues}
-              onClose={() => setShowPreview(false)}
-            />
+            <SpreadsheetPreview formData={formValues} onClose={() => setShowPreview(false)} />
           </div>
         )}
       </CardContent>

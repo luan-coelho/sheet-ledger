@@ -1,14 +1,8 @@
-"use client"
+'use client'
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { ProfessionalForm } from './professional-form'
-import { Professional } from '@/lib/schemas/professional-schema'
+import { Professional } from '@/app/db/schemas/professional-schema'
 
 interface ProfessionalModalProps {
   open: boolean
@@ -31,21 +25,13 @@ export function ProfessionalModal({ open, onOpenChange, professional }: Professi
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>
-            {isEditing ? 'Editar Profissional' : 'Novo Profissional'}
-          </DialogTitle>
+          <DialogTitle>{isEditing ? 'Editar Profissional' : 'Novo Profissional'}</DialogTitle>
           <DialogDescription>
-            {isEditing
-              ? 'Atualize as informações do profissional.'
-              : 'Adicione um novo profissional ao sistema.'}
+            {isEditing ? 'Atualize as informações do profissional.' : 'Adicione um novo profissional ao sistema.'}
           </DialogDescription>
         </DialogHeader>
-        
-        <ProfessionalForm
-          professional={professional}
-          onSuccess={handleSuccess}
-          onCancel={handleCancel}
-        />
+
+        <ProfessionalForm professional={professional} onSuccess={handleSuccess} onCancel={handleCancel} />
       </DialogContent>
     </Dialog>
   )

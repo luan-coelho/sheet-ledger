@@ -1,18 +1,11 @@
-"use client"
+'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { insertHealthPlanSchema, HealthPlanFormValues, HealthPlan } from '@/lib/schemas/health-plan-schema'
+import { insertHealthPlanSchema, HealthPlanFormValues, HealthPlan } from '@/app/db/schemas/health-plan-schema'
 import { useCreateHealthPlan, useUpdateHealthPlan } from '@/hooks/use-health-plans'
 import { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
@@ -25,7 +18,7 @@ interface HealthPlanFormProps {
 
 export function HealthPlanForm({ healthPlan, onSuccess, onCancel }: HealthPlanFormProps) {
   const isEditing = !!healthPlan
-  
+
   const form = useForm<HealthPlanFormValues>({
     resolver: zodResolver(insertHealthPlanSchema),
     defaultValues: {
@@ -56,7 +49,7 @@ export function HealthPlanForm({ healthPlan, onSuccess, onCancel }: HealthPlanFo
       } else {
         await createMutation.mutateAsync(values)
       }
-      
+
       form.reset()
       onSuccess?.()
     } catch (error) {
@@ -74,11 +67,7 @@ export function HealthPlanForm({ healthPlan, onSuccess, onCancel }: HealthPlanFo
             <FormItem>
               <FormLabel>Nome do Plano de Saúde</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Digite o nome do plano de saúde"
-                  {...field}
-                  disabled={isLoading}
-                />
+                <Input placeholder="Digite o nome do plano de saúde" {...field} disabled={isLoading} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -87,16 +76,11 @@ export function HealthPlanForm({ healthPlan, onSuccess, onCancel }: HealthPlanFo
 
         <div className="flex gap-3 justify-end">
           {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isLoading}
-            >
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
               Cancelar
             </Button>
           )}
-          
+
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isEditing ? 'Atualizar' : 'Criar'} Plano de Saúde

@@ -1,18 +1,11 @@
-"use client"
+'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { insertGuardianSchema, GuardianFormValues, Guardian } from '@/lib/schemas/guardian-schema'
+import { insertGuardianSchema, GuardianFormValues, Guardian } from '@/app/db/schemas/guardian-schema'
 import { useCreateGuardian, useUpdateGuardian } from '@/hooks/use-guardians'
 import { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
@@ -25,7 +18,7 @@ interface GuardianFormProps {
 
 export function GuardianForm({ guardian, onSuccess, onCancel }: GuardianFormProps) {
   const isEditing = !!guardian
-  
+
   const form = useForm<GuardianFormValues>({
     resolver: zodResolver(insertGuardianSchema),
     defaultValues: {
@@ -56,7 +49,7 @@ export function GuardianForm({ guardian, onSuccess, onCancel }: GuardianFormProp
       } else {
         await createMutation.mutateAsync(values)
       }
-      
+
       form.reset()
       onSuccess?.()
     } catch (error) {
@@ -74,11 +67,7 @@ export function GuardianForm({ guardian, onSuccess, onCancel }: GuardianFormProp
             <FormItem>
               <FormLabel>Nome do Responsável</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Digite o nome do responsável"
-                  {...field}
-                  disabled={isLoading}
-                />
+                <Input placeholder="Digite o nome do responsável" {...field} disabled={isLoading} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -87,16 +76,11 @@ export function GuardianForm({ guardian, onSuccess, onCancel }: GuardianFormProp
 
         <div className="flex gap-3 justify-end">
           {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isLoading}
-            >
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
               Cancelar
             </Button>
           )}
-          
+
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isEditing ? 'Atualizar' : 'Criar'} Responsável

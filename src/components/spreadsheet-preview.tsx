@@ -1,16 +1,16 @@
 'use client'
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
-import { X, Calendar, User, FileText, CreditCard, Shield } from 'lucide-react'
-import { SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
-import { PreviewUtils } from '@/lib/preview-utils'
-import { useProfessionals } from '@/hooks/use-professionals'
-import { usePatients } from '@/hooks/use-patients'
 import { useGuardians } from '@/hooks/use-guardians'
 import { useHealthPlans } from '@/hooks/use-health-plans'
+import { usePatients } from '@/hooks/use-patients'
+import { useProfessionals } from '@/hooks/use-professionals'
+import { PreviewUtils } from '@/lib/preview-utils'
+import { SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
+import { Calendar, FileText, User, X } from 'lucide-react'
 
 interface SpreadsheetPreviewProps {
   formData: SpreadsheetFormValues
@@ -52,16 +52,14 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
               <FileText className="h-5 w-5" />
               Preview da Planilha de Atendimento
             </CardTitle>
-            <CardDescription>
-              Visualização dos dados que serão gerados na planilha
-            </CardDescription>
+            <CardDescription>Visualização dos dados que serão gerados na planilha</CardDescription>
           </div>
           <Button variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-6">
         {/* Header Information */}
         <div className="bg-muted/50 p-4 rounded-lg">
@@ -69,33 +67,33 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
             <User className="h-4 w-4" />
             REGISTRO DE ATENDIMENTO
           </h3>
-          
+
           <div className="grid gap-3 text-sm">
             <div className="flex justify-between">
               <span className="font-medium">Profissional executante:</span>
               <span>{professional?.name || 'Carregando...'}</span>
             </div>
-            
+
             <div className="flex justify-between">
               <span className="font-medium">Nº conselho do profissional:</span>
               <span>{formData.licenseNumber}</span>
             </div>
-            
+
             <div className="flex justify-between">
               <span className="font-medium">Sessão Autorizada:</span>
               <span>{formData.authorizedSession}</span>
             </div>
-            
+
             <div className="flex justify-between">
               <span className="font-medium">Nome paciente:</span>
               <span>{patient?.name || 'Carregando...'}</span>
             </div>
-            
+
             <div className="flex justify-between">
               <span className="font-medium">Responsável:</span>
               <span>{guardian?.name || 'Carregando...'}</span>
             </div>
-            
+
             <div className="flex justify-between">
               <span className="font-medium">Plano:</span>
               <span>{healthPlan?.name || 'Carregando...'}</span>
@@ -149,7 +147,7 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
         {/* Sessions Table Preview */}
         <div className="space-y-4">
           <h3 className="font-semibold text-lg">Sessões que serão geradas:</h3>
-          
+
           <div className="border rounded-lg overflow-hidden">
             <div className="bg-muted/50 px-4 py-2 border-b">
               <div className="grid grid-cols-3 gap-4 text-sm font-medium">
@@ -158,7 +156,7 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
                 <span>Sessão/dia</span>
               </div>
             </div>
-            
+
             <div className="max-h-64 overflow-y-auto">
               {sessionDates.map((session, index) => (
                 <div key={index} className="px-4 py-2 border-b last:border-b-0 hover:bg-muted/30">

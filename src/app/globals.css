@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -112,6 +112,42 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.488 0.243 264.376);
+}
+
+/* Configurações de tamanho de fonte */
+.text-size-small {
+  font-size: 0.875rem;
+}
+
+.text-size-medium {
+  font-size: 1rem;
+}
+
+.text-size-large {
+  font-size: 1.125rem;
+}
+
+/* Configuração de movimento reduzido */
+.reduce-motion * {
+  transition-duration: 0.001ms !important;
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  scroll-behavior: auto !important;
+}
+
+/* Configuração de alto contraste */
+.high-contrast {
+  --primary: oklch(0.5 0.36 260);
+  --ring: oklch(0.5 0.36 260);
+  --border: oklch(0.3 0.05 286.32);
+  --muted-foreground: oklch(0.3 0.05 285.938);
+}
+
+.dark.high-contrast {
+  --primary: oklch(0.7 0.36 260);
+  --ring: oklch(0.7 0.36 260);
+  --border: oklch(0.8 0.05 286.32);
+  --muted-foreground: oklch(0.8 0.05 285.938);
 }
 
 @layer base {

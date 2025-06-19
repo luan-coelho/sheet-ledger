@@ -16,28 +16,24 @@ export class PreviewUtils {
    * @param weekDays Array of selected weekdays
    * @returns Array of dates representing selected days
    */
-  static generateSessionDates(
-    year: number,
-    month: number,
-    weekDays: WeekDays[]
-  ): Date[] {
+  static generateSessionDates(year: number, month: number, weekDays: WeekDays[]): Date[] {
     const selectedDays: Date[] = []
     const startDate = new Date(year, month, 1)
     const endDate = new Date(year, month + 1, 0)
-    
+
     // Convert WeekDays enum to day indices (0 = Monday, 6 = Sunday)
     const daysOfWeekIndices = weekDays.map(day => this.getDayIndex(day))
-    
+
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
       // Convert JS day (0 = Sunday) to our day (0 = Monday)
       const jsDay = d.getDay() // 0 = Sunday, 1 = Monday, etc.
       const ourDay = jsDay === 0 ? 6 : jsDay - 1 // Convert to 0 = Monday, 6 = Sunday
-      
+
       if (daysOfWeekIndices.includes(ourDay)) {
         selectedDays.push(new Date(d))
       }
     }
-    
+
     return selectedDays
   }
 
@@ -86,7 +82,7 @@ export class PreviewUtils {
    */
   static formatWeekDaysRange(weekDays: WeekDays[]): string {
     if (weekDays.length === 0) return ''
-    
+
     // Map weekdays to abbreviations
     const dayAbbreviations: Record<WeekDays, string> = {
       [WeekDays.MONDAY]: 'SEG',
@@ -100,9 +96,10 @@ export class PreviewUtils {
 
     // Sort weekdays by their index
     const sortedDays = [...weekDays].sort((a, b) => this.getDayIndex(a) - this.getDayIndex(b))
-    
+
     // Check if it's a consecutive range from Monday to Friday
-    const isWeekdayRange = sortedDays.length === 5 && 
+    const isWeekdayRange =
+      sortedDays.length === 5 &&
       sortedDays.includes(WeekDays.MONDAY) &&
       sortedDays.includes(WeekDays.TUESDAY) &&
       sortedDays.includes(WeekDays.WEDNESDAY) &&
@@ -148,7 +145,7 @@ export class PreviewUtils {
   static generateSessionDatesWithSessions(
     year: number,
     month: number,
-    weekDaySessions: WeekdaySession[]
+    weekDaySessions: WeekdaySession[],
   ): SessionDate[] {
     const sessionDates: SessionDate[] = []
     const startDate = new Date(year, month, 1)
@@ -168,7 +165,7 @@ export class PreviewUtils {
       if (sessionsMap.has(ourDay)) {
         sessionDates.push({
           date: new Date(d),
-          sessions: sessionsMap.get(ourDay)!
+          sessions: sessionsMap.get(ourDay)!,
         })
       }
     }
@@ -183,14 +180,22 @@ export class PreviewUtils {
    */
   private static getWeekDayFromJSDay(jsDay: number): WeekDays {
     switch (jsDay) {
-      case 1: return WeekDays.MONDAY
-      case 2: return WeekDays.TUESDAY
-      case 3: return WeekDays.WEDNESDAY
-      case 4: return WeekDays.THURSDAY
-      case 5: return WeekDays.FRIDAY
-      case 6: return WeekDays.SATURDAY
-      case 0: return WeekDays.SUNDAY
-      default: return WeekDays.MONDAY
+      case 1:
+        return WeekDays.MONDAY
+      case 2:
+        return WeekDays.TUESDAY
+      case 3:
+        return WeekDays.WEDNESDAY
+      case 4:
+        return WeekDays.THURSDAY
+      case 5:
+        return WeekDays.FRIDAY
+      case 6:
+        return WeekDays.SATURDAY
+      case 0:
+        return WeekDays.SUNDAY
+      default:
+        return WeekDays.MONDAY
     }
   }
 
@@ -216,8 +221,6 @@ export class PreviewUtils {
     // Sort weekdays by their index
     const sortedSessions = [...weekDaySessions].sort((a, b) => this.getDayIndex(a.day) - this.getDayIndex(b.day))
 
-    return sortedSessions.map(({ day, sessions }) =>
-      `${dayAbbreviations[day]}(${sessions})`
-    ).join(', ')
+    return sortedSessions.map(({ day, sessions }) => `${dayAbbreviations[day]}(${sessions})`).join(', ')
   }
 }

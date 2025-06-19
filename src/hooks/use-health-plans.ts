@@ -8,7 +8,7 @@ import {
   deleteHealthPlan,
   healthPlanQueryKeys,
 } from '@/services/health-plan-service'
-import { HealthPlan, HealthPlanFormValues } from '@/lib/schemas/health-plan-schema'
+import { HealthPlan, HealthPlanFormValues } from '@/app/db/schemas/health-plan-schema'
 
 // Hook para listar todos os planos de saúde
 export function useHealthPlans() {
@@ -40,7 +40,7 @@ export function useCreateHealthPlan() {
       })
       toast.success('Plano de saúde criado com sucesso!')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Erro ao criar plano de saúde: ${error.message}`)
     },
   })
@@ -51,22 +51,18 @@ export function useUpdateHealthPlan() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: HealthPlanFormValues }) =>
-      updateHealthPlan(id, data),
-    onSuccess: (updatedHealthPlan) => {
+    mutationFn: ({ id, data }: { id: string; data: HealthPlanFormValues }) => updateHealthPlan(id, data),
+    onSuccess: updatedHealthPlan => {
       // Invalidar a lista de planos de saúde
       queryClient.invalidateQueries({
         queryKey: healthPlanQueryKeys.lists(),
       })
-      
+
       // Atualizar o cache do plano de saúde específico
-      queryClient.setQueryData(
-        healthPlanQueryKeys.detail(updatedHealthPlan.id),
-        updatedHealthPlan
-      )
+      queryClient.setQueryData(healthPlanQueryKeys.detail(updatedHealthPlan.id), updatedHealthPlan)
       toast.success('Plano de saúde atualizado com sucesso!')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Erro ao atualizar plano de saúde: ${error.message}`)
     },
   })
@@ -83,14 +79,14 @@ export function useDeleteHealthPlan() {
       queryClient.invalidateQueries({
         queryKey: healthPlanQueryKeys.lists(),
       })
-      
+
       // Remover o plano de saúde específico do cache
       queryClient.removeQueries({
         queryKey: healthPlanQueryKeys.detail(deletedId),
       })
       toast.success('Plano de saúde excluído com sucesso!')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(`Erro ao excluir plano de saúde: ${error.message}`)
     },
   })

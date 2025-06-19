@@ -12,12 +12,7 @@ interface SignInButtonProps {
   callbackUrl?: string
 }
 
-export function SignInButton({
-  variant = 'default',
-  size = 'default',
-  className,
-  callbackUrl
-}: SignInButtonProps) {
+export function SignInButton({ variant = 'default', size = 'default', className, callbackUrl }: SignInButtonProps) {
   const searchParams = useSearchParams()
   const defaultCallbackUrl = searchParams.get('callbackUrl') || callbackUrl || '/'
 
@@ -26,12 +21,7 @@ export function SignInButton({
   }
 
   return (
-    <Button
-      onClick={handleSignIn}
-      variant={variant}
-      size={size}
-      className={className}
-    >
+    <Button onClick={handleSignIn} variant={variant} size={size} className={className}>
       <LogIn className="mr-2 h-4 w-4" />
       Entrar com Google
     </Button>

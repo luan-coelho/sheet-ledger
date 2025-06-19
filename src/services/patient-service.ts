@@ -1,4 +1,4 @@
-import { Patient, PatientFormValues } from '@/lib/schemas/patient-schema'
+import { Patient, PatientFormValues } from '@/app/db/schemas/patient-schema'
 
 // Tipos para as respostas da API
 export interface ApiResponse<T = any> {
@@ -13,10 +13,7 @@ export interface ApiResponse<T = any> {
 const API_BASE_URL = '/api/pacientes'
 
 // Função auxiliar para fazer requisições
-async function apiRequest<T>(
-  url: string,
-  options: RequestInit = {}
-): Promise<ApiResponse<T>> {
+async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   try {
     const response = await fetch(url, {
       headers: {
@@ -55,35 +52,30 @@ export async function getPatientById(id: string): Promise<Patient> {
 }
 
 // Criar novo paciente
-export async function createPatient(
-  data: PatientFormValues
-): Promise<Patient> {
+export async function createPatient(data: PatientFormValues): Promise<Patient> {
   const response = await apiRequest<Patient>(API_BASE_URL, {
     method: 'POST',
     body: JSON.stringify(data),
   })
-  
+
   if (!response.data) {
     throw new Error('Erro ao criar paciente')
   }
-  
+
   return response.data
 }
 
 // Atualizar paciente
-export async function updatePatient(
-  id: string,
-  data: PatientFormValues
-): Promise<Patient> {
+export async function updatePatient(id: string, data: PatientFormValues): Promise<Patient> {
   const response = await apiRequest<Patient>(`${API_BASE_URL}/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   })
-  
+
   if (!response.data) {
     throw new Error('Erro ao atualizar paciente')
   }
-  
+
   return response.data
 }
 

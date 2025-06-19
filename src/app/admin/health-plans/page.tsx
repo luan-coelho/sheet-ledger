@@ -1,22 +1,10 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
 import { Plus, MoreHorizontal, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,17 +15,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { HealthPlanForm } from '@/components/health-plan-form'
 import { useHealthPlans, useDeleteHealthPlan } from '@/hooks/use-health-plans'
-import { HealthPlan } from '@/lib/schemas/health-plan-schema'
+import { HealthPlan } from '@/app/db/schemas/health-plan-schema'
 
 export default function PlanosSaudePage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -88,16 +70,12 @@ export default function PlanosSaudePage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Planos de Saúde</h1>
-          <p className="text-muted-foreground">
-            Gerencie os planos de saúde do sistema
-          </p>
+          <p className="text-muted-foreground">Gerencie os planos de saúde do sistema</p>
         </div>
-        
+
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center text-destructive">
-              Erro ao carregar planos de saúde: {error.message}
-            </div>
+            <div className="text-center text-destructive">Erro ao carregar planos de saúde: {error.message}</div>
           </CardContent>
         </Card>
       </div>
@@ -109,11 +87,9 @@ export default function PlanosSaudePage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Planos de Saúde</h1>
-          <p className="text-muted-foreground">
-            Gerencie os planos de saúde do sistema
-          </p>
+          <p className="text-muted-foreground">Gerencie os planos de saúde do sistema</p>
         </div>
-        
+
         <Button onClick={handleNewHealthPlan}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Plano de Saúde
@@ -123,9 +99,7 @@ export default function PlanosSaudePage() {
       <Card>
         <CardHeader>
           <CardTitle>Lista de Planos de Saúde</CardTitle>
-          <CardDescription>
-            {healthPlans?.length || 0} plano(s) de saúde cadastrado(s)
-          </CardDescription>
+          <CardDescription>{healthPlans?.length || 0} plano(s) de saúde cadastrado(s)</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -144,17 +118,11 @@ export default function PlanosSaudePage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {healthPlans.map((healthPlan) => (
+                {healthPlans.map(healthPlan => (
                   <TableRow key={healthPlan.id}>
-                    <TableCell className="font-medium">
-                      {healthPlan.name}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(healthPlan.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(healthPlan.updatedAt)}
-                    </TableCell>
+                    <TableCell className="font-medium">{healthPlan.name}</TableCell>
+                    <TableCell>{formatDate(healthPlan.createdAt)}</TableCell>
+                    <TableCell>{formatDate(healthPlan.updatedAt)}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -170,8 +138,7 @@ export default function PlanosSaudePage() {
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => setDeletingHealthPlan(healthPlan)}
-                            className="text-destructive"
-                          >
+                            className="text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
                             Excluir
                           </DropdownMenuItem>
@@ -184,9 +151,7 @@ export default function PlanosSaudePage() {
             </Table>
           ) : (
             <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                Nenhum plano de saúde cadastrado ainda.
-              </p>
+              <p className="text-muted-foreground mb-4">Nenhum plano de saúde cadastrado ainda.</p>
               <Button onClick={handleNewHealthPlan}>
                 <Plus className="mr-2 h-4 w-4" />
                 Cadastrar Primeiro Plano de Saúde
@@ -199,34 +164,25 @@ export default function PlanosSaudePage() {
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>
-              {editingHealthPlan ? 'Editar Plano de Saúde' : 'Novo Plano de Saúde'}
-            </DialogTitle>
+            <DialogTitle>{editingHealthPlan ? 'Editar Plano de Saúde' : 'Novo Plano de Saúde'}</DialogTitle>
             <DialogDescription>
               {editingHealthPlan
                 ? 'Atualize as informações do plano de saúde.'
                 : 'Adicione um novo plano de saúde ao sistema.'}
             </DialogDescription>
           </DialogHeader>
-          
-          <HealthPlanForm
-            healthPlan={editingHealthPlan}
-            onSuccess={handleModalClose}
-            onCancel={handleModalClose}
-          />
+
+          <HealthPlanForm healthPlan={editingHealthPlan} onSuccess={handleModalClose} onCancel={handleModalClose} />
         </DialogContent>
       </Dialog>
 
-      <AlertDialog
-        open={!!deletingHealthPlan}
-        onOpenChange={() => setDeletingHealthPlan(null)}
-      >
+      <AlertDialog open={!!deletingHealthPlan} onOpenChange={() => setDeletingHealthPlan(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o plano de saúde "{deletingHealthPlan?.name}"?
-              Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir o plano de saúde "{deletingHealthPlan?.name}"? Esta ação não pode ser
+              desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -234,11 +190,8 @@ export default function PlanosSaudePage() {
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>

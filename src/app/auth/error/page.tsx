@@ -24,23 +24,15 @@ export default function AuthErrorPage() {
           <div className="flex items-center justify-center mb-4">
             <AlertCircle className="h-12 w-12 text-destructive" />
           </div>
-          <CardTitle className="text-2xl text-center">
-            Erro de Autenticação
-          </CardTitle>
-          <CardDescription className="text-center">
-            {errorMessages[error] || errorMessages.Default}
-          </CardDescription>
+          <CardTitle className="text-2xl text-center">Erro de Autenticação</CardTitle>
+          <CardDescription className="text-center">{errorMessages[error] || errorMessages.Default}</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-4">
           <Button asChild className="w-full">
-            <Link href="/auth/signin">
-              Tentar Novamente
-            </Link>
+            <Link href="/auth/signin">Tentar Novamente</Link>
           </Button>
           <Button variant="outline" asChild className="w-full">
-            <Link href="/">
-              Voltar ao Início
-            </Link>
+            <Link href="/">Voltar ao Início</Link>
           </Button>
         </CardContent>
       </Card>

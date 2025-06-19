@@ -29,9 +29,7 @@ export function AuthStatus() {
     <Card>
       <CardHeader>
         <CardTitle>Status da Autenticação</CardTitle>
-        <CardDescription>
-          {session ? 'Você está autenticado' : 'Você não está autenticado'}
-        </CardDescription>
+        <CardDescription>{session ? 'Você está autenticado' : 'Você não está autenticado'}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         {session ? (

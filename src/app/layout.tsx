@@ -1,6 +1,7 @@
 import { QueryProvider } from '@/components/query-provider'
 import { SessionProvider } from '@/components/session-provider'
 import { ThemeProvider } from '@/components/theme-provider'
+import { ThemeConfigProvider } from '@/components/theme-config-provider'
 import { Toaster } from '@/components/ui/sonner'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
@@ -29,13 +30,21 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
-          <SessionProvider>
-            <QueryProvider>
-              {children}
-              <Toaster />
-            </QueryProvider>
-          </SessionProvider>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+          storageKey="sheet-ledger-theme"
+        >
+          <ThemeConfigProvider>
+            <SessionProvider>
+              <QueryProvider>
+                {children}
+                <Toaster />
+              </QueryProvider>
+            </SessionProvider>
+          </ThemeConfigProvider>
         </ThemeProvider>
       </body>
     </html>

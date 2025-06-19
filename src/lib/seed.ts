@@ -1,5 +1,5 @@
-import { db } from './db'
-import { 
+import { db } from '../app/db'
+import {
   professionalsTable,
   patientsTable,
   guardiansTable,
@@ -7,8 +7,8 @@ import {
   type NewProfessional,
   type NewPatient,
   type NewGuardian,
-  type NewHealthPlan
-} from './schemas'
+  type NewHealthPlan,
+} from '../app/db/schemas'
 import { eq, sql } from 'drizzle-orm'
 
 // Sample data for seeding
@@ -63,11 +63,7 @@ export async function seedDatabase() {
     console.log('\n👥 Seeding patients...')
     let patientsCreated = 0
     for (const patient of samplePatients) {
-      const existing = await db
-        .select()
-        .from(patientsTable)
-        .where(eq(patientsTable.name, patient.name))
-        .limit(1)
+      const existing = await db.select().from(patientsTable).where(eq(patientsTable.name, patient.name)).limit(1)
 
       if (existing.length === 0) {
         await db.insert(patientsTable).values(patient)
@@ -101,11 +97,7 @@ export async function seedDatabase() {
     console.log('\n👨‍👩‍👧‍👦 Seeding guardians...')
     let guardiansCreated = 0
     for (const guardian of sampleGuardians) {
-      const existing = await db
-        .select()
-        .from(guardiansTable)
-        .where(eq(guardiansTable.name, guardian.name))
-        .limit(1)
+      const existing = await db.select().from(guardiansTable).where(eq(guardiansTable.name, guardian.name)).limit(1)
 
       if (existing.length === 0) {
         await db.insert(guardiansTable).values(guardian)
@@ -141,7 +133,7 @@ export async function seedDatabase() {
     console.log(`  Professionals created: ${professionalsCreated}/${sampleProfessionals.length}`)
     console.log(`  Guardians created: ${guardiansCreated}/${sampleGuardians.length}`)
     console.log(`  Health plans created: ${healthPlansCreated}/${sampleHealthPlans.length}`)
-    
+
     const totalCreated = patientsCreated + professionalsCreated + guardiansCreated + healthPlansCreated
     console.log(`\n✅ Database seeding completed! Created ${totalCreated} new records.`)
 
@@ -152,15 +144,14 @@ export async function seedDatabase() {
         professionals: professionalsCreated,
         guardians: guardiansCreated,
         healthPlans: healthPlansCreated,
-        total: totalCreated
-      }
+        total: totalCreated,
+      },
     }
-
   } catch (error) {
     console.error('❌ Database seeding failed:', error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     }
   }
 }
@@ -201,12 +192,11 @@ export async function clearSeedData() {
 
     console.log('✅ Seed data cleared successfully!')
     return { success: true }
-
   } catch (error) {
     console.error('❌ Failed to clear seed data:', error)
     return {
       success: false,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     }
   }
 }

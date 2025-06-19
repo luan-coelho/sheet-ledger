@@ -1,4 +1,4 @@
-import { Professional, ProfessionalFormValues } from '@/lib/schemas/professional-schema'
+import { Professional, ProfessionalFormValues } from '@/app/db/schemas/professional-schema'
 
 // Tipos para as respostas da API
 export interface ApiResponse<T = any> {
@@ -13,10 +13,7 @@ export interface ApiResponse<T = any> {
 const API_BASE_URL = '/api/profissionais'
 
 // Função auxiliar para fazer requisições
-async function apiRequest<T>(
-  url: string,
-  options: RequestInit = {}
-): Promise<ApiResponse<T>> {
+async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   try {
     const response = await fetch(url, {
       headers: {
@@ -55,35 +52,30 @@ export async function getProfessionalById(id: string): Promise<Professional> {
 }
 
 // Criar novo profissional
-export async function createProfessional(
-  data: ProfessionalFormValues
-): Promise<Professional> {
+export async function createProfessional(data: ProfessionalFormValues): Promise<Professional> {
   const response = await apiRequest<Professional>(API_BASE_URL, {
     method: 'POST',
     body: JSON.stringify(data),
   })
-  
+
   if (!response.data) {
     throw new Error('Erro ao criar profissional')
   }
-  
+
   return response.data
 }
 
 // Atualizar profissional
-export async function updateProfessional(
-  id: string,
-  data: ProfessionalFormValues
-): Promise<Professional> {
+export async function updateProfessional(id: string, data: ProfessionalFormValues): Promise<Professional> {
   const response = await apiRequest<Professional>(`${API_BASE_URL}/${id}`, {
     method: 'PUT',
     body: JSON.stringify(data),
   })
-  
+
   if (!response.data) {
     throw new Error('Erro ao atualizar profissional')
   }
-  
+
   return response.data
 }
 

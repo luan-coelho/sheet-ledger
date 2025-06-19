@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import { useGuardians } from "@/hooks/use-guardians"
-import { Combobox, ComboboxOption } from "@/components/ui/combobox"
-import { Skeleton } from "@/components/ui/skeleton"
+import { useGuardians } from '@/hooks/use-guardians'
+import { Combobox, ComboboxOption } from '@/components/ui/combobox'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface GuardianSelectorProps {
   value?: string
@@ -15,7 +15,7 @@ interface GuardianSelectorProps {
 export function GuardianSelector({
   value,
   onValueChange,
-  placeholder = "Selecione um responsável...",
+  placeholder = 'Selecione um responsável...',
   className,
   disabled = false,
 }: GuardianSelectorProps) {
@@ -26,17 +26,14 @@ export function GuardianSelector({
   }
 
   if (error) {
-    return (
-      <div className="text-sm text-destructive">
-        Erro ao carregar responsáveis
-      </div>
-    )
+    return <div className="text-sm text-destructive">Erro ao carregar responsáveis</div>
   }
 
-  const options: ComboboxOption[] = guardians?.map((guardian) => ({
-    value: guardian.id,
-    label: guardian.name,
-  })) || []
+  const options: ComboboxOption[] =
+    guardians?.map(guardian => ({
+      value: guardian.id,
+      label: guardian.name,
+    })) || []
 
   return (
     <Combobox

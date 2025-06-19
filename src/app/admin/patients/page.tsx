@@ -1,22 +1,10 @@
-"use client"
+'use client'
 
 import { useState } from 'react'
 import { Plus, MoreHorizontal, Pencil, Trash2, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,17 +15,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { PatientForm } from '@/components/patient-form'
 import { usePatients, useDeletePatient } from '@/hooks/use-patients'
-import { Patient } from '@/lib/schemas/patient-schema'
+import { Patient } from '@/app/db/schemas/patient-schema'
 
 export default function PacientesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -88,16 +70,12 @@ export default function PacientesPage() {
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Pacientes</h1>
-          <p className="text-muted-foreground">
-            Gerencie os pacientes do sistema
-          </p>
+          <p className="text-muted-foreground">Gerencie os pacientes do sistema</p>
         </div>
-        
+
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center text-destructive">
-              Erro ao carregar pacientes: {error.message}
-            </div>
+            <div className="text-center text-destructive">Erro ao carregar pacientes: {error.message}</div>
           </CardContent>
         </Card>
       </div>
@@ -109,11 +87,9 @@ export default function PacientesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Pacientes</h1>
-          <p className="text-muted-foreground">
-            Gerencie os pacientes do sistema
-          </p>
+          <p className="text-muted-foreground">Gerencie os pacientes do sistema</p>
         </div>
-        
+
         <Button onClick={handleNewPatient}>
           <Plus className="mr-2 h-4 w-4" />
           Novo Paciente
@@ -123,9 +99,7 @@ export default function PacientesPage() {
       <Card>
         <CardHeader>
           <CardTitle>Lista de Pacientes</CardTitle>
-          <CardDescription>
-            {patients?.length || 0} paciente(s) cadastrado(s)
-          </CardDescription>
+          <CardDescription>{patients?.length || 0} paciente(s) cadastrado(s)</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
@@ -144,17 +118,11 @@ export default function PacientesPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {patients.map((patient) => (
+                {patients.map(patient => (
                   <TableRow key={patient.id}>
-                    <TableCell className="font-medium">
-                      {patient.name}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(patient.createdAt)}
-                    </TableCell>
-                    <TableCell>
-                      {formatDate(patient.updatedAt)}
-                    </TableCell>
+                    <TableCell className="font-medium">{patient.name}</TableCell>
+                    <TableCell>{formatDate(patient.createdAt)}</TableCell>
+                    <TableCell>{formatDate(patient.updatedAt)}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -168,10 +136,7 @@ export default function PacientesPage() {
                             <Pencil className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setDeletingPatient(patient)}
-                            className="text-destructive"
-                          >
+                          <DropdownMenuItem onClick={() => setDeletingPatient(patient)} className="text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
                             Excluir
                           </DropdownMenuItem>
@@ -184,9 +149,7 @@ export default function PacientesPage() {
             </Table>
           ) : (
             <div className="text-center py-8">
-              <p className="text-muted-foreground mb-4">
-                Nenhum paciente cadastrado ainda.
-              </p>
+              <p className="text-muted-foreground mb-4">Nenhum paciente cadastrado ainda.</p>
               <Button onClick={handleNewPatient}>
                 <Plus className="mr-2 h-4 w-4" />
                 Cadastrar Primeiro Paciente
@@ -199,34 +162,22 @@ export default function PacientesPage() {
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>
-              {editingPatient ? 'Editar Paciente' : 'Novo Paciente'}
-            </DialogTitle>
+            <DialogTitle>{editingPatient ? 'Editar Paciente' : 'Novo Paciente'}</DialogTitle>
             <DialogDescription>
-              {editingPatient
-                ? 'Atualize as informações do paciente.'
-                : 'Adicione um novo paciente ao sistema.'}
+              {editingPatient ? 'Atualize as informações do paciente.' : 'Adicione um novo paciente ao sistema.'}
             </DialogDescription>
           </DialogHeader>
-          
-          <PatientForm
-            patient={editingPatient}
-            onSuccess={handleModalClose}
-            onCancel={handleModalClose}
-          />
+
+          <PatientForm patient={editingPatient} onSuccess={handleModalClose} onCancel={handleModalClose} />
         </DialogContent>
       </Dialog>
 
-      <AlertDialog
-        open={!!deletingPatient}
-        onOpenChange={() => setDeletingPatient(null)}
-      >
+      <AlertDialog open={!!deletingPatient} onOpenChange={() => setDeletingPatient(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o paciente "{deletingPatient?.name}"?
-              Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir o paciente "{deletingPatient?.name}"? Esta ação não pode ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -234,11 +185,8 @@ export default function PacientesPage() {
             <AlertDialogAction
               onClick={handleDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={deleteMutation.isPending}
-            >
-              {deleteMutation.isPending && (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              )}
+              disabled={deleteMutation.isPending}>
+              {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Excluir
             </AlertDialogAction>
           </AlertDialogFooter>

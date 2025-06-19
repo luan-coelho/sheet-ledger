@@ -5,13 +5,15 @@ import { routes } from '@/lib/routes'
 import { Loader2, LogIn } from 'lucide-react'
 import { signIn } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
+import { useRouter } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
 
 export function SignInForm() {
+  const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
   const searchParams = useSearchParams()
-  const callbackUrl = searchParams.get('callbackUrl') || routes.frontend.admin.home
+  const callbackUrl = searchParams.get('callbackUrl') || routes.frontend.admin.sheets
   const error = searchParams.get('error')
 
   // Show error message if there's an authentication error
@@ -40,7 +42,7 @@ export function SignInForm() {
         toast.error('Erro ao fazer login. Tente novamente.')
       } else if (result?.url) {
         // Redirect to the callback URL or dashboard
-        window.location.href = result.url
+        router.push(result.url)
       }
     } catch (error) {
       console.error('Sign in error:', error)
@@ -66,7 +68,7 @@ export function SignInForm() {
         )}
       </Button>
 
-      {callbackUrl !== '/' && (
+      {callbackUrl !== routes.frontend.admin.sheets && (
         <p className="text-xs text-center text-muted-foreground">
           Você será redirecionado para a página solicitada após o login
         </p>

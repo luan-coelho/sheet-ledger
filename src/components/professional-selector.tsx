@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import { useProfessionals } from "@/hooks/use-professionals"
-import { Combobox, ComboboxOption } from "@/components/ui/combobox"
-import { Skeleton } from "@/components/ui/skeleton"
+import { useProfessionals } from '@/hooks/use-professionals'
+import { Combobox, ComboboxOption } from '@/components/ui/combobox'
+import { Skeleton } from '@/components/ui/skeleton'
 
 interface ProfessionalSelectorProps {
   value?: string
@@ -15,7 +15,7 @@ interface ProfessionalSelectorProps {
 export function ProfessionalSelector({
   value,
   onValueChange,
-  placeholder = "Selecione um profissional...",
+  placeholder = 'Selecione um profissional...',
   className,
   disabled = false,
 }: ProfessionalSelectorProps) {
@@ -26,17 +26,14 @@ export function ProfessionalSelector({
   }
 
   if (error) {
-    return (
-      <div className="text-sm text-destructive">
-        Erro ao carregar profissionais
-      </div>
-    )
+    return <div className="text-sm text-destructive">Erro ao carregar profissionais</div>
   }
 
-  const options: ComboboxOption[] = professionals?.map((professional) => ({
-    value: professional.id,
-    label: professional.name,
-  })) || []
+  const options: ComboboxOption[] =
+    professionals?.map(professional => ({
+      value: professional.id,
+      label: professional.name,
+    })) || []
 
   return (
     <Combobox

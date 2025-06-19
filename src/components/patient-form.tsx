@@ -1,18 +1,11 @@
-"use client"
+'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Button } from '@/components/ui/button'
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { insertPatientSchema, PatientFormValues, Patient } from '@/lib/schemas/patient-schema'
+import { insertPatientSchema, PatientFormValues, Patient } from '@/app/db/schemas/patient-schema'
 import { useCreatePatient, useUpdatePatient } from '@/hooks/use-patients'
 import { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
@@ -25,7 +18,7 @@ interface PatientFormProps {
 
 export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) {
   const isEditing = !!patient
-  
+
   const form = useForm<PatientFormValues>({
     resolver: zodResolver(insertPatientSchema),
     defaultValues: {
@@ -57,7 +50,7 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
       } else {
         await createMutation.mutateAsync(values)
       }
-      
+
       form.reset()
       onSuccess?.()
     } catch (error) {
@@ -75,11 +68,7 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
             <FormItem>
               <FormLabel>Nome do Paciente</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Digite o nome do paciente"
-                  {...field}
-                  disabled={isLoading}
-                />
+                <Input placeholder="Digite o nome do paciente" {...field} disabled={isLoading} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -88,16 +77,11 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
 
         <div className="flex gap-3 justify-end">
           {onCancel && (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              disabled={isLoading}
-            >
+            <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
               Cancelar
             </Button>
           )}
-          
+
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isEditing ? 'Atualizar' : 'Criar'} Paciente
