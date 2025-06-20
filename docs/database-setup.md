@@ -59,16 +59,19 @@ npm run db:seed:create-admin-user
 ## Comandos Úteis
 
 ### Gerar Nova Migração
+
 ```bash
 npm run db:generate
 ```
 
 ### Aplicar Migrações
+
 ```bash
 npm run db:migrate
 ```
 
 ### Visualizar Banco
+
 ```bash
 npm run db:studio
 ```
@@ -76,14 +79,17 @@ npm run db:studio
 ## Troubleshooting
 
 ### Erro de Conexão
+
 - Verifique se a DATABASE_URL está correta
 - Confirme se o projeto Supabase está ativo
 - Execute `npm run db:setup` para testar a conexão
 
 ### Tabelas não Existem
+
 - Execute `npm run db:push` ou `npm run db:migrate`
 - Verifique se as migrações foram aplicadas
 
 ### Problemas de SSL
+
 - Em produção, SSL é obrigatório
-- Em desenvolvimento, SSL é opcional 
+- Em desenvolvimento, SSL é opcional

@@ -3,7 +3,7 @@ import { db } from '@/app/db'
 import { patientsTable, insertPatientSchema } from '@/app/db/schemas/patient-schema'
 import { desc } from 'drizzle-orm'
 
-// GET /api/pacientes - Listar todos os pacientes
+// GET /api/patients - List all patients
 export async function GET() {
   try {
     const allPatients = await db.select().from(patientsTable).orderBy(desc(patientsTable.createdAt))
@@ -11,30 +11,30 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: allPatients,
-      message: 'Pacientes listados com sucesso',
+      message: 'Patients listed successfully',
     })
   } catch (error) {
-    console.error('Erro ao buscar pacientes:', error)
+    console.error('Error fetching patients:', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível buscar os pacientes',
+        error: 'Internal server error',
+        message: 'Could not fetch patients',
       },
       { status: 500 },
     )
   }
 }
 
-// POST /api/pacientes - Criar novo paciente
+// POST /api/patients - Create new patient
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    // Validar dados usando Zod schema
+    // Validate data using Zod schema
     const validatedData = insertPatientSchema.parse(body)
 
-    // Inserir no banco de dados
+    // Insert into database
     const [newPatient] = await db
       .insert(patientsTable)
       .values({
@@ -48,20 +48,20 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         data: newPatient,
-        message: 'Paciente criado com sucesso',
+        message: 'Patient created successfully',
       },
       { status: 201 },
     )
   } catch (error) {
-    console.error('Erro ao criar paciente:', error)
+    console.error('Error creating patient:', error)
 
-    // Erro de validação Zod
+    // Zod validation error
     if (error instanceof Error && error.name === 'ZodError') {
       return NextResponse.json(
         {
           success: false,
-          error: 'Dados inválidos',
-          message: 'Verifique os dados fornecidos',
+          error: 'Invalid data',
+          message: 'Please check the provided data',
           details: error.message,
         },
         { status: 400 },
@@ -71,10 +71,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível criar o paciente',
+        error: 'Internal server error',
+        message: 'Could not create patient',
       },
       { status: 500 },
     )
   }
-}
+} 

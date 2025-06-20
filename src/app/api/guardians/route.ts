@@ -3,7 +3,7 @@ import { db } from '@/app/db'
 import { guardiansTable, insertGuardianSchema } from '@/app/db/schemas/guardian-schema'
 import { desc } from 'drizzle-orm'
 
-// GET /api/responsaveis - Listar todos os responsáveis
+// GET /api/guardians - List all guardians
 export async function GET() {
   try {
     const allGuardians = await db.select().from(guardiansTable).orderBy(desc(guardiansTable.createdAt))
@@ -11,30 +11,30 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: allGuardians,
-      message: 'Responsáveis listados com sucesso',
+      message: 'Guardians listed successfully',
     })
   } catch (error) {
-    console.error('Erro ao buscar responsáveis:', error)
+    console.error('Error fetching guardians:', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível buscar os responsáveis',
+        error: 'Internal server error',
+        message: 'Could not fetch guardians',
       },
       { status: 500 },
     )
   }
 }
 
-// POST /api/responsaveis - Criar novo responsável
+// POST /api/guardians - Create new guardian
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    // Validar dados usando Zod schema
+    // Validate data using Zod schema
     const validatedData = insertGuardianSchema.parse(body)
 
-    // Inserir no banco de dados
+    // Insert into database
     const [newGuardian] = await db
       .insert(guardiansTable)
       .values({
@@ -48,20 +48,20 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         data: newGuardian,
-        message: 'Responsável criado com sucesso',
+        message: 'Guardian created successfully',
       },
       { status: 201 },
     )
   } catch (error) {
-    console.error('Erro ao criar responsável:', error)
+    console.error('Error creating guardian:', error)
 
-    // Erro de validação Zod
+    // Zod validation error
     if (error instanceof Error && error.name === 'ZodError') {
       return NextResponse.json(
         {
           success: false,
-          error: 'Dados inválidos',
-          message: 'Verifique os dados fornecidos',
+          error: 'Invalid data',
+          message: 'Please check the provided data',
           details: error.message,
         },
         { status: 400 },
@@ -71,8 +71,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível criar o responsável',
+        error: 'Internal server error',
+        message: 'Could not create guardian',
       },
       { status: 500 },
     )

@@ -35,8 +35,7 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
-          storageKey="sheet-ledger-theme"
-        >
+          storageKey="sheet-ledger-theme">
           <ThemeConfigProvider>
             <SessionProvider>
               <QueryProvider>

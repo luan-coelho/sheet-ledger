@@ -10,7 +10,7 @@ export interface ApiResponse<T = any> {
 }
 
 // Base URL da API
-const API_BASE_URL = '/api/responsaveis'
+const API_BASE_URL = '/api/guardians'
 
 // Função auxiliar para fazer requisições
 async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> {

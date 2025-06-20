@@ -3,7 +3,7 @@ import { db } from '@/app/db'
 import { healthPlansTable, insertHealthPlanSchema } from '@/app/db/schemas/health-plan-schema'
 import { desc } from 'drizzle-orm'
 
-// GET /api/planos-saude - Listar todos os planos de saúde
+// GET /api/health-plans - List all health plans
 export async function GET() {
   try {
     const allHealthPlans = await db.select().from(healthPlansTable).orderBy(desc(healthPlansTable.createdAt))
@@ -11,30 +11,30 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: allHealthPlans,
-      message: 'Planos de saúde listados com sucesso',
+      message: 'Health plans listed successfully',
     })
   } catch (error) {
-    console.error('Erro ao buscar planos de saúde:', error)
+    console.error('Error fetching health plans:', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível buscar os planos de saúde',
+        error: 'Internal server error',
+        message: 'Could not fetch health plans',
       },
       { status: 500 },
     )
   }
 }
 
-// POST /api/planos-saude - Criar novo plano de saúde
+// POST /api/health-plans - Create new health plan
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
-    // Validar dados usando Zod schema
+    // Validate data using Zod schema
     const validatedData = insertHealthPlanSchema.parse(body)
 
-    // Inserir no banco de dados
+    // Insert into database
     const [newHealthPlan] = await db
       .insert(healthPlansTable)
       .values({
@@ -48,20 +48,20 @@ export async function POST(request: NextRequest) {
       {
         success: true,
         data: newHealthPlan,
-        message: 'Plano de saúde criado com sucesso',
+        message: 'Health plan created successfully',
       },
       { status: 201 },
     )
   } catch (error) {
-    console.error('Erro ao criar plano de saúde:', error)
+    console.error('Error creating health plan:', error)
 
-    // Erro de validação Zod
+    // Zod validation error
     if (error instanceof Error && error.name === 'ZodError') {
       return NextResponse.json(
         {
           success: false,
-          error: 'Dados inválidos',
-          message: 'Verifique os dados fornecidos',
+          error: 'Invalid data',
+          message: 'Please check the provided data',
           details: error.message,
         },
         { status: 400 },
@@ -71,10 +71,10 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível criar o plano de saúde',
+        error: 'Internal server error',
+        message: 'Could not create health plan',
       },
       { status: 500 },
     )
   }
-}
+} 

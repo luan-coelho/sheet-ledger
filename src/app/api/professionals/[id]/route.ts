@@ -3,10 +3,10 @@ import { db } from '@/app/db'
 import { professionalsTable, insertProfessionalSchema } from '@/app/db/schemas/professional-schema'
 import { eq } from 'drizzle-orm'
 
-// GET /api/profissionais/[id] - Buscar profissional por ID
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+// GET /api/professionals/[id] - Get professional by ID
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
 
     const [professional] = await db.select().from(professionalsTable).where(eq(professionalsTable.id, id)).limit(1)
 
@@ -14,8 +14,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(
         {
           success: false,
-          error: 'Profissional não encontrado',
-          message: 'O profissional solicitado não existe',
+          error: 'Professional not found',
+          message: 'The requested professional does not exist',
         },
         { status: 404 },
       )
@@ -24,31 +24,31 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({
       success: true,
       data: professional,
-      message: 'Profissional encontrado com sucesso',
+      message: 'Professional found successfully',
     })
   } catch (error) {
-    console.error('Erro ao buscar profissional:', error)
+    console.error('Error fetching professional:', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível buscar o profissional',
+        error: 'Internal server error',
+        message: 'Could not fetch the professional',
       },
       { status: 500 },
     )
   }
 }
 
-// PUT /api/profissionais/[id] - Atualizar profissional
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+// PUT /api/professionals/[id] - Update professional
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
 
-    // Validar dados usando Zod schema
+    // Validate data using Zod schema
     const validatedData = insertProfessionalSchema.parse(body)
 
-    // Verificar se o profissional existe
+    // Check if professional exists
     const [existingProfessional] = await db
       .select()
       .from(professionalsTable)
@@ -59,14 +59,14 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(
         {
           success: false,
-          error: 'Profissional não encontrado',
-          message: 'O profissional que você está tentando atualizar não existe',
+          error: 'Professional not found',
+          message: 'The professional you are trying to update does not exist',
         },
         { status: 404 },
       )
     }
 
-    // Atualizar no banco de dados
+    // Update in database
     const [updatedProfessional] = await db
       .update(professionalsTable)
       .set({
@@ -79,18 +79,18 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({
       success: true,
       data: updatedProfessional,
-      message: 'Profissional atualizado com sucesso',
+      message: 'Professional updated successfully',
     })
   } catch (error) {
-    console.error('Erro ao atualizar profissional:', error)
+    console.error('Error updating professional:', error)
 
-    // Erro de validação Zod
+    // Zod validation error
     if (error instanceof Error && error.name === 'ZodError') {
       return NextResponse.json(
         {
           success: false,
-          error: 'Dados inválidos',
-          message: 'Verifique os dados fornecidos',
+          error: 'Invalid data',
+          message: 'Please check the provided data',
           details: error.message,
         },
         { status: 400 },
@@ -100,20 +100,20 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível atualizar o profissional',
+        error: 'Internal server error',
+        message: 'Could not update the professional',
       },
       { status: 500 },
     )
   }
 }
 
-// DELETE /api/profissionais/[id] - Excluir profissional
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+// DELETE /api/professionals/[id] - Delete professional
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
 
-    // Verificar se o profissional existe
+    // Check if professional exists
     const [existingProfessional] = await db
       .select()
       .from(professionalsTable)
@@ -124,29 +124,29 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json(
         {
           success: false,
-          error: 'Profissional não encontrado',
-          message: 'O profissional que você está tentando excluir não existe',
+          error: 'Professional not found',
+          message: 'The professional you are trying to delete does not exist',
         },
         { status: 404 },
       )
     }
 
-    // Excluir do banco de dados
+    // Delete from database
     await db.delete(professionalsTable).where(eq(professionalsTable.id, id))
 
     return NextResponse.json({
       success: true,
-      message: 'Profissional excluído com sucesso',
+      message: 'Professional deleted successfully',
     })
   } catch (error) {
-    console.error('Erro ao excluir profissional:', error)
+    console.error('Error deleting professional:', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível excluir o profissional',
+        error: 'Internal server error',
+        message: 'Could not delete the professional',
       },
       { status: 500 },
     )
   }
-}
+} 

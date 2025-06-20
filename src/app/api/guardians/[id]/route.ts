@@ -3,10 +3,10 @@ import { db } from '@/app/db'
 import { guardiansTable, insertGuardianSchema } from '@/app/db/schemas/guardian-schema'
 import { eq } from 'drizzle-orm'
 
-// GET /api/responsaveis/[id] - Buscar responsável por ID
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+// GET /api/guardians/[id] - Get guardian by ID
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
 
     const [guardian] = await db.select().from(guardiansTable).where(eq(guardiansTable.id, id)).limit(1)
 
@@ -14,8 +14,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(
         {
           success: false,
-          error: 'Responsável não encontrado',
-          message: 'O responsável solicitado não existe',
+          error: 'Guardian not found',
+          message: 'The requested guardian does not exist',
         },
         { status: 404 },
       )
@@ -24,45 +24,45 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({
       success: true,
       data: guardian,
-      message: 'Responsável encontrado com sucesso',
+      message: 'Guardian found successfully',
     })
   } catch (error) {
-    console.error('Erro ao buscar responsável:', error)
+    console.error('Error fetching guardian:', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível buscar o responsável',
+        error: 'Internal server error',
+        message: 'Could not fetch the guardian',
       },
       { status: 500 },
     )
   }
 }
 
-// PUT /api/responsaveis/[id] - Atualizar responsável
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+// PUT /api/guardians/[id] - Update guardian
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
 
-    // Validar dados usando Zod schema
+    // Validate data using Zod schema
     const validatedData = insertGuardianSchema.parse(body)
 
-    // Verificar se o responsável existe
+    // Check if guardian exists
     const [existingGuardian] = await db.select().from(guardiansTable).where(eq(guardiansTable.id, id)).limit(1)
 
     if (!existingGuardian) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Responsável não encontrado',
-          message: 'O responsável que você está tentando atualizar não existe',
+          error: 'Guardian not found',
+          message: 'The guardian you are trying to update does not exist',
         },
         { status: 404 },
       )
     }
 
-    // Atualizar no banco de dados
+    // Update in database
     const [updatedGuardian] = await db
       .update(guardiansTable)
       .set({
@@ -75,18 +75,18 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({
       success: true,
       data: updatedGuardian,
-      message: 'Responsável atualizado com sucesso',
+      message: 'Guardian updated successfully',
     })
   } catch (error) {
-    console.error('Erro ao atualizar responsável:', error)
+    console.error('Error updating guardian:', error)
 
-    // Erro de validação Zod
+    // Zod validation error
     if (error instanceof Error && error.name === 'ZodError') {
       return NextResponse.json(
         {
           success: false,
-          error: 'Dados inválidos',
-          message: 'Verifique os dados fornecidos',
+          error: 'Invalid data',
+          message: 'Please check the provided data',
           details: error.message,
         },
         { status: 400 },
@@ -96,49 +96,49 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível atualizar o responsável',
+        error: 'Internal server error',
+        message: 'Could not update the guardian',
       },
       { status: 500 },
     )
   }
 }
 
-// DELETE /api/responsaveis/[id] - Excluir responsável
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+// DELETE /api/guardians/[id] - Delete guardian
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
 
-    // Verificar se o responsável existe
+    // Check if guardian exists
     const [existingGuardian] = await db.select().from(guardiansTable).where(eq(guardiansTable.id, id)).limit(1)
 
     if (!existingGuardian) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Responsável não encontrado',
-          message: 'O responsável que você está tentando excluir não existe',
+          error: 'Guardian not found',
+          message: 'The guardian you are trying to delete does not exist',
         },
         { status: 404 },
       )
     }
 
-    // Excluir do banco de dados
+    // Delete from database
     await db.delete(guardiansTable).where(eq(guardiansTable.id, id))
 
     return NextResponse.json({
       success: true,
-      message: 'Responsável excluído com sucesso',
+      message: 'Guardian deleted successfully',
     })
   } catch (error) {
-    console.error('Erro ao excluir responsável:', error)
+    console.error('Error deleting guardian:', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível excluir o responsável',
+        error: 'Internal server error',
+        message: 'Could not delete the guardian',
       },
       { status: 500 },
     )
   }
-}
+} 

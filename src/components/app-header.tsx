@@ -17,7 +17,7 @@ export function AppHeader() {
             <Bell className="h-4 w-4" />
             <span className="sr-only">Notificações</span>
           </Button>
-          
+
           <ThemeToggle />
 
           <UserMenu />

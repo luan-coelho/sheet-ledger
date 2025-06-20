@@ -3,10 +3,10 @@ import { db } from '@/app/db'
 import { patientsTable, insertPatientSchema } from '@/app/db/schemas/patient-schema'
 import { eq } from 'drizzle-orm'
 
-// GET /api/pacientes/[id] - Buscar paciente por ID
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+// GET /api/patients/[id] - Get patient by ID
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
 
     const [patient] = await db.select().from(patientsTable).where(eq(patientsTable.id, id)).limit(1)
 
@@ -14,8 +14,8 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       return NextResponse.json(
         {
           success: false,
-          error: 'Paciente não encontrado',
-          message: 'O paciente solicitado não existe',
+          error: 'Patient not found',
+          message: 'The requested patient does not exist',
         },
         { status: 404 },
       )
@@ -24,45 +24,45 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({
       success: true,
       data: patient,
-      message: 'Paciente encontrado com sucesso',
+      message: 'Patient found successfully',
     })
   } catch (error) {
-    console.error('Erro ao buscar paciente:', error)
+    console.error('Error fetching patient:', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível buscar o paciente',
+        error: 'Internal server error',
+        message: 'Could not fetch the patient',
       },
       { status: 500 },
     )
   }
 }
 
-// PUT /api/pacientes/[id] - Atualizar paciente
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+// PUT /api/patients/[id] - Update patient
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
 
-    // Validar dados usando Zod schema
+    // Validate data using Zod schema
     const validatedData = insertPatientSchema.parse(body)
 
-    // Verificar se o paciente existe
+    // Check if patient exists
     const [existingPatient] = await db.select().from(patientsTable).where(eq(patientsTable.id, id)).limit(1)
 
     if (!existingPatient) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Paciente não encontrado',
-          message: 'O paciente que você está tentando atualizar não existe',
+          error: 'Patient not found',
+          message: 'The patient you are trying to update does not exist',
         },
         { status: 404 },
       )
     }
 
-    // Atualizar no banco de dados
+    // Update in database
     const [updatedPatient] = await db
       .update(patientsTable)
       .set({
@@ -75,18 +75,18 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json({
       success: true,
       data: updatedPatient,
-      message: 'Paciente atualizado com sucesso',
+      message: 'Patient updated successfully',
     })
   } catch (error) {
-    console.error('Erro ao atualizar paciente:', error)
+    console.error('Error updating patient:', error)
 
-    // Erro de validação Zod
+    // Zod validation error
     if (error instanceof Error && error.name === 'ZodError') {
       return NextResponse.json(
         {
           success: false,
-          error: 'Dados inválidos',
-          message: 'Verifique os dados fornecidos',
+          error: 'Invalid data',
+          message: 'Please check the provided data',
           details: error.message,
         },
         { status: 400 },
@@ -96,49 +96,49 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível atualizar o paciente',
+        error: 'Internal server error',
+        message: 'Could not update the patient',
       },
       { status: 500 },
     )
   }
 }
 
-// DELETE /api/pacientes/[id] - Excluir paciente
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+// DELETE /api/patients/[id] - Delete patient
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
 
-    // Verificar se o paciente existe
+    // Check if patient exists
     const [existingPatient] = await db.select().from(patientsTable).where(eq(patientsTable.id, id)).limit(1)
 
     if (!existingPatient) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Paciente não encontrado',
-          message: 'O paciente que você está tentando excluir não existe',
+          error: 'Patient not found',
+          message: 'The patient you are trying to delete does not exist',
         },
         { status: 404 },
       )
     }
 
-    // Excluir do banco de dados
+    // Delete from database
     await db.delete(patientsTable).where(eq(patientsTable.id, id))
 
     return NextResponse.json({
       success: true,
-      message: 'Paciente excluído com sucesso',
+      message: 'Patient deleted successfully',
     })
   } catch (error) {
-    console.error('Erro ao excluir paciente:', error)
+    console.error('Error deleting patient:', error)
     return NextResponse.json(
       {
         success: false,
-        error: 'Erro interno do servidor',
-        message: 'Não foi possível excluir o paciente',
+        error: 'Internal server error',
+        message: 'Could not delete the patient',
       },
       { status: 500 },
     )
   }
-}
+} 

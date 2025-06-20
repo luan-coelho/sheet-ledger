@@ -1,16 +1,13 @@
 'use client'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { FileText, Users, CreditCard, Shield, Clock } from 'lucide-react'
-import { useProfessionals } from '@/hooks/use-professionals'
-import { usePatients } from '@/hooks/use-patients'
 import { useGuardians } from '@/hooks/use-guardians'
 import { useHealthPlans } from '@/hooks/use-health-plans'
-import Link from 'next/link'
+import { usePatients } from '@/hooks/use-patients'
+import { useProfessionals } from '@/hooks/use-professionals'
 import { routes } from '@/lib/routes'
-import { Separator } from './ui/separator'
-import { Badge } from './ui/badge'
+import { CreditCard, FileText, Shield, Users } from 'lucide-react'
+import Link from 'next/link'
 
 export function DashboardContent() {
   const { data: professionals } = useProfessionals()
