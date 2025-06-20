@@ -6,7 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useSystemConfig, useThemeConfig, useHasHydrated } from '@/lib/theme-config'
+import { useSystemConfig, useThemeConfig } from '@/lib/theme-config'
 import { Bell, Eye, Palette } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
@@ -16,23 +16,14 @@ export default function SettingsPage() {
   const { config, updateNotificationConfig, updatePrivacyConfig } = useSystemConfig()
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
-  const hasHydrated = useHasHydrated()
 
   // Evitar problemas de hidratação
   useEffect(() => {
     setMounted(true)
   }, [])
 
-  if (!mounted || !hasHydrated) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Configurações</h2>
-          <p className="text-muted-foreground">Carregando preferências...</p>
-        </div>
-        <Separator />
-      </div>
-    )
+  if (!mounted) {
+    return null
   }
 
   return (
@@ -89,19 +80,7 @@ export default function SettingsPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="dark-sidebar">Sidebar escuro no tema claro</Label>
-                      <p className="text-[0.8rem] text-muted-foreground">
-                        Manter o sidebar escuro mesmo quando o tema geral estiver claro.
-                      </p>
-                    </div>
-                    <Switch
-                      id="dark-sidebar"
-                      checked={themeConfig.darkSidebarInLightMode}
-                      onCheckedChange={(checked: boolean) => updateThemeConfig({ darkSidebarInLightMode: checked })}
-                    />
-                  </div>
+
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label htmlFor="high-contrast">Alto contraste</Label>
