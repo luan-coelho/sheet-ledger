@@ -1,20 +1,19 @@
 'use client'
 
+import { GoogleDriveConfig } from '@/components/google-drive-config'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useSystemConfig, useThemeConfig } from '@/lib/theme-config'
-import { Bell, Eye, Palette, Settings } from 'lucide-react'
+import { useThemeConfig } from '@/lib/theme-config'
+import { Palette, Settings } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
-import { GoogleDriveConfig } from '@/components/google-drive-config'
 
 export default function SettingsPage() {
   const { config: themeConfig, updateConfig: updateThemeConfig } = useThemeConfig()
-  const { config, updateNotificationConfig, updatePrivacyConfig } = useSystemConfig()
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
 
@@ -49,18 +48,6 @@ export default function SettingsPage() {
             className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative w-full justify-start after:absolute after:inset-y-0 after:start-0 after:-ms-1 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none">
             <Settings className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true" />
             Integrações
-          </TabsTrigger>
-          <TabsTrigger
-            value="notifications"
-            className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative w-full justify-start after:absolute after:inset-y-0 after:start-0 after:-ms-1 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none">
-            <Bell className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true" />
-            Notificações
-          </TabsTrigger>
-          <TabsTrigger
-            value="privacy"
-            className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative w-full justify-start after:absolute after:inset-y-0 after:start-0 after:-ms-1 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none">
-            <Eye className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true" />
-            Privacidade
           </TabsTrigger>
         </TabsList>
 
@@ -161,142 +148,9 @@ export default function SettingsPage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-medium">Integrações</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Configure integrações com serviços externos.
-                  </p>
+                  <p className="text-sm text-muted-foreground">Configure integrações com serviços externos.</p>
                 </div>
                 <GoogleDriveConfig />
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Aba de Notificações */}
-          <TabsContent value="notifications">
-            <div className="px-4 py-3">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium">Notificações</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Configure como você deseja receber notificações do sistema.
-                  </p>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="enable-notifications">Ativar notificações</Label>
-                      <p className="text-[0.8rem] text-muted-foreground">
-                        Receber notificações sobre atualizações e eventos importantes.
-                      </p>
-                    </div>
-                    <Switch
-                      id="enable-notifications"
-                      checked={config.notifications.enableNotifications}
-                      onCheckedChange={(checked: boolean) => updateNotificationConfig({ enableNotifications: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="email-notifications">Notificações por e-mail</Label>
-                      <p className="text-[0.8rem] text-muted-foreground">
-                        Receber notificações importantes por e-mail.
-                      </p>
-                    </div>
-                    <Switch
-                      id="email-notifications"
-                      checked={config.notifications.emailNotifications}
-                      disabled={!config.notifications.enableNotifications}
-                      onCheckedChange={(checked: boolean) => updateNotificationConfig({ emailNotifications: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="desktop-notifications">Notificações no navegador</Label>
-                      <p className="text-[0.8rem] text-muted-foreground">
-                        Receber notificações no navegador enquanto estiver usando o sistema.
-                      </p>
-                    </div>
-                    <Switch
-                      id="desktop-notifications"
-                      checked={config.notifications.desktopNotifications}
-                      disabled={!config.notifications.enableNotifications}
-                      onCheckedChange={(checked: boolean) =>
-                        updateNotificationConfig({ desktopNotifications: checked })
-                      }
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="sound-alerts">Alertas sonoros</Label>
-                      <p className="text-[0.8rem] text-muted-foreground">
-                        Reproduzir sons ao receber notificações importantes.
-                      </p>
-                    </div>
-                    <Switch
-                      id="sound-alerts"
-                      checked={config.notifications.soundAlerts}
-                      disabled={!config.notifications.enableNotifications}
-                      onCheckedChange={(checked: boolean) => updateNotificationConfig({ soundAlerts: checked })}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </TabsContent>
-
-          {/* Aba de Privacidade */}
-          <TabsContent value="privacy">
-            <div className="px-4 py-3">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-lg font-medium">Privacidade</h3>
-                  <p className="text-sm text-muted-foreground">Gerencie suas configurações de privacidade e dados.</p>
-                </div>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="share-usage-data">Compartilhar dados de uso</Label>
-                      <p className="text-[0.8rem] text-muted-foreground">
-                        Ajude a melhorar o sistema compartilhando dados anônimos de uso.
-                      </p>
-                    </div>
-                    <Switch
-                      id="share-usage-data"
-                      checked={config.privacy.shareUsageData}
-                      onCheckedChange={(checked: boolean) => updatePrivacyConfig({ shareUsageData: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="store-history">Armazenar histórico</Label>
-                      <p className="text-[0.8rem] text-muted-foreground">
-                        Manter histórico de ações para referência futura.
-                      </p>
-                    </div>
-                    <Switch
-                      id="store-history"
-                      checked={config.privacy.storeHistory}
-                      onCheckedChange={(checked: boolean) => updatePrivacyConfig({ storeHistory: checked })}
-                    />
-                  </div>
-
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label htmlFor="auto-save">Salvar automaticamente</Label>
-                      <p className="text-[0.8rem] text-muted-foreground">
-                        Salvar automaticamente alterações em formulários e documentos.
-                      </p>
-                    </div>
-                    <Switch
-                      id="auto-save"
-                      checked={config.privacy.autoSave}
-                      onCheckedChange={(checked: boolean) => updatePrivacyConfig({ autoSave: checked })}
-                    />
-                  </div>
-                </div>
               </div>
             </div>
           </TabsContent>

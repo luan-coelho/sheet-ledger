@@ -35,15 +35,12 @@ export class GoogleDriveConfigService {
     const oauth2Client = new google.auth.OAuth2(
       this.oauthConfig.clientId,
       this.oauthConfig.clientSecret,
-      this.oauthConfig.redirectUri
+      this.oauthConfig.redirectUri,
     )
 
     return oauth2Client.generateAuthUrl({
       access_type: 'offline',
-      scope: [
-        'https://www.googleapis.com/auth/drive',
-        'https://www.googleapis.com/auth/userinfo.email',
-      ],
+      scope: ['https://www.googleapis.com/auth/drive', 'https://www.googleapis.com/auth/userinfo.email'],
       prompt: 'consent',
       state: 'google-drive-config', // Identificador único para nosso fluxo
     })
@@ -70,16 +67,16 @@ export class GoogleDriveConfigService {
       const oauth2Client = new google.auth.OAuth2(
         this.oauthConfig.clientId,
         this.oauthConfig.clientSecret,
-        this.oauthConfig.redirectUri
+        this.oauthConfig.redirectUri,
       )
 
       const { tokens } = await oauth2Client.getToken(code)
-      
+
       console.log('✅ Tokens recebidos do Google')
       console.log('Access Token:', tokens.access_token ? 'Presente' : 'Ausente')
       console.log('Refresh Token:', tokens.refresh_token ? 'Presente' : 'Ausente')
       console.log('Expiry Date:', tokens.expiry_date)
-      
+
       if (!tokens.access_token || !tokens.refresh_token) {
         throw new Error('Tokens não recebidos do Google')
       }
@@ -106,51 +103,63 @@ export class GoogleDriveConfigService {
       }
     } catch (error: unknown) {
       console.error('❌ Erro detalhado ao trocar código por tokens:', error)
-      
+
       // Tratar erros específicos do Google OAuth
-      const errorObj = error as { 
+      const errorObj = error as {
         code?: number
         message?: string
-        response?: { 
-          data?: { 
+        response?: {
+          data?: {
             error?: string
-            error_description?: string 
-          } 
+            error_description?: string
+          }
         }
       }
-      
+
       // Log detalhado do erro
       if (errorObj.response?.data) {
         console.error('Resposta do Google:', errorObj.response.data)
       }
-      
+
       // Tratar diferentes tipos de erro invalid_grant
       if (errorObj.code === 400 || errorObj.message?.includes('invalid_grant')) {
         const errorDescription = errorObj.response?.data?.error_description || ''
-        
+
         if (errorDescription.includes('expired')) {
-          throw new Error('Código de autorização expirado. O código OAuth expira em alguns minutos. Solicite um novo código.')
+          throw new Error(
+            'Código de autorização expirado. O código OAuth expira em alguns minutos. Solicite um novo código.',
+          )
         }
-        
+
         if (errorDescription.includes('used')) {
-          throw new Error('Código de autorização já foi usado. Cada código só pode ser usado uma vez. Solicite um novo código.')
+          throw new Error(
+            'Código de autorização já foi usado. Cada código só pode ser usado uma vez. Solicite um novo código.',
+          )
         }
-        
+
         if (errorDescription.includes('redirect_uri_mismatch')) {
-          throw new Error(`URL de redirecionamento não confere. Verifique se '${this.oauthConfig.redirectUri}' está registrada no Google Cloud Console.`)
+          throw new Error(
+            `URL de redirecionamento não confere. Verifique se '${this.oauthConfig.redirectUri}' está registrada no Google Cloud Console.`,
+          )
         }
-        
-        throw new Error('Código de autorização inválido. Verifique se a URL de callback está correta no Google Cloud Console e solicite um novo código.')
+
+        throw new Error(
+          'Código de autorização inválido. Verifique se a URL de callback está correta no Google Cloud Console e solicite um novo código.',
+        )
       }
-      
+
       if (errorObj.message?.includes('invalid_client')) {
-        throw new Error('Credenciais do Google inválidas. Verifique se CLIENT_ID e CLIENT_SECRET estão corretos no Google Cloud Console.')
+        throw new Error(
+          'Credenciais do Google inválidas. Verifique se CLIENT_ID e CLIENT_SECRET estão corretos no Google Cloud Console.',
+        )
       }
-      
+
       if (errorObj.message?.includes('redirect_uri_mismatch')) {
-        throw new Error(`URL de redirecionamento inválida. Registre '${this.oauthConfig.redirectUri}' no Google Cloud Console.`)
+        throw new Error(
+          `URL de redirecionamento inválida. Registre '${this.oauthConfig.redirectUri}' no Google Cloud Console.`,
+        )
       }
-      
+
       throw new Error(`Erro na autorização OAuth: ${errorObj.message || 'Erro desconhecido'}`)
     }
   }
@@ -232,7 +241,7 @@ export class GoogleDriveConfigService {
     const oauth2Client = new google.auth.OAuth2(
       this.oauthConfig.clientId,
       this.oauthConfig.clientSecret,
-      this.oauthConfig.redirectUri
+      this.oauthConfig.redirectUri,
     )
 
     oauth2Client.setCredentials({
@@ -241,7 +250,7 @@ export class GoogleDriveConfigService {
 
     try {
       const { credentials } = await oauth2Client.refreshAccessToken()
-      
+
       if (!credentials.access_token) {
         throw new Error('Novo token de acesso não recebido')
       }
@@ -274,7 +283,7 @@ export class GoogleDriveConfigService {
   // Obter token válido para usar na API
   async getValidAccessToken(): Promise<string> {
     const config = await this.getActiveConfig()
-    
+
     if (!config) {
       throw new Error('Google Drive não configurado')
     }
@@ -298,7 +307,7 @@ export class GoogleDriveConfigService {
     configuredAt?: Date
   }> {
     const config = await this.getActiveConfig()
-    
+
     return {
       isConfigured: !!config,
       accountEmail: config?.accountEmail,
@@ -308,4 +317,4 @@ export class GoogleDriveConfigService {
 }
 
 // Instância singleton
-export const googleDriveConfigService = new GoogleDriveConfigService() 
+export const googleDriveConfigService = new GoogleDriveConfigService()

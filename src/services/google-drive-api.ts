@@ -214,7 +214,7 @@ export class GoogleDriveApi {
   // Baixar arquivo
   async downloadFile(fileId: string): Promise<Blob> {
     const response = await fetch(`/api/google-drive/files/${fileId}/download`)
-    
+
     if (!response.ok) {
       throw new Error('Erro ao baixar arquivo')
     }
@@ -242,4 +242,4 @@ export const googleDriveQueryKeys = {
   file: (fileId: string) => [...googleDriveQueryKeys.files(), 'detail', fileId] as const,
   search: (query: string) => [...googleDriveQueryKeys.files(), 'search', query] as const,
   storage: () => [...googleDriveQueryKeys.all, 'storage'] as const,
-} 
+}

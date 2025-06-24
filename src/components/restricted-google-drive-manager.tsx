@@ -1,23 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
 import { Separator } from '@/components/ui/separator'
-import {
-  Folder,
-  FileText,
-  RefreshCw,
-  Plus,
-  FolderPlus,
-  Download,
-  ExternalLink,
-  Calendar,
-  HardDrive,
-} from 'lucide-react'
+import { Calendar, Download, ExternalLink, FileText, Folder, HardDrive, RefreshCw } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 interface RestrictedDriveFile {
@@ -51,7 +41,7 @@ export function RestrictedGoogleDriveManager() {
   const [loading, setLoading] = useState(false)
   const [creating, setCreating] = useState(false)
   const [showCreateForm, setShowCreateForm] = useState(false)
-  const [createType, setCreateType] = useState<'file' | 'folder'>('folder')
+  const [createType] = useState<'file' | 'folder'>('folder')
   const [createName, setCreateName] = useState('')
 
   // Carregar arquivos da pasta da aplicação

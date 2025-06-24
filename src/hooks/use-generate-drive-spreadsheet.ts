@@ -45,14 +45,14 @@ export function useGenerateDriveSpreadsheet() {
 
       return result
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast.success(data.message, {
         description: `Pasta: "${data.patientFolder}" | Arquivos: ${data.files.map(f => f.name).join(', ')}`,
         duration: 5000,
       })
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error instanceof Error ? error.message : 'Erro ao gerar planilhas no Google Drive')
     },
   })
-} 
+}

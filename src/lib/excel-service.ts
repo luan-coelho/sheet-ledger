@@ -64,26 +64,26 @@ export class ExcelService {
       // Usar o novo formato com data de início e fim
       const dataInicio = new Date(data.dataInicio)
       const dataFim = new Date(data.dataFim)
-      
+
       // Formato da competência para o período
       const mesInicio = dataInicio.toLocaleDateString('pt-BR', { month: 'long' })
       const anoInicio = dataInicio.getFullYear()
       const mesFim = dataFim.toLocaleDateString('pt-BR', { month: 'long' })
       const anoFim = dataFim.getFullYear()
-      
+
       if (anoInicio === anoFim && mesInicio === mesFim) {
         competenciaText = `${mesInicio.toUpperCase()}/${anoInicio}`
       } else {
         competenciaText = `${mesInicio.toUpperCase()}/${anoInicio} - ${mesFim.toUpperCase()}/${anoFim}`
       }
-      
+
       records = this.generateRecordsForPeriodWithSessions(dataInicio, dataFim, data.weekDaySessions)
     } else if (data.competencia) {
       // Manter compatibilidade com o formato antigo
       const mesIndex = parseInt(data.competencia.mes)
       const mesNome = meses.find(m => parseInt(m.value) === mesIndex)?.label || 'Janeiro'
       competenciaText = `${mesNome.toUpperCase()}/${data.competencia.ano}`
-      
+
       const mesCompetencia = parseInt(data.competencia.mes)
       const anoCompetencia = parseInt(data.competencia.ano)
       records = this.generateRecordsForMonthWithSessions(anoCompetencia, mesCompetencia, data.weekDaySessions)
@@ -332,35 +332,35 @@ export class ExcelService {
   private static generateRecordsForPeriodWithSessions(
     dataInicio: Date,
     dataFim: Date,
-    weekDaySessions: WeekdaySession[]
+    weekDaySessions: WeekdaySession[],
   ): SessionRecord[] {
     const records: SessionRecord[] = []
-    
+
     // Create a map of weekdays to session counts for faster lookup
     const weekDaySessionMap = new Map<WeekDays, number>()
     weekDaySessions.forEach(ws => {
       weekDaySessionMap.set(ws.day, ws.sessions)
     })
-    
+
     // Iterate through each day in the period
     const currentDate = new Date(dataInicio)
     while (currentDate <= dataFim) {
       const jsDay = currentDate.getDay()
       const weekDay = this.getWeekDayFromJSDay(jsDay)
-      
+
       // Check if this weekday is selected
       if (weekDaySessionMap.has(weekDay)) {
         const sessions = weekDaySessionMap.get(weekDay)!
         records.push({
           date: new Date(currentDate),
-          sessions: sessions
+          sessions: sessions,
         })
       }
-      
+
       // Move to next day
       currentDate.setDate(currentDate.getDate() + 1)
     }
-    
+
     return records
   }
 

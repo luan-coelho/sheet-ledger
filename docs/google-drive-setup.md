@@ -39,7 +39,7 @@ A partir da versão atual, o Google Drive é configurado uma única vez para tod
 3. Selecione **Aplicativo da Web**
 4. Configure:
    - **Nome**: Sheet Ledger - Google Drive
-   - **URIs de origem autorizados**: 
+   - **URIs de origem autorizados**:
      - `http://localhost:3000` (desenvolvimento)
      - `https://seudominio.com` (produção)
    - **URIs de redirecionamento autorizados**:
@@ -89,6 +89,7 @@ npm run db:migrate
 ### 2. Autorização
 
 #### Opção 1: Autorização Automática
+
 1. Clique em **"Autorizar com Google"**
 2. Uma nova janela abrirá para autorização
 3. Faça login com a conta Google Drive da aplicação
@@ -96,6 +97,7 @@ npm run db:migrate
 5. A configuração será salva automaticamente
 
 #### Opção 2: Configuração Manual
+
 1. Clique em **"Configuração Manual"**
 2. Acesse manualmente a URL de autorização do Google
 3. Copie o código de autorização retornado
@@ -135,6 +137,7 @@ npm run db:migrate
 ### Permissões
 
 A aplicação solicita apenas as permissões necessárias:
+
 - **drive**: Acesso completo ao Google Drive
 - **userinfo.email**: Email da conta para identificação
 
@@ -205,4 +208,4 @@ Para problemas relacionados à configuração do Google Drive:
 1. Verifique os logs da aplicação
 2. Confirme as variáveis de ambiente
 3. Teste as credenciais no Google Cloud Console
-4. Verifique as permissões da conta configurada 
+4. Verifique as permissões da conta configurada

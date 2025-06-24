@@ -6,16 +6,13 @@ import { auth } from '@/lib/auth'
 export async function GET() {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, message: 'Não autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, message: 'Não autorizado' }, { status: 401 })
     }
 
     const status = await googleDriveConfigService.getConfigStatus()
-    
+
     return NextResponse.json({
       success: true,
       data: status,
@@ -24,12 +21,12 @@ export async function GET() {
   } catch (error) {
     console.error('Erro ao obter status do Google Drive:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Erro interno do servidor',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -38,27 +35,21 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, message: 'Não autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, message: 'Não autorizado' }, { status: 401 })
     }
 
     const body = await request.json()
     const { code } = body
 
     if (!code) {
-      return NextResponse.json(
-        { success: false, message: 'Código de autorização é obrigatório' },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, message: 'Código de autorização é obrigatório' }, { status: 400 })
     }
 
     // Trocar código por tokens
     const tokens = await googleDriveConfigService.exchangeCodeForTokens(code)
-    
+
     // Salvar configuração no banco
     const config = await googleDriveConfigService.saveConfig({
       accountEmail: tokens.email,
@@ -78,12 +69,12 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Erro ao configurar Google Drive:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Erro ao configurar Google Drive',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -92,12 +83,9 @@ export async function POST(request: NextRequest) {
 export async function DELETE() {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, message: 'Não autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, message: 'Não autorizado' }, { status: 401 })
     }
 
     await googleDriveConfigService.removeConfig()
@@ -109,12 +97,12 @@ export async function DELETE() {
   } catch (error) {
     console.error('Erro ao remover configuração do Google Drive:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Erro ao remover configuração',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
-} 
+}

@@ -7,12 +7,9 @@ import { googleDriveConfigService } from '@/services/google-drive-config-service
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, message: 'Não autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, message: 'Não autorizado' }, { status: 401 })
     }
 
     const { searchParams } = new URL(request.url)
@@ -26,18 +23,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: files,
-      message: 'Arquivos listados com sucesso'
+      message: 'Arquivos listados com sucesso',
     })
-
   } catch (error) {
     console.error('Erro na API Google Drive - GET files:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Erro ao listar arquivos',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -46,12 +42,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, message: 'Não autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, message: 'Não autorizado' }, { status: 401 })
     }
 
     const body = await request.json()
@@ -70,18 +63,17 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: result,
-      message: `${type === 'folder' ? 'Pasta' : 'Arquivo'} criado com sucesso`
+      message: `${type === 'folder' ? 'Pasta' : 'Arquivo'} criado com sucesso`,
     })
-
   } catch (error) {
     console.error('Erro na API Google Drive - POST files:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Erro ao criar item',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
-} 
+}

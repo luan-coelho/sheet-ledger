@@ -30,11 +30,11 @@ export function useGoogleDriveConfigStatus() {
     queryFn: async (): Promise<GoogleDriveConfigStatus> => {
       const response = await fetch('/api/google-drive-config')
       const data = await response.json()
-      
+
       if (!data.success) {
         throw new Error(data.message || 'Erro ao obter status')
       }
-      
+
       return data.data
     },
     staleTime: 30 * 1000, // 30 segundos
@@ -49,11 +49,11 @@ export function useGoogleDriveAuthUrl() {
     queryFn: async (): Promise<GoogleDriveAuthUrl> => {
       const response = await fetch('/api/google-drive-config/auth-url')
       const data = await response.json()
-      
+
       if (!data.success) {
         throw new Error(data.message || 'Erro ao obter URL de autorização')
       }
-      
+
       return data.data
     },
     enabled: false, // Só executa quando chamado manualmente
@@ -63,7 +63,7 @@ export function useGoogleDriveAuthUrl() {
 // Hook para configurar Google Drive
 export function useConfigureGoogleDrive() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (code: string): Promise<GoogleDriveConfigData> => {
       const response = await fetch('/api/google-drive-config', {
@@ -73,22 +73,22 @@ export function useConfigureGoogleDrive() {
         },
         body: JSON.stringify({ code }),
       })
-      
+
       const data = await response.json()
-      
+
       if (!data.success) {
         throw new Error(data.message || 'Erro ao configurar Google Drive')
       }
-      
+
       return data.data
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Invalidar cache do status
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.status })
-      
+
       toast.success(`Google Drive configurado com sucesso! Conta: ${data.accountEmail}`)
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error instanceof Error ? error.message : 'Erro ao configurar Google Drive')
     },
   })
@@ -97,15 +97,15 @@ export function useConfigureGoogleDrive() {
 // Hook para remover configuração
 export function useRemoveGoogleDriveConfig() {
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (): Promise<void> => {
       const response = await fetch('/api/google-drive-config', {
         method: 'DELETE',
       })
-      
+
       const data = await response.json()
-      
+
       if (!data.success) {
         throw new Error(data.message || 'Erro ao remover configuração')
       }
@@ -113,10 +113,10 @@ export function useRemoveGoogleDriveConfig() {
     onSuccess: () => {
       // Invalidar cache do status
       queryClient.invalidateQueries({ queryKey: QUERY_KEYS.status })
-      
+
       toast.success('Configuração do Google Drive removida com sucesso')
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error instanceof Error ? error.message : 'Erro ao remover configuração')
     },
   })
@@ -126,24 +126,24 @@ export function useRemoveGoogleDriveConfig() {
 export function useStartGoogleDriveAuth() {
   const { refetch: getAuthUrl } = useGoogleDriveAuthUrl()
   const queryClient = useQueryClient()
-  
+
   return useMutation({
     mutationFn: async (): Promise<void> => {
       const { data } = await getAuthUrl()
-      
+
       if (data?.authUrl) {
         // Abrir nova janela para autorização
         const width = 500
         const height = 600
-        const left = (window.screen.width / 2) - (width / 2)
-        const top = (window.screen.height / 2) - (height / 2)
-        
+        const left = window.screen.width / 2 - width / 2
+        const top = window.screen.height / 2 - height / 2
+
         const authWindow = window.open(
           data.authUrl,
           'google-drive-auth',
-          `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`
+          `width=${width},height=${height},left=${left},top=${top},scrollbars=yes,resizable=yes`,
         )
-        
+
         // Monitorar quando a janela for fechada
         const checkClosed = setInterval(() => {
           if (authWindow?.closed) {
@@ -156,8 +156,8 @@ export function useStartGoogleDriveAuth() {
         }, 1000)
       }
     },
-    onError: (error) => {
+    onError: error => {
       toast.error(error instanceof Error ? error.message : 'Erro ao iniciar autorização')
     },
   })
-} 
+}

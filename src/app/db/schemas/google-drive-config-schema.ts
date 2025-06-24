@@ -29,4 +29,4 @@ export const googleDriveConfigFormSchema = z.object({
   authorizationCode: z.string().min(1, 'Código de autorização é obrigatório'),
 })
 
-export type GoogleDriveConfigFormValues = z.infer<typeof googleDriveConfigFormSchema> 
+export type GoogleDriveConfigFormValues = z.infer<typeof googleDriveConfigFormSchema>

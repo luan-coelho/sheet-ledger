@@ -7,12 +7,9 @@ import { googleDriveConfigService } from '@/services/google-drive-config-service
 export async function GET() {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, message: 'Não autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, message: 'Não autorizado' }, { status: 401 })
     }
 
     const accessToken = await googleDriveConfigService.getValidAccessToken()
@@ -22,18 +19,17 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       data: storageInfo,
-      message: 'Informações de armazenamento obtidas com sucesso'
+      message: 'Informações de armazenamento obtidas com sucesso',
     })
-
   } catch (error) {
     console.error('Erro na API Google Drive - Storage:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Erro ao obter informações de armazenamento',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
-} 
+}

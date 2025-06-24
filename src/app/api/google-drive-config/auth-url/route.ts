@@ -6,16 +6,13 @@ import { auth } from '@/lib/auth'
 export async function GET() {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, message: 'Não autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, message: 'Não autorizado' }, { status: 401 })
     }
 
     const authUrl = googleDriveConfigService.generateAuthUrl()
-    
+
     return NextResponse.json({
       success: true,
       data: { authUrl },
@@ -24,12 +21,12 @@ export async function GET() {
   } catch (error) {
     console.error('Erro ao gerar URL de autorização:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Erro ao gerar URL de autorização',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
-} 
+}

@@ -209,35 +209,35 @@ export class PreviewUtils {
   static generateSessionDatesWithSessionsForPeriod(
     dataInicio: Date,
     dataFim: Date,
-    weekDaySessions: WeekdaySession[]
+    weekDaySessions: WeekdaySession[],
   ): SessionDate[] {
     const sessionDates: SessionDate[] = []
-    
+
     // Create a map for quick lookup of sessions by day
     const sessionsMap = new Map<WeekDays, number>()
     weekDaySessions.forEach(({ day, sessions }) => {
       sessionsMap.set(day, sessions)
     })
-    
+
     // Iterate through each day in the period
     const currentDate = new Date(dataInicio)
     while (currentDate <= dataFim) {
       const jsDay = currentDate.getDay()
       const weekDay = this.getWeekDayFromJSDay(jsDay)
-      
+
       // Check if this weekday is selected
       if (sessionsMap.has(weekDay)) {
         const sessions = sessionsMap.get(weekDay)!
         sessionDates.push({
           date: new Date(currentDate),
-          sessions: sessions
+          sessions: sessions,
         })
       }
-      
+
       // Move to next day
       currentDate.setDate(currentDate.getDate() + 1)
     }
-    
+
     return sessionDates
   }
 

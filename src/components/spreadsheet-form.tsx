@@ -34,7 +34,7 @@ export function SpreadsheetForm() {
   const { data: patients } = usePatients()
   const { data: guardians } = useGuardians()
   const { data: healthPlans } = useHealthPlans()
-  
+
   // Hooks para Google Drive
   const { data: driveStatus } = useGoogleDriveConfigStatus()
   const generateDriveSpreadsheet = useGenerateDriveSpreadsheet()
@@ -61,10 +61,10 @@ export function SpreadsheetForm() {
 
   // Watch form values for real-time preview updates
   const formValues = form.watch()
-  
+
   // Watch data início para validação da data fim
   const dataInicio = form.watch('dataInicio')
-  
+
   // Helper para obter o dia seguinte à data de início
   const getMinDataFim = (dataInicio: string | undefined) => {
     if (!dataInicio) return undefined
@@ -271,10 +271,10 @@ export function SpreadsheetForm() {
                     <FormControl>
                       <DatePicker
                         date={field.value ? new Date(field.value) : undefined}
-                        onSelect={(date) => {
+                        onSelect={date => {
                           const newDataInicio = date?.toISOString().split('T')[0] || ''
                           field.onChange(newDataInicio)
-                          
+
                           // Se a data fim já estiver selecionada e for anterior ou igual à nova data início,
                           // limpa a data fim para forçar o usuário a selecionar uma nova
                           const currentDataFim = form.getValues('dataFim')
@@ -300,7 +300,7 @@ export function SpreadsheetForm() {
                     <FormControl>
                       <DatePicker
                         date={field.value ? new Date(field.value) : undefined}
-                        onSelect={(date) => field.onChange(date?.toISOString().split('T')[0] || '')}
+                        onSelect={date => field.onChange(date?.toISOString().split('T')[0] || '')}
                         placeholder="Selecione a data fim"
                         className="w-full"
                         fromDate={getMinDataFim(dataInicio)}
@@ -342,11 +342,7 @@ export function SpreadsheetForm() {
                 Visualizar Preview
               </Button>
 
-              <Button 
-                type="submit" 
-                className="flex-1" 
-                disabled={isGenerating || generateDriveSpreadsheet.isPending}
-              >
+              <Button type="submit" className="flex-1" disabled={isGenerating || generateDriveSpreadsheet.isPending}>
                 <FileText className="mr-2 h-4 w-4" />
                 {isGenerating ? 'Gerando planilha...' : 'Gerar planilha'}
               </Button>
@@ -362,8 +358,11 @@ export function SpreadsheetForm() {
                   }
                 }}
                 disabled={isGenerating || generateDriveSpreadsheet.isPending || !driveStatus?.isConfigured}
-                title={!driveStatus?.isConfigured ? 'Configure o Google Drive primeiro nas configurações' : 'Gerar planilhas organizadas por mês no Google Drive'}
-              >
+                title={
+                  !driveStatus?.isConfigured
+                    ? 'Configure o Google Drive primeiro nas configurações'
+                    : 'Gerar planilhas organizadas por mês no Google Drive'
+                }>
                 <Cloud className="mr-2 h-4 w-4" />
                 {generateDriveSpreadsheet.isPending ? 'Gerando no Drive...' : 'Gerar no Google Drive'}
               </Button>

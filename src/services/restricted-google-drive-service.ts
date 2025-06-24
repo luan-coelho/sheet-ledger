@@ -56,12 +56,12 @@ export class RestrictedGoogleDriveService {
 
     try {
       console.log(`🔍 Procurando pasta "${APP_ROOT_FOLDER_NAME}"...`)
-      
+
       // Procurar pela pasta "planilhas-app" na raiz do Drive
       const response = await this.drive.files.list({
         q: `name='${APP_ROOT_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents`,
         fields: 'files(id,name)',
-        pageSize: 1
+        pageSize: 1,
       })
 
       if (response.data.files && response.data.files.length > 0) {
@@ -75,9 +75,9 @@ export class RestrictedGoogleDriveService {
           requestBody: {
             name: APP_ROOT_FOLDER_NAME,
             mimeType: 'application/vnd.google-apps.folder',
-            parents: ['root']
+            parents: ['root'],
           },
-          fields: 'id,name'
+          fields: 'id,name',
         })
 
         this.appRootFolderId = createResponse.data.id!
@@ -95,7 +95,7 @@ export class RestrictedGoogleDriveService {
   async validateFolderAccess(folderId: string): Promise<boolean> {
     try {
       const appRootId = await this.ensureAppRootFolder()
-      
+
       if (folderId === appRootId) {
         return true
       }
@@ -103,7 +103,7 @@ export class RestrictedGoogleDriveService {
       // Verificar se a pasta é filha da pasta raiz da aplicação
       const response = await this.drive.files.get({
         fileId: folderId,
-        fields: 'id,parents'
+        fields: 'id,parents',
       })
 
       const folder = response.data
@@ -123,10 +123,10 @@ export class RestrictedGoogleDriveService {
   async listFiles(folderId?: string): Promise<RestrictedDriveFile[]> {
     try {
       const appRootId = await this.ensureAppRootFolder()
-      
+
       // Se não especificou folderId, usar a pasta raiz da aplicação
       const targetFolderId = folderId || appRootId
-      
+
       // Validar acesso se foi especificado um folderId
       if (folderId && !(await this.validateFolderAccess(folderId))) {
         throw new Error('Acesso negado: pasta fora do escopo da aplicação')
@@ -138,7 +138,7 @@ export class RestrictedGoogleDriveService {
         q: `'${targetFolderId}' in parents and trashed=false`,
         pageSize: 100,
         fields: 'files(id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink,thumbnailLink,iconLink)',
-        orderBy: 'folder,name'
+        orderBy: 'folder,name',
       })
 
       const files = (response.data.files || []).map(file => ({
@@ -166,14 +166,14 @@ export class RestrictedGoogleDriveService {
   async searchFiles(searchTerm: string): Promise<RestrictedDriveFile[]> {
     try {
       const appRootId = await this.ensureAppRootFolder()
-      
+
       console.log(`🔍 Buscando arquivos com termo: "${searchTerm}"`)
 
       // Buscar recursivamente dentro da pasta da aplicação
       const response = await this.drive.files.list({
         q: `name contains '${searchTerm}' and trashed=false`,
         pageSize: 50,
-        fields: 'files(id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink,thumbnailLink,iconLink)'
+        fields: 'files(id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink,thumbnailLink,iconLink)',
       })
 
       const allFiles = (response.data.files || []).map(file => ({
@@ -209,10 +209,10 @@ export class RestrictedGoogleDriveService {
   async createFile(options: CreateRestrictedFileOptions): Promise<RestrictedDriveFile> {
     try {
       const appRootId = await this.ensureAppRootFolder()
-      
+
       // Determinar a pasta pai
       const parentFolderId = options.parentFolderId || appRootId
-      
+
       // Validar acesso à pasta pai se especificada
       if (options.parentFolderId && !(await this.validateFolderAccess(options.parentFolderId))) {
         throw new Error('Acesso negado: pasta pai fora do escopo da aplicação')
@@ -222,21 +222,21 @@ export class RestrictedGoogleDriveService {
 
       const fileMetadata = {
         name: options.name,
-        parents: [parentFolderId]
+        parents: [parentFolderId],
       }
 
       let media
       if (options.content) {
         media = {
           mimeType: options.mimeType || 'application/octet-stream',
-          body: options.content
+          body: options.content,
         }
       }
 
       const response = await this.drive.files.create({
         requestBody: fileMetadata,
         media,
-        fields: 'id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink'
+        fields: 'id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink',
       })
 
       const file = response.data
@@ -263,10 +263,10 @@ export class RestrictedGoogleDriveService {
   async createFolder(options: CreateRestrictedFolderOptions): Promise<RestrictedDriveFolder> {
     try {
       const appRootId = await this.ensureAppRootFolder()
-      
+
       // Determinar a pasta pai
       const parentFolderId = options.parentFolderId || appRootId
-      
+
       // Validar acesso à pasta pai se especificada
       if (options.parentFolderId && !(await this.validateFolderAccess(options.parentFolderId))) {
         throw new Error('Acesso negado: pasta pai fora do escopo da aplicação')
@@ -278,9 +278,9 @@ export class RestrictedGoogleDriveService {
         requestBody: {
           name: options.name,
           mimeType: 'application/vnd.google-apps.folder',
-          parents: [parentFolderId]
+          parents: [parentFolderId],
         },
-        fields: 'id,name,parents,modifiedTime'
+        fields: 'id,name,parents,modifiedTime',
       })
 
       const folder = response.data
@@ -303,10 +303,10 @@ export class RestrictedGoogleDriveService {
   async getAppRootFolderInfo(): Promise<RestrictedDriveFolder> {
     try {
       const appRootId = await this.ensureAppRootFolder()
-      
+
       const response = await this.drive.files.get({
         fileId: appRootId,
-        fields: 'id,name,parents,modifiedTime'
+        fields: 'id,name,parents,modifiedTime',
       })
 
       const folder = response.data
@@ -327,7 +327,7 @@ export class RestrictedGoogleDriveService {
     try {
       const response = await this.drive.files.get({
         fileId,
-        fields: 'id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink,thumbnailLink,iconLink'
+        fields: 'id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink,thumbnailLink,iconLink',
       })
 
       const file = response.data
@@ -363,10 +363,13 @@ export class RestrictedGoogleDriveService {
       // Primeiro validar se o arquivo está na pasta da aplicação
       await this.getFile(fileId)
 
-      const response = await this.drive.files.get({
-        fileId,
-        alt: 'media'
-      }, { responseType: 'stream' })
+      const response = await this.drive.files.get(
+        {
+          fileId,
+          alt: 'media',
+        },
+        { responseType: 'stream' },
+      )
 
       return new Promise((resolve, reject) => {
         const chunks: Buffer[] = []
@@ -384,4 +387,4 @@ export class RestrictedGoogleDriveService {
 // Factory function para criar o serviço
 export function createRestrictedGoogleDriveService(accessToken: string): RestrictedGoogleDriveService {
   return new RestrictedGoogleDriveService(accessToken)
-} 
+}

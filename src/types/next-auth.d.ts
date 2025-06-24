@@ -10,4 +10,4 @@ declare module 'next-auth' {
   interface JWT extends DefaultJWT {
     id?: string
   }
-} 
+}

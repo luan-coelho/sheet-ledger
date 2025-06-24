@@ -11,12 +11,9 @@ interface RouteParams {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, message: 'Não autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, message: 'Não autorizado' }, { status: 401 })
     }
 
     const { id } = await params
@@ -27,18 +24,17 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json({
       success: true,
       data: file,
-      message: 'Arquivo obtido com sucesso'
+      message: 'Arquivo obtido com sucesso',
     })
-
   } catch (error) {
     console.error('Erro na API Google Drive - GET file:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Erro ao obter arquivo',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -47,12 +43,9 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, message: 'Não autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, message: 'Não autorizado' }, { status: 401 })
     }
 
     const { id } = await params
@@ -77,27 +70,23 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         result = await service.updateFile(id, options)
         break
       default:
-        return NextResponse.json(
-          { success: false, message: 'Ação não reconhecida' },
-          { status: 400 }
-        )
+        return NextResponse.json({ success: false, message: 'Ação não reconhecida' }, { status: 400 })
     }
 
     return NextResponse.json({
       success: true,
       data: result,
-      message: 'Arquivo atualizado com sucesso'
+      message: 'Arquivo atualizado com sucesso',
     })
-
   } catch (error) {
     console.error('Erro na API Google Drive - PUT file:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Erro ao atualizar arquivo',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
 }
@@ -106,12 +95,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, message: 'Não autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, message: 'Não autorizado' }, { status: 401 })
     }
 
     const { id } = await params
@@ -121,18 +107,17 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json({
       success: true,
-      message: 'Arquivo deletado com sucesso'
+      message: 'Arquivo deletado com sucesso',
     })
-
   } catch (error) {
     console.error('Erro na API Google Drive - DELETE file:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Erro ao deletar arquivo',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
-} 
+}

@@ -62,12 +62,12 @@ export class GoogleDriveService {
 
     try {
       console.log(`🔍 Procurando pasta "${APP_ROOT_FOLDER_NAME}" no Google Drive...`)
-      
+
       // Procurar pela pasta "planilhas-app" na raiz do Drive
       const response = await this.drive.files.list({
         q: `name='${APP_ROOT_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents`,
         fields: 'files(id,name)',
-        pageSize: 1
+        pageSize: 1,
       })
 
       console.log('🔍 Resposta da busca:', response.data)
@@ -82,9 +82,9 @@ export class GoogleDriveService {
           requestBody: {
             name: APP_ROOT_FOLDER_NAME,
             mimeType: 'application/vnd.google-apps.folder',
-            parents: ['root']
+            parents: ['root'],
           },
-          fields: 'id,name'
+          fields: 'id,name',
         })
 
         this.appRootFolderId = createResponse.data.id!
@@ -102,11 +102,11 @@ export class GoogleDriveService {
   async validateFileAccess(fileId: string): Promise<boolean> {
     try {
       const appRootId = await this.ensureAppRootFolder()
-      
+
       // Obter informações do arquivo
       const response = await this.drive.files.get({
         fileId,
-        fields: 'id,parents'
+        fields: 'id,parents',
       })
 
       const file = response.data
@@ -131,7 +131,7 @@ export class GoogleDriveService {
 
       const response = await this.drive.files.get({
         fileId,
-        fields: 'id,parents'
+        fields: 'id,parents',
       })
 
       const file = response.data
@@ -144,27 +144,27 @@ export class GoogleDriveService {
         if (parentId === appRootId) {
           return true
         }
-        
+
         // Verificar recursivamente se o parent está dentro da pasta da aplicação
         if (await this.isFileInAppFolder(parentId, appRootId)) {
           return true
         }
       }
 
-             return false
-     } catch {
-       return false
-     }
+      return false
+    } catch {
+      return false
+    }
   }
 
   // Listar arquivos e pastas (apenas dentro da pasta da aplicação)
   async listFiles(folderId?: string, pageSize: number = 100): Promise<DriveFile[]> {
     try {
       const appRootId = await this.ensureAppRootFolder()
-      
+
       // Se não especificou folderId, usar a pasta raiz da aplicação
       const targetFolderId = folderId || appRootId
-      
+
       // Validar acesso se foi especificado um folderId
       if (folderId && !(await this.validateFileAccess(folderId))) {
         throw new Error('Acesso negado: pasta fora do escopo da aplicação')
@@ -176,7 +176,7 @@ export class GoogleDriveService {
         q: query,
         pageSize,
         fields: 'files(id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink,thumbnailLink,iconLink)',
-        orderBy: 'folder,name'
+        orderBy: 'folder,name',
       })
 
       return (response.data.files || []).map((file: any) => ({
@@ -201,15 +201,15 @@ export class GoogleDriveService {
   async searchFiles(query: string, pageSize: number = 50): Promise<DriveFile[]> {
     try {
       const appRootId = await this.ensureAppRootFolder()
-      
+
       // Buscar apenas dentro da pasta da aplicação
       const searchQuery = `name contains '${query}' and trashed=false and '${appRootId}' in parents`
-      
+
       const response = await this.drive.files.list({
         q: searchQuery,
         pageSize,
         fields: 'files(id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink,thumbnailLink,iconLink)',
-        orderBy: 'folder,name'
+        orderBy: 'folder,name',
       })
 
       // Filtrar apenas arquivos que estão realmente dentro da pasta da aplicação
@@ -251,7 +251,7 @@ export class GoogleDriveService {
 
       const response = await this.drive.files.get({
         fileId,
-        fields: 'id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink,thumbnailLink,iconLink'
+        fields: 'id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink,thumbnailLink,iconLink',
       })
 
       const file = response.data
@@ -277,10 +277,10 @@ export class GoogleDriveService {
   async createFile(options: CreateFileOptions): Promise<DriveFile> {
     try {
       const appRootId = await this.ensureAppRootFolder()
-      
+
       // Se não especificou parents, usar a pasta raiz da aplicação
-      let parents = options.parents || [appRootId]
-      
+      const parents = options.parents || [appRootId]
+
       // Validar que todos os parents estão dentro da pasta da aplicação
       for (const parentId of parents) {
         if (!(await this.validateFileAccess(parentId))) {
@@ -288,23 +288,23 @@ export class GoogleDriveService {
         }
       }
 
-      const fileMetadata: Record<string, any> = {
+      const fileMetadata: Record<string, unknown> = {
         name: options.name,
-        parents
+        parents,
       }
 
       let media
       if (options.content) {
         media = {
           mimeType: options.mimeType || 'application/octet-stream',
-          body: options.content
+          body: options.content,
         }
       }
 
       const response = await this.drive.files.create({
         requestBody: fileMetadata,
         media,
-        fields: 'id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink'
+        fields: 'id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink',
       })
 
       const file = response.data
@@ -328,10 +328,10 @@ export class GoogleDriveService {
   async createFolder(options: CreateFolderOptions): Promise<DriveFolder> {
     try {
       const appRootId = await this.ensureAppRootFolder()
-      
+
       // Se não especificou parents, usar a pasta raiz da aplicação
-      let parents = options.parents || [appRootId]
-      
+      const parents = options.parents || [appRootId]
+
       // Validar que todos os parents estão dentro da pasta da aplicação
       for (const parentId of parents) {
         if (!(await this.validateFileAccess(parentId))) {
@@ -342,12 +342,12 @@ export class GoogleDriveService {
       const fileMetadata = {
         name: options.name,
         mimeType: 'application/vnd.google-apps.folder',
-        parents
+        parents,
       }
 
       const response = await this.drive.files.create({
         requestBody: fileMetadata,
-        fields: 'id,name,parents,modifiedTime'
+        fields: 'id,name,parents,modifiedTime',
       })
 
       const file = response.data
@@ -370,7 +370,7 @@ export class GoogleDriveService {
       throw new Error('Acesso negado: arquivo fora do escopo da aplicação')
     }
     try {
-      const fileMetadata: Record<string, any> = {}
+      const fileMetadata: Record<string, unknown> = {}
       if (options.name) {
         fileMetadata.name = options.name
       }
@@ -379,7 +379,7 @@ export class GoogleDriveService {
       if (options.content) {
         media = {
           mimeType: options.mimeType || 'application/octet-stream',
-          body: options.content
+          body: options.content,
         }
       }
 
@@ -387,7 +387,7 @@ export class GoogleDriveService {
         fileId,
         requestBody: fileMetadata,
         media,
-        fields: 'id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink'
+        fields: 'id,name,mimeType,size,modifiedTime,parents,webViewLink,webContentLink',
       })
 
       const file = response.data
@@ -413,7 +413,7 @@ export class GoogleDriveService {
       const response = await this.drive.files.update({
         fileId,
         requestBody: { name: newName },
-        fields: 'id,name,mimeType,size,modifiedTime,parents'
+        fields: 'id,name,mimeType,size,modifiedTime,parents',
       })
 
       const file = response.data
@@ -434,10 +434,10 @@ export class GoogleDriveService {
   // Mover arquivo ou pasta
   async move(fileId: string, newParentId: string, oldParentId?: string): Promise<DriveFile> {
     try {
-      const params: Record<string, any> = {
+      const params: Record<string, unknown> = {
         fileId,
         addParents: newParentId,
-        fields: 'id,name,mimeType,size,modifiedTime,parents'
+        fields: 'id,name,mimeType,size,modifiedTime,parents',
       }
 
       if (oldParentId) {
@@ -468,9 +468,9 @@ export class GoogleDriveService {
         fileId,
         requestBody: {
           name,
-          parents: parentIds
+          parents: parentIds,
         },
-        fields: 'id,name,mimeType,size,modifiedTime,parents'
+        fields: 'id,name,mimeType,size,modifiedTime,parents',
       })
 
       const file = response.data
@@ -492,7 +492,7 @@ export class GoogleDriveService {
   async delete(fileId: string): Promise<void> {
     try {
       await this.drive.files.delete({
-        fileId
+        fileId,
       })
     } catch (error) {
       console.error('Erro ao deletar arquivo:', error)
@@ -503,10 +503,13 @@ export class GoogleDriveService {
   // Baixar arquivo
   async downloadFile(fileId: string): Promise<Buffer> {
     try {
-      const response = await this.drive.files.get({
-        fileId,
-        alt: 'media'
-      }, { responseType: 'arraybuffer' })
+      const response = await this.drive.files.get(
+        {
+          fileId,
+          alt: 'media',
+        },
+        { responseType: 'arraybuffer' },
+      )
 
       return Buffer.from(response.data as ArrayBuffer)
     } catch (error) {
@@ -519,7 +522,7 @@ export class GoogleDriveService {
   async getStorageInfo(): Promise<{ total: string; used: string; free: string }> {
     try {
       const response = await this.drive.about.get({
-        fields: 'storageQuota'
+        fields: 'storageQuota',
       })
 
       const quota = response.data.storageQuota
@@ -542,8 +545,8 @@ export class GoogleDriveService {
         requestBody: {
           type: 'user',
           role,
-          emailAddress: email
-        }
+          emailAddress: email,
+        },
       })
     } catch (error) {
       console.error('Erro ao compartilhar arquivo:', error)
@@ -556,7 +559,7 @@ export class GoogleDriveService {
     try {
       await this.drive.permissions.delete({
         fileId,
-        permissionId
+        permissionId,
       })
     } catch (error) {
       console.error('Erro ao remover compartilhamento:', error)
@@ -565,11 +568,11 @@ export class GoogleDriveService {
   }
 
   // Listar permissões de um arquivo
-  async getFilePermissions(fileId: string): Promise<any[]> {
+  async getFilePermissions(fileId: string): Promise<unknown[]> {
     try {
       const response = await this.drive.permissions.list({
         fileId,
-        fields: 'permissions(id,type,role,emailAddress,displayName)'
+        fields: 'permissions(id,type,role,emailAddress,displayName)',
       })
 
       return response.data.permissions || []
@@ -594,4 +597,4 @@ export const googleDriveQueryKeys = {
   search: (query: string) => [...googleDriveQueryKeys.files(), 'search', query] as const,
   storage: () => [...googleDriveQueryKeys.all, 'storage'] as const,
   permissions: (fileId: string) => [...googleDriveQueryKeys.all, 'permissions', fileId] as const,
-} 
+}

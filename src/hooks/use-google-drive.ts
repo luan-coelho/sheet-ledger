@@ -1,14 +1,13 @@
-import { useSession } from 'next-auth/react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 import {
-  createGoogleDriveApi,
-  googleDriveQueryKeys,
   CreateFileOptions,
   CreateFolderOptions,
-  UpdateFileOptions,
+  createGoogleDriveApi,
   DriveFile,
+  googleDriveQueryKeys,
+  UpdateFileOptions,
 } from '@/services/google-drive-api'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 // Hook para obter o serviço do Google Drive
 function useGoogleDriveApi() {
@@ -61,8 +60,6 @@ export function useGoogleDriveStorage() {
   })
 }
 
-
-
 // Hook para criar arquivo
 export function useCreateGoogleDriveFile() {
   const api = useGoogleDriveApi()
@@ -111,7 +108,7 @@ export function useCreateGoogleDriveFolder() {
         queryClient.setQueryData(queryKey, (oldData: DriveFile[] | undefined) => {
           const folderAsFile: DriveFile = {
             ...newFolder,
-            mimeType: 'application/vnd.google-apps.folder'
+            mimeType: 'application/vnd.google-apps.folder',
           }
           return oldData ? [folderAsFile, ...oldData] : [folderAsFile]
         })
@@ -133,7 +130,7 @@ export function useUpdateGoogleDriveFile() {
   return useMutation({
     mutationFn: ({ fileId, options }: { fileId: string; options: UpdateFileOptions }) =>
       api.updateFile(fileId, options),
-    onSuccess: (updatedFile) => {
+    onSuccess: updatedFile => {
       // Invalidar listas de arquivos
       queryClient.invalidateQueries({
         queryKey: googleDriveQueryKeys.files(),
@@ -156,9 +153,8 @@ export function useRenameGoogleDriveFile() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ fileId, newName }: { fileId: string; newName: string }) =>
-      api.rename(fileId, newName),
-    onSuccess: (renamedFile) => {
+    mutationFn: ({ fileId, newName }: { fileId: string; newName: string }) => api.rename(fileId, newName),
+    onSuccess: renamedFile => {
       // Invalidar listas de arquivos
       queryClient.invalidateQueries({
         queryKey: googleDriveQueryKeys.files(),
@@ -181,11 +177,8 @@ export function useMoveGoogleDriveFile() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ fileId, newParentId, oldParentId }: { 
-      fileId: string; 
-      newParentId: string; 
-      oldParentId?: string 
-    }) => api.move(fileId, newParentId, oldParentId),
+    mutationFn: ({ fileId, newParentId, oldParentId }: { fileId: string; newParentId: string; oldParentId?: string }) =>
+      api.move(fileId, newParentId, oldParentId),
     onSuccess: () => {
       // Invalidar todas as listas de arquivos
       queryClient.invalidateQueries({
@@ -206,11 +199,8 @@ export function useCopyGoogleDriveFile() {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ fileId, name, parentIds }: { 
-      fileId: string; 
-      name: string; 
-      parentIds?: string[] 
-    }) => api.copy(fileId, name, parentIds),
+    mutationFn: ({ fileId, name, parentIds }: { fileId: string; name: string; parentIds?: string[] }) =>
+      api.copy(fileId, name, parentIds),
     onSuccess: () => {
       // Invalidar listas de arquivos
       queryClient.invalidateQueries({
@@ -265,5 +255,3 @@ export function useDownloadGoogleDriveFile() {
     },
   })
 }
-
- 

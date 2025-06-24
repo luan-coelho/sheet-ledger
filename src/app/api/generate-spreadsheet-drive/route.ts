@@ -10,21 +10,20 @@ function getMonthsBetweenDates(startDate: Date, endDate: Date) {
   const months = []
   const current = new Date(startDate.getFullYear(), startDate.getMonth(), 1)
   const end = new Date(endDate.getFullYear(), endDate.getMonth(), 1)
-  
+
   while (current <= end) {
     months.push({
       year: current.getFullYear(),
       month: current.getMonth() + 1,
       monthName: current.toLocaleDateString('pt-BR', { month: 'long' }),
       startDate: new Date(Math.max(current.getTime(), startDate.getTime())),
-      endDate: new Date(Math.min(
-        new Date(current.getFullYear(), current.getMonth() + 1, 0).getTime(),
-        endDate.getTime()
-      ))
+      endDate: new Date(
+        Math.min(new Date(current.getFullYear(), current.getMonth() + 1, 0).getTime(), endDate.getTime()),
+      ),
     })
     current.setMonth(current.getMonth() + 1)
   }
-  
+
   return months
 }
 
@@ -45,7 +44,7 @@ export async function POST(request: NextRequest) {
       console.error('❌ Erro ao obter token do Google Drive:', error)
       return NextResponse.json(
         { error: 'Google Drive não configurado ou token expirado. Configure primeiro nas configurações.' },
-        { status: 400 }
+        { status: 400 },
       )
     }
 
@@ -64,20 +63,14 @@ export async function POST(request: NextRequest) {
     } = body
 
     if (!dataInicio || !dataFim) {
-      return NextResponse.json(
-        { error: 'Data de início e fim são obrigatórias' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Data de início e fim são obrigatórias' }, { status: 400 })
     }
 
     const startDate = new Date(dataInicio)
     const endDate = new Date(dataFim)
 
     if (startDate >= endDate) {
-      return NextResponse.json(
-        { error: 'Data de início deve ser anterior à data de fim' },
-        { status: 400 }
-      )
+      return NextResponse.json({ error: 'Data de início deve ser anterior à data de fim' }, { status: 400 })
     }
 
     // Inicializar cliente do Google Drive
@@ -93,7 +86,7 @@ export async function POST(request: NextRequest) {
     const rootSearch = await drive.files.list({
       q: `name='${APP_ROOT_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents`,
       fields: 'files(id,name)',
-      pageSize: 1
+      pageSize: 1,
     })
 
     if (rootSearch.data.files && rootSearch.data.files.length > 0) {
@@ -105,9 +98,9 @@ export async function POST(request: NextRequest) {
         requestBody: {
           name: APP_ROOT_FOLDER_NAME,
           mimeType: 'application/vnd.google-apps.folder',
-          parents: ['root']
+          parents: ['root'],
         },
-        fields: 'id,name'
+        fields: 'id,name',
       })
       appRootId = rootFolder.data.id!
       console.log(`✅ Pasta "${APP_ROOT_FOLDER_NAME}" criada: ${appRootId}`)
@@ -121,7 +114,7 @@ export async function POST(request: NextRequest) {
     const patientSearch = await drive.files.list({
       q: `name='${patientFolderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false and '${appRootId}' in parents`,
       fields: 'files(id,name)',
-      pageSize: 1
+      pageSize: 1,
     })
 
     if (patientSearch.data.files && patientSearch.data.files.length > 0) {
@@ -133,9 +126,9 @@ export async function POST(request: NextRequest) {
         requestBody: {
           name: patientFolderName,
           mimeType: 'application/vnd.google-apps.folder',
-          parents: [appRootId]
+          parents: [appRootId],
         },
-        fields: 'id,name'
+        fields: 'id,name',
       })
       patientFolderId = patientFolder.data.id!
       console.log(`✅ Pasta do paciente "${patientFolderName}" criada: ${patientFolderId}`)
@@ -167,7 +160,7 @@ export async function POST(request: NextRequest) {
       const fileSearch = await drive.files.list({
         q: `name='${fileName}' and trashed=false and '${patientFolderId}' in parents`,
         fields: 'files(id,name)',
-        pageSize: 1
+        pageSize: 1,
       })
 
       // Converter buffer para stream
@@ -183,8 +176,8 @@ export async function POST(request: NextRequest) {
           fileId: existingFileId,
           media: {
             mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            body: bufferStream
-          }
+            body: bufferStream,
+          },
         })
         fileId = updatedFile.data.id!
         console.log(`✅ Arquivo "${fileName}" atualizado: ${fileId}`)
@@ -193,19 +186,19 @@ export async function POST(request: NextRequest) {
         const createStream = new Readable()
         createStream.push(Buffer.from(spreadsheetBuffer))
         createStream.push(null)
-        
+
         // Criar novo arquivo
         const newFile = await drive.files.create({
           requestBody: {
             name: fileName,
             parents: [patientFolderId],
-            mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           },
           media: {
             mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            body: createStream
+            body: createStream,
           },
-          fields: 'id,name'
+          fields: 'id,name',
         })
         fileId = newFile.data.id!
         console.log(`✅ Arquivo "${fileName}" criado: ${fileId}`)
@@ -215,7 +208,7 @@ export async function POST(request: NextRequest) {
         id: fileId,
         name: fileName,
         month: monthInfo.monthName,
-        year: monthInfo.year
+        year: monthInfo.year,
       })
     }
 
@@ -223,44 +216,34 @@ export async function POST(request: NextRequest) {
       success: true,
       message: `${createdFiles.length} planilha(s) gerada(s) com sucesso no Google Drive`,
       patientFolder: patientFolderName,
-      files: createdFiles
+      files: createdFiles,
     })
-
   } catch (error) {
     console.error('Erro ao gerar planilhas no Google Drive:', error)
-    
+
     // Tratar erros específicos do Google Drive
     if (error instanceof Error) {
       if (error.message.includes('Invalid Credentials') || error.message.includes('unauthorized')) {
         return NextResponse.json(
           { error: 'Token do Google Drive expirado ou inválido. Reconfigure nas configurações.' },
-          { status: 401 }
+          { status: 401 },
         )
       }
-      
+
       if (error.message.includes('quotaExceeded')) {
         return NextResponse.json(
           { error: 'Cota do Google Drive excedida. Tente novamente mais tarde.' },
-          { status: 429 }
+          { status: 429 },
         )
       }
-      
+
       if (error.message.includes('notFound')) {
-        return NextResponse.json(
-          { error: 'Pasta ou arquivo não encontrado no Google Drive.' },
-          { status: 404 }
-        )
+        return NextResponse.json({ error: 'Pasta ou arquivo não encontrado no Google Drive.' }, { status: 404 })
       }
-      
-      return NextResponse.json(
-        { error: error.message },
-        { status: 500 }
-      )
+
+      return NextResponse.json({ error: error.message }, { status: 500 })
     }
-    
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    )
+
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
   }
-} 
+}

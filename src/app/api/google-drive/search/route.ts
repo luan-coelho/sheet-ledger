@@ -7,12 +7,9 @@ import { googleDriveConfigService } from '@/services/google-drive-config-service
 export async function GET(request: NextRequest) {
   try {
     const session = await auth()
-    
+
     if (!session?.user) {
-      return NextResponse.json(
-        { success: false, message: 'Não autorizado' },
-        { status: 401 }
-      )
+      return NextResponse.json({ success: false, message: 'Não autorizado' }, { status: 401 })
     }
 
     const { searchParams } = new URL(request.url)
@@ -20,10 +17,7 @@ export async function GET(request: NextRequest) {
     const pageSize = parseInt(searchParams.get('pageSize') || '50')
 
     if (!query) {
-      return NextResponse.json(
-        { success: false, message: 'Parâmetro de busca (q) é obrigatório' },
-        { status: 400 }
-      )
+      return NextResponse.json({ success: false, message: 'Parâmetro de busca (q) é obrigatório' }, { status: 400 })
     }
 
     const accessToken = await googleDriveConfigService.getValidAccessToken()
@@ -33,18 +27,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       data: files,
-      message: 'Busca realizada com sucesso'
+      message: 'Busca realizada com sucesso',
     })
-
   } catch (error) {
     console.error('Erro na API Google Drive - Search:', error)
     return NextResponse.json(
-      { 
-        success: false, 
+      {
+        success: false,
         message: 'Erro ao buscar arquivos',
-        error: error instanceof Error ? error.message : 'Erro desconhecido'
+        error: error instanceof Error ? error.message : 'Erro desconhecido',
       },
-      { status: 500 }
+      { status: 500 },
     )
   }
-} 
+}

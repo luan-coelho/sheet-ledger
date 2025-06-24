@@ -32,19 +32,19 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
   // Generate session dates with sessions per day
   let sessionDates: Array<{ date: Date; sessions: number }> = []
   let competenciaString = ''
-  
+
   if (formData.dataInicio && formData.dataFim) {
     // Use new date range format
     const dataInicio = new Date(formData.dataInicio)
     const dataFim = new Date(formData.dataFim)
     sessionDates = PreviewUtils.generateSessionDatesWithSessionsForPeriod(dataInicio, dataFim, formData.weekDaySessions)
-    
+
     // Format period string
     const mesInicio = dataInicio.toLocaleDateString('pt-BR', { month: 'long' })
     const anoInicio = dataInicio.getFullYear()
     const mesFim = dataFim.toLocaleDateString('pt-BR', { month: 'long' })
     const anoFim = dataFim.getFullYear()
-    
+
     if (anoInicio === anoFim && mesInicio === mesFim) {
       competenciaString = `${mesInicio.toUpperCase()}/${anoInicio}`
     } else {
