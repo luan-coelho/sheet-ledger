@@ -6,6 +6,7 @@ const db = drizzle(process.env.DATABASE_URL!)
 
 export { db, schema } */
 
+import 'dotenv/config'
 import { drizzle } from 'drizzle-orm/neon-http'
 import { neon } from '@neondatabase/serverless'
 import * as schema from './schemas'
