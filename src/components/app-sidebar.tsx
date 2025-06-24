@@ -80,7 +80,7 @@ export function AppSidebar() {
               <FileText className="h-4 w-4" />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">Sheet Ledger</span>
+              <span className="truncate font-semibold">Sistema</span>
               <span className="truncate text-xs text-muted-foreground">Gestão de Planilhas</span>
             </div>
           </div>

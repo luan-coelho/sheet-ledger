@@ -1,6 +1,20 @@
 import { google } from 'googleapis'
 import { Readable } from 'stream'
 
+// Interface para arquivo retornado pela API do Google Drive
+interface GoogleDriveApiFile {
+  id?: string | null
+  name?: string | null
+  mimeType?: string | null
+  size?: string | null
+  modifiedTime?: string | null
+  parents?: string[] | null
+  webViewLink?: string | null
+  webContentLink?: string | null
+  thumbnailLink?: string | null
+  iconLink?: string | null
+}
+
 // Tipos simplificados para os arquivos e pastas do Google Drive
 export interface DriveFile {
   id: string
@@ -179,7 +193,7 @@ export class GoogleDriveService {
         orderBy: 'folder,name',
       })
 
-      return (response.data.files || []).map((file: any) => ({
+      return (response.data.files || []).map((file: GoogleDriveApiFile) => ({
         id: file.id || '',
         name: file.name || '',
         mimeType: file.mimeType || '',
@@ -188,8 +202,8 @@ export class GoogleDriveService {
         parents: file.parents || undefined,
         webViewLink: file.webViewLink || undefined,
         webContentLink: file.webContentLink || undefined,
-        thumbnailLink: file.thumbnailLink,
-        iconLink: file.iconLink,
+        thumbnailLink: file.thumbnailLink || undefined,
+        iconLink: file.iconLink || undefined,
       }))
     } catch (error) {
       console.error('Erro ao listar arquivos:', error)
@@ -213,7 +227,7 @@ export class GoogleDriveService {
       })
 
       // Filtrar apenas arquivos que estão realmente dentro da pasta da aplicação
-      const files = (response.data.files || []).map((file: any) => ({
+      const files = (response.data.files || []).map((file: GoogleDriveApiFile) => ({
         id: file.id || '',
         name: file.name || '',
         mimeType: file.mimeType || '',
@@ -222,8 +236,8 @@ export class GoogleDriveService {
         parents: file.parents || undefined,
         webViewLink: file.webViewLink || undefined,
         webContentLink: file.webContentLink || undefined,
-        thumbnailLink: file.thumbnailLink,
-        iconLink: file.iconLink,
+        thumbnailLink: file.thumbnailLink || undefined,
+        iconLink: file.iconLink || undefined,
       }))
 
       // Validação adicional para garantir que estão na pasta da aplicação
