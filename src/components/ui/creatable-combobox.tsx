@@ -18,6 +18,7 @@ interface CreatableComboboxProps {
   value?: string
   onValueChange: (value: string) => void
   onCreate?: (name: string) => Promise<string> // Retorna o ID do novo item criado
+  validate?: (name: string) => boolean // Função para validar se o nome é válido para criação
   placeholder?: string
   searchPlaceholder?: string
   emptyText?: string
@@ -32,6 +33,7 @@ export function CreatableCombobox({
   value,
   onValueChange,
   onCreate,
+  validate,
   placeholder = 'Selecione uma opção...',
   searchPlaceholder = 'Buscar...',
   emptyText = 'Nenhuma opção encontrada.',
@@ -48,8 +50,11 @@ export function CreatableCombobox({
   // Verificar se o valor de busca corresponde a alguma opção existente
   const exactMatch = options.find(option => option.label.toLowerCase() === searchValue.toLowerCase())
 
+  // Verificar se o valor é válido para criação
+  const isValidForCreation = validate ? validate(searchValue.trim()) : searchValue.trim().length >= 3
+
   const handleCreate = async () => {
-    if (!onCreate || !searchValue.trim() || exactMatch) return
+    if (!onCreate || !searchValue.trim() || exactMatch || !isValidForCreation) return
 
     try {
       const newId = await onCreate(searchValue.trim())
@@ -95,8 +100,8 @@ export function CreatableCombobox({
                 ))}
             </CommandGroup>
 
-            {/* Opção para criar novo item */}
-            {onCreate && searchValue.trim() && !exactMatch && (
+            {/* Opção para criar novo item - só aparece se for válido */}
+            {onCreate && searchValue.trim() && !exactMatch && isValidForCreation && (
               <CommandGroup>
                 <CommandItem onSelect={handleCreate} disabled={isCreating} className="text-primary">
                   <Plus className="mr-2 h-4 w-4" />

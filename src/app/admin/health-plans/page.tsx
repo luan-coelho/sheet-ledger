@@ -181,8 +181,8 @@ export default function PlanosSaudePage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o plano de saúde "{deletingHealthPlan?.name}"? Esta ação não pode ser
-              desfeita.
+              Tem certeza que deseja excluir o plano de saúde &quot;{deletingHealthPlan?.name}?&quot; Esta ação não pode
+              ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

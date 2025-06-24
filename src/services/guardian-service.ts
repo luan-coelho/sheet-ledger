@@ -1,7 +1,7 @@
 import { Guardian, GuardianFormValues } from '@/app/db/schemas/guardian-schema'
 
 // Tipos para as respostas da API
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   message: string
@@ -90,7 +90,7 @@ export async function deleteGuardian(id: string): Promise<void> {
 export const guardianQueryKeys = {
   all: ['guardians'] as const,
   lists: () => [...guardianQueryKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...guardianQueryKeys.lists(), { filters }] as const,
+  list: (filters: Record<string, unknown>) => [...guardianQueryKeys.lists(), { filters }] as const,
   details: () => [...guardianQueryKeys.all, 'detail'] as const,
   detail: (id: string) => [...guardianQueryKeys.details(), id] as const,
 }

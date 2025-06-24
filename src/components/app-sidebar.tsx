@@ -1,10 +1,8 @@
 'use client'
 
-import { Home, Settings, Users, FileText, CreditCard, Shield, BarChart3 } from 'lucide-react'
-import { useSession } from 'next-auth/react'
 import { UserAvatar } from '@/components/auth/user-avatar'
-import { useTheme } from 'next-themes'
-import { useThemeConfig } from '@/lib/theme-config'
+import { BarChart3, CreditCard, FileText, Settings, Shield, Users } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 
 import {
   Sidebar,
@@ -66,8 +64,6 @@ const configItems = [
 
 export function AppSidebar() {
   const { data: session } = useSession()
-  const { theme } = useTheme()
-  const { config } = useThemeConfig()
 
   // Sidebar sempre usa o tema dark
   return (

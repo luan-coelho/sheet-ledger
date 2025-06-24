@@ -1,4 +1,5 @@
 import { auth } from '@/lib/auth'
+import { Session } from 'next-auth'
 import { redirect } from 'next/navigation'
 
 /**
@@ -26,7 +27,7 @@ export async function getServerSession() {
 /**
  * Check if user has specific permissions (for future role-based access)
  */
-export function hasPermission(session: any, _permission: string): boolean {
+export function hasPermission(session: Session): boolean {
   // For now, all authenticated users have all permissions
   // This can be extended later for role-based access control
   return !!session?.user

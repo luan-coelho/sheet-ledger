@@ -177,7 +177,8 @@ export default function ResponsaveisPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o responsável "{deletingGuardian?.name}"? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir o responsável &quot;{deletingGuardian?.name}?&quot; Esta ação não pode ser
+              desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

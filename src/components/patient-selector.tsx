@@ -41,12 +41,18 @@ export function PatientSelector({
     return result.id
   }
 
+  // Validação baseada no schema: nome deve ter pelo menos 3 caracteres
+  const validateName = (name: string) => {
+    return name.trim().length >= 3
+  }
+
   return (
     <CreatableCombobox
       options={options}
       value={value}
       onValueChange={onValueChange}
       onCreate={handleCreate}
+      validate={validateName}
       placeholder={placeholder}
       searchPlaceholder="Buscar paciente..."
       emptyText="Nenhum paciente encontrado."

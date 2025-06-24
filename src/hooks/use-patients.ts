@@ -1,14 +1,14 @@
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
+import { PatientFormValues } from '@/app/db/schemas/patient-schema'
 import {
+  createPatient,
+  deletePatient,
   getAllPatients,
   getPatientById,
-  createPatient,
-  updatePatient,
-  deletePatient,
   patientQueryKeys,
+  updatePatient,
 } from '@/services/patient-service'
-import { Patient, PatientFormValues } from '@/app/db/schemas/patient-schema'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 // Hook para listar todos os pacientes
 export function usePatients() {

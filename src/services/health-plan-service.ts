@@ -1,7 +1,7 @@
 import { HealthPlan, HealthPlanFormValues } from '@/app/db/schemas/health-plan-schema'
 
 // Tipos para as respostas da API
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   message: string
@@ -90,7 +90,7 @@ export async function deleteHealthPlan(id: string): Promise<void> {
 export const healthPlanQueryKeys = {
   all: ['healthPlans'] as const,
   lists: () => [...healthPlanQueryKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...healthPlanQueryKeys.lists(), { filters }] as const,
+  list: (filters: Record<string, unknown>) => [...healthPlanQueryKeys.lists(), { filters }] as const,
   details: () => [...healthPlanQueryKeys.all, 'detail'] as const,
   detail: (id: string) => [...healthPlanQueryKeys.details(), id] as const,
 }

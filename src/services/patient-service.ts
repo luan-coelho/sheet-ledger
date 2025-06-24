@@ -1,7 +1,7 @@
 import { Patient, PatientFormValues } from '@/app/db/schemas/patient-schema'
 
 // Tipos para as respostas da API
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   message: string
@@ -90,7 +90,7 @@ export async function deletePatient(id: string): Promise<void> {
 export const patientQueryKeys = {
   all: ['patients'] as const,
   lists: () => [...patientQueryKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...patientQueryKeys.lists(), { filters }] as const,
+  list: (filters: Record<string, unknown>) => [...patientQueryKeys.lists(), { filters }] as const,
   details: () => [...patientQueryKeys.all, 'detail'] as const,
   detail: (id: string) => [...patientQueryKeys.details(), id] as const,
 }

@@ -1,7 +1,7 @@
 import { Professional, ProfessionalFormValues } from '@/app/db/schemas/professional-schema'
 
 // Tipos para as respostas da API
-export interface ApiResponse<T = any> {
+export interface ApiResponse<T = unknown> {
   success: boolean
   data?: T
   message: string
@@ -90,7 +90,7 @@ export async function deleteProfessional(id: string): Promise<void> {
 export const professionalQueryKeys = {
   all: ['professionals'] as const,
   lists: () => [...professionalQueryKeys.all, 'list'] as const,
-  list: (filters: Record<string, any>) => [...professionalQueryKeys.lists(), { filters }] as const,
+  list: (filters: Record<string, unknown>) => [...professionalQueryKeys.lists(), { filters }] as const,
   details: () => [...professionalQueryKeys.all, 'detail'] as const,
   detail: (id: string) => [...professionalQueryKeys.details(), id] as const,
 }

@@ -167,8 +167,8 @@ export default function ProfissionaisPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o profissional "{deletingProfessional?.name}"? Esta ação não pode ser
-              desfeita.
+              Tem certeza que deseja excluir o profissional &quot;{deletingProfessional?.name}?&quot; Esta ação não pode
+              ser desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

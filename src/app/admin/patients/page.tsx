@@ -315,7 +315,9 @@ export default function PacientesPage() {
             <div className="text-center py-8">
               {searchFilter ? (
                 <div>
-                  <p className="text-muted-foreground mb-4">Nenhum paciente encontrado com o nome "{searchFilter}".</p>
+                  <p className="text-muted-foreground mb-4">
+                    Nenhum paciente encontrado com o nome &quot;{searchFilter}&quot;.
+                  </p>
                   <Button variant="outline" onClick={clearSearch}>
                     <X className="mr-2 h-4 w-4" />
                     Limpar Filtro
@@ -353,7 +355,8 @@ export default function PacientesPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o paciente "{deletingPatient?.name}"? Esta ação não pode ser desfeita.
+              Tem certeza que deseja excluir o paciente &quot;{deletingPatient?.name}?&quot; Esta ação não pode ser
+              desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -54,11 +54,6 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
     onChange?.(newSelectedDays)
   }
 
-  function getSessionsForDay(day: WeekDays): number {
-    const dayConfig = selectedDays.find(item => item.day === day)
-    return dayConfig?.sessions || 4
-  }
-
   function isDaySelected(day: WeekDays): boolean {
     return selectedDays.some(item => item.day === day)
   }
