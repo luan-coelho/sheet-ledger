@@ -24,7 +24,9 @@ export class ExcelService {
     responsible: string
     healthPlan: string
     weekDaySessions: WeekdaySession[]
-    competencia: {
+    dataInicio?: string
+    dataFim?: string
+    competencia?: {
       mes: string
       ano: string
     }
@@ -55,18 +57,42 @@ export class ExcelService {
     // Fill row 14 with weekdays
     worksheet.getCell('H14').value = weekDaysString
 
-    // Get month name from the number
-    const mesIndex = parseInt(data.competencia.mes)
-    const mesNome = meses.find(m => parseInt(m.value) === mesIndex)?.label || 'Janeiro'
+    let records: SessionRecord[]
+    let competenciaText: string
+
+    if (data.dataInicio && data.dataFim) {
+      // Usar o novo formato com data de início e fim
+      const dataInicio = new Date(data.dataInicio)
+      const dataFim = new Date(data.dataFim)
+      
+      // Formato da competência para o período
+      const mesInicio = dataInicio.toLocaleDateString('pt-BR', { month: 'long' })
+      const anoInicio = dataInicio.getFullYear()
+      const mesFim = dataFim.toLocaleDateString('pt-BR', { month: 'long' })
+      const anoFim = dataFim.getFullYear()
+      
+      if (anoInicio === anoFim && mesInicio === mesFim) {
+        competenciaText = `${mesInicio.toUpperCase()}/${anoInicio}`
+      } else {
+        competenciaText = `${mesInicio.toUpperCase()}/${anoInicio} - ${mesFim.toUpperCase()}/${anoFim}`
+      }
+      
+      records = this.generateRecordsForPeriodWithSessions(dataInicio, dataFim, data.weekDaySessions)
+    } else if (data.competencia) {
+      // Manter compatibilidade com o formato antigo
+      const mesIndex = parseInt(data.competencia.mes)
+      const mesNome = meses.find(m => parseInt(m.value) === mesIndex)?.label || 'Janeiro'
+      competenciaText = `${mesNome.toUpperCase()}/${data.competencia.ano}`
+      
+      const mesCompetencia = parseInt(data.competencia.mes)
+      const anoCompetencia = parseInt(data.competencia.ano)
+      records = this.generateRecordsForMonthWithSessions(anoCompetencia, mesCompetencia, data.weekDaySessions)
+    } else {
+      throw new Error('É necessário informar a data de início e fim ou a competência')
+    }
 
     // Fill the competência field in row 17 (cells H17, I17, J17, K17 are merged)
-    worksheet.getCell('H17').value = `${mesNome.toUpperCase()}/${data.competencia.ano}`
-
-    // Generate records for the selected month and year
-    const mesCompetencia = parseInt(data.competencia.mes)
-    const anoCompetencia = parseInt(data.competencia.ano)
-
-    const records = this.generateRecordsForMonthWithSessions(anoCompetencia, mesCompetencia, data.weekDaySessions)
+    worksheet.getCell('H17').value = competenciaText
 
     // Initial row for records
     const startRow = 12
@@ -294,6 +320,48 @@ export class ExcelService {
     }
 
     return sessionRecords
+  }
+
+  /**
+   * Generates records for a specific period (from dataInicio to dataFim), filtered by selected weekdays
+   * @param dataInicio Start date
+   * @param dataFim End date
+   * @param weekDaySessions Array of weekday sessions configuration
+   * @returns Array of session records for the period
+   */
+  private static generateRecordsForPeriodWithSessions(
+    dataInicio: Date,
+    dataFim: Date,
+    weekDaySessions: WeekdaySession[]
+  ): SessionRecord[] {
+    const records: SessionRecord[] = []
+    
+    // Create a map of weekdays to session counts for faster lookup
+    const weekDaySessionMap = new Map<WeekDays, number>()
+    weekDaySessions.forEach(ws => {
+      weekDaySessionMap.set(ws.day, ws.sessions)
+    })
+    
+    // Iterate through each day in the period
+    const currentDate = new Date(dataInicio)
+    while (currentDate <= dataFim) {
+      const jsDay = currentDate.getDay()
+      const weekDay = this.getWeekDayFromJSDay(jsDay)
+      
+      // Check if this weekday is selected
+      if (weekDaySessionMap.has(weekDay)) {
+        const sessions = weekDaySessionMap.get(weekDay)!
+        records.push({
+          date: new Date(currentDate),
+          sessions: sessions
+        })
+      }
+      
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1)
+    }
+    
+    return records
   }
 
   /**

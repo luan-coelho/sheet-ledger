@@ -40,7 +40,7 @@ export default function RootLayout({
             <SessionProvider>
               <QueryProvider>
                 {children}
-                <Toaster />
+                <Toaster richColors expand />
               </QueryProvider>
             </SessionProvider>
           </ThemeConfigProvider>

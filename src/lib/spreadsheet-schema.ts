@@ -46,15 +46,21 @@ export const spreadsheetFormSchema = z.object({
       }),
     )
     .min(1, 'Selecione pelo menos um dia da semana'),
-  competencia: z.object(
-    {
-      mes: z.string(),
-      ano: z.string().regex(/^\d{4}$/, 'Formato de ano inválido'),
-    },
-    {
-      required_error: 'Selecione a competência',
-    },
-  ),
+  dataInicio: z.string().min(1, 'Data de início é obrigatória'),
+  dataFim: z.string().min(1, 'Data fim é obrigatória'),
+}).refine((data) => {
+  if (!data.dataInicio || !data.dataFim) return true // Deixa a validação de campos obrigatórios para o schema principal
+  
+  const dataInicio = new Date(data.dataInicio)
+  const dataFim = new Date(data.dataFim)
+  
+  // Verifica se as datas são válidas
+  if (isNaN(dataInicio.getTime()) || isNaN(dataFim.getTime())) return true
+  
+  return dataInicio < dataFim
+}, {
+  message: 'Data fim deve ser posterior à data de início',
+  path: ['dataFim'],
 })
 
 export type SpreadsheetFormValues = z.infer<typeof spreadsheetFormSchema>

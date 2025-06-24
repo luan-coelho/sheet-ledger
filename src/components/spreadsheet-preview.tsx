@@ -30,13 +30,30 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
   const healthPlan = healthPlans?.find(h => h.id === formData.healthPlanId)
 
   // Generate session dates with sessions per day
-  const monthIndex = parseInt(formData.competencia.mes)
-  const year = parseInt(formData.competencia.ano)
-  const sessionDates = PreviewUtils.generateSessionDatesWithSessions(year, monthIndex, formData.weekDaySessions)
+  let sessionDates: Array<{ date: Date; sessions: number }> = []
+  let competenciaString = ''
+  
+  if (formData.dataInicio && formData.dataFim) {
+    // Use new date range format
+    const dataInicio = new Date(formData.dataInicio)
+    const dataFim = new Date(formData.dataFim)
+    sessionDates = PreviewUtils.generateSessionDatesWithSessionsForPeriod(dataInicio, dataFim, formData.weekDaySessions)
+    
+    // Format period string
+    const mesInicio = dataInicio.toLocaleDateString('pt-BR', { month: 'long' })
+    const anoInicio = dataInicio.getFullYear()
+    const mesFim = dataFim.toLocaleDateString('pt-BR', { month: 'long' })
+    const anoFim = dataFim.getFullYear()
+    
+    if (anoInicio === anoFim && mesInicio === mesFim) {
+      competenciaString = `${mesInicio.toUpperCase()}/${anoInicio}`
+    } else {
+      competenciaString = `${mesInicio.toUpperCase()}/${anoInicio} - ${mesFim.toUpperCase()}/${anoFim}`
+    }
+  }
 
   // Format data for display
   const weekDaysString = PreviewUtils.formatWeekDaysRangeWithSessions(formData.weekDaySessions)
-  const competenciaString = PreviewUtils.formatCompetencia(monthIndex, formData.competencia.ano)
 
   // Calculate totals
   const totalSessionsInMonth = sessionDates.reduce((total, session) => total + session.sessions, 0)

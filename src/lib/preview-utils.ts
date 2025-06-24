@@ -200,6 +200,48 @@ export class PreviewUtils {
   }
 
   /**
+   * Generates session dates with sessions per day for a specific period
+   * @param dataInicio Start date
+   * @param dataFim End date
+   * @param weekDaySessions Array of weekday sessions configuration
+   * @returns Array of session dates with sessions count
+   */
+  static generateSessionDatesWithSessionsForPeriod(
+    dataInicio: Date,
+    dataFim: Date,
+    weekDaySessions: WeekdaySession[]
+  ): SessionDate[] {
+    const sessionDates: SessionDate[] = []
+    
+    // Create a map for quick lookup of sessions by day
+    const sessionsMap = new Map<WeekDays, number>()
+    weekDaySessions.forEach(({ day, sessions }) => {
+      sessionsMap.set(day, sessions)
+    })
+    
+    // Iterate through each day in the period
+    const currentDate = new Date(dataInicio)
+    while (currentDate <= dataFim) {
+      const jsDay = currentDate.getDay()
+      const weekDay = this.getWeekDayFromJSDay(jsDay)
+      
+      // Check if this weekday is selected
+      if (sessionsMap.has(weekDay)) {
+        const sessions = sessionsMap.get(weekDay)!
+        sessionDates.push({
+          date: new Date(currentDate),
+          sessions: sessions
+        })
+      }
+      
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1)
+    }
+    
+    return sessionDates
+  }
+
+  /**
    * Formats weekdays range with sessions for display
    * @param weekDaySessions Array of weekday sessions configuration
    * @returns Formatted string like "SEG(4), TER(4), QUA(4)"
