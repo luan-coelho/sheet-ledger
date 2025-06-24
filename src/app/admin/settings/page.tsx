@@ -7,9 +7,10 @@ import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useSystemConfig, useThemeConfig } from '@/lib/theme-config'
-import { Bell, Eye, Palette } from 'lucide-react'
+import { Bell, Eye, Palette, Settings } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useEffect, useState } from 'react'
+import { GoogleDriveConfig } from '@/components/google-drive-config'
 
 export default function SettingsPage() {
   const { config: themeConfig, updateConfig: updateThemeConfig } = useThemeConfig()
@@ -42,6 +43,12 @@ export default function SettingsPage() {
             className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative w-full justify-start after:absolute after:inset-y-0 after:start-0 after:-ms-1 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none">
             <Palette className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true" />
             Aparência
+          </TabsTrigger>
+          <TabsTrigger
+            value="integrations"
+            className="hover:bg-accent hover:text-foreground data-[state=active]:after:bg-primary data-[state=active]:hover:bg-accent relative w-full justify-start after:absolute after:inset-y-0 after:start-0 after:-ms-1 after:w-0.5 data-[state=active]:bg-transparent data-[state=active]:shadow-none">
+            <Settings className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true" />
+            Integrações
           </TabsTrigger>
           <TabsTrigger
             value="notifications"
@@ -144,6 +151,21 @@ export default function SettingsPage() {
                     </RadioGroup>
                   </div>
                 </div>
+              </div>
+            </div>
+          </TabsContent>
+
+          {/* Aba de Integrações */}
+          <TabsContent value="integrations">
+            <div className="px-4 py-3">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-lg font-medium">Integrações</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Configure integrações com serviços externos.
+                  </p>
+                </div>
+                <GoogleDriveConfig />
               </div>
             </div>
           </TabsContent>

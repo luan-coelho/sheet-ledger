@@ -16,6 +16,7 @@
     "db:seed:create-admin-user": "tsx scripts/create-admin-user.ts"
   },
   "dependencies": {
+    "@google-cloud/local-auth": "^3.0.1",
     "@hookform/resolvers": "^5.1.1",
     "@radix-ui/react-alert-dialog": "^1.1.14",
     "@radix-ui/react-avatar": "^1.1.10",
@@ -39,6 +40,8 @@
     "drizzle-orm": "^0.44.2",
     "drizzle-zod": "^0.8.2",
     "exceljs": "^4.4.0",
+    "google-auth-library": "^10.1.0",
+    "googleapis": "^150.0.1",
     "lucide-react": "^0.508.0",
     "next": "15.3.2",
     "next-auth": "5.0.0-beta.28",

@@ -43,6 +43,10 @@ export const routes = {
         create: '/admin/health-plans/novo',
         edit: (id: string) => `/admin/health-plans/${validateId(id)}/editar`,
       },
+      googleDrive: {
+        index: '/admin/google-drive',
+        folder: (folderId: string) => `/admin/google-drive/pasta/${validateId(folderId)}`,
+      },
     },
 
     // Autenticação
@@ -72,6 +76,16 @@ export const routes = {
     users: {
       base: '/api/users',
       byId: (id: string) => `/api/users/${validateId(id)}`,
+    },
+    googleDrive: {
+      base: '/api/google-drive',
+      files: '/api/google-drive/files',
+      folders: '/api/google-drive/folders',
+      search: '/api/google-drive/search',
+      upload: '/api/google-drive/upload',
+      download: (fileId: string) => `/api/google-drive/download/${validateId(fileId)}`,
+      share: '/api/google-drive/share',
+      permissions: (fileId: string) => `/api/google-drive/permissions/${validateId(fileId)}`,
     },
   },
 }

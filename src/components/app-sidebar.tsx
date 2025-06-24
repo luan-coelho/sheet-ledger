@@ -1,7 +1,7 @@
 'use client'
 
 import { UserAvatar } from '@/components/auth/user-avatar'
-import { BarChart3, CreditCard, FileText, Settings, Shield, Users } from 'lucide-react'
+import { BarChart3, CreditCard, FileText, Settings, Shield, Users, Cloud } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
 import {
@@ -45,6 +45,11 @@ const items = [
     title: 'Planos de Saúde',
     url: routes.frontend.admin.healthPlans.index,
     icon: CreditCard,
+  },
+  {
+    title: 'Google Drive',
+    url: routes.frontend.admin.googleDrive.index,
+    icon: Cloud,
   },
 ]
 
