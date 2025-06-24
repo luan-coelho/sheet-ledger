@@ -1,13 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, XCircle, Loader2, Copy } from 'lucide-react'
 import { useConfigureGoogleDrive } from '@/hooks/use-google-drive-config'
 
-export default function GoogleDriveCallbackPage() {
+function GoogleDriveCallbackContent() {
   const searchParams = useSearchParams()
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [authCode, setAuthCode] = useState<string>('')
@@ -138,5 +138,31 @@ export default function GoogleDriveCallbackPage() {
         </CardContent>
       </Card>
     </div>
+  )
+}
+
+export default function GoogleDriveCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center p-4 bg-gray-50">
+          <Card className="w-full max-w-md">
+            <CardHeader className="text-center">
+              <CardTitle className="flex items-center justify-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Google Drive - Autorização
+              </CardTitle>
+              <CardDescription>Carregando...</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="text-center">
+                <p className="text-sm text-muted-foreground">Processando autorização...</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }>
+      <GoogleDriveCallbackContent />
+    </Suspense>
   )
 }

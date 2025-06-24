@@ -6,23 +6,24 @@ import { useForm } from 'react-hook-form'
 
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form'
-import { Input } from '@/components/ui/input'
-import { WeekDays, spreadsheetFormSchema, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
-import { WeekdaySessionSelector } from './weekday-session-selector'
 import { DatePicker } from '@/components/ui/date-picker'
-import { ProfessionalSelector } from './professional-selector'
-import { PatientSelector } from './patient-selector'
-import { GuardianSelector } from './guardian-selector'
-import { HealthPlanSelector } from './health-plan-selector'
-import { SpreadsheetPreview } from './spreadsheet-preview'
-import { Eye, FileText, Cloud } from 'lucide-react'
-import { useProfessionals } from '@/hooks/use-professionals'
-import { usePatients } from '@/hooks/use-patients'
-import { useGuardians } from '@/hooks/use-guardians'
-import { useHealthPlans } from '@/hooks/use-health-plans'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Input } from '@/components/ui/input'
 import { useGenerateDriveSpreadsheet } from '@/hooks/use-generate-drive-spreadsheet'
 import { useGoogleDriveConfigStatus } from '@/hooks/use-google-drive-config'
+import { getNowInBrazil, getFirstDayOfMonth, getLastDayOfMonth, formatDateISO } from '@/lib/date-utils'
+import { useGuardians } from '@/hooks/use-guardians'
+import { useHealthPlans } from '@/hooks/use-health-plans'
+import { usePatients } from '@/hooks/use-patients'
+import { useProfessionals } from '@/hooks/use-professionals'
+import { WeekDays, spreadsheetFormSchema, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
+import { Cloud, Eye, FileText } from 'lucide-react'
+import { GuardianSelector } from './guardian-selector'
+import { HealthPlanSelector } from './health-plan-selector'
+import { PatientSelector } from './patient-selector'
+import { ProfessionalSelector } from './professional-selector'
+import { SpreadsheetPreview } from './spreadsheet-preview'
+import { WeekdaySessionSelector } from './weekday-session-selector'
 
 export function SpreadsheetForm() {
   const [isGenerating, setIsGenerating] = useState(false)
@@ -39,10 +40,18 @@ export function SpreadsheetForm() {
   const { data: driveStatus } = useGoogleDriveConfigStatus()
   const generateDriveSpreadsheet = useGenerateDriveSpreadsheet()
 
+  // Helper para converter Date para string local (YYYY-MM-DD)
+  const formatDateToLocal = (date: Date) => {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+
   // Obter datas atuais para valores padrão
-  const hoje = new Date()
-  const primeiroDiaMes = new Date(hoje.getFullYear(), hoje.getMonth(), 1)
-  const ultimoDiaMes = new Date(hoje.getFullYear(), hoje.getMonth() + 1, 0)
+  const today = getNowInBrazil()
+  const firstDayOfMonth = getFirstDayOfMonth(today.getFullYear(), today.getMonth())
+  const lastDayOfMonth = getLastDayOfMonth(today.getFullYear(), today.getMonth())
 
   const form = useForm<SpreadsheetFormValues>({
     resolver: zodResolver(spreadsheetFormSchema),
@@ -54,8 +63,8 @@ export function SpreadsheetForm() {
       guardianId: '',
       healthPlanId: '',
       weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }],
-      dataInicio: primeiroDiaMes.toISOString().split('T')[0],
-      dataFim: ultimoDiaMes.toISOString().split('T')[0],
+      dataInicio: formatDateISO(firstDayOfMonth),
+      dataFim: formatDateISO(lastDayOfMonth),
     },
   })
 
@@ -63,19 +72,28 @@ export function SpreadsheetForm() {
   const formValues = form.watch()
 
   // Watch data início para validação da data fim
-  const dataInicio = form.watch('dataInicio')
+  const startDate = form.watch('dataInicio')
+  const endDate = form.watch('dataFim')
+
+  // Verificar se o período abrange múltiplos meses
+  const isMultipleMonths = (() => {
+    if (!startDate || !endDate) return false
+    const startDateObj = new Date(startDate + 'T00:00:00')
+    const endDateObj = new Date(endDate + 'T00:00:00')
+    return startDateObj.getMonth() !== endDateObj.getMonth() || startDateObj.getFullYear() !== endDateObj.getFullYear()
+  })()
 
   // Helper para obter o dia seguinte à data de início
-  const getMinDataFim = (dataInicio: string | undefined) => {
-    if (!dataInicio) return undefined
-    const date = new Date(dataInicio)
+  const getMinEndDate = (startDate: string | undefined) => {
+    if (!startDate) return undefined
+    const date = new Date(startDate + 'T00:00:00')
     date.setDate(date.getDate() + 1)
     return date
   }
 
   async function handlePreview() {
-    const isValid = await form.trigger()
-    if (isValid) {
+    const isFormValid = await form.trigger()
+    if (isFormValid) {
       setShowPreview(true)
       setError(null)
     }
@@ -106,15 +124,24 @@ export function SpreadsheetForm() {
       setIsGenerating(true)
       setError(null)
 
-      const apiData = transformFormDataToApi(values)
+      const transformedData = transformFormDataToApi(values)
+
+      // Verificar se o período abrange mais de um mês
+      const startDateObj = new Date(values.dataInicio + 'T00:00:00')
+      const endDateObj = new Date(values.dataFim + 'T00:00:00')
+      const isMultiMonth =
+        startDateObj.getMonth() !== endDateObj.getMonth() || startDateObj.getFullYear() !== endDateObj.getFullYear()
+
+      // Usar a API apropriada baseada no período
+      const apiEndpoint = isMultiMonth ? '/api/generate-spreadsheet-multi' : '/api/generate-spreadsheet'
 
       // Make API request
-      const response = await fetch('/api/generate-spreadsheet', {
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(apiData),
+        body: JSON.stringify(transformedData),
       })
 
       if (!response.ok) {
@@ -126,14 +153,18 @@ export function SpreadsheetForm() {
       const blob = await response.blob()
 
       // Create download link and click it
-      const url = window.URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'attendance-sheet.xlsx'
-      document.body.appendChild(a)
-      a.click()
-      window.URL.revokeObjectURL(url)
-      document.body.removeChild(a)
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const downloadLink = document.createElement('a')
+      downloadLink.href = downloadUrl
+
+      // Definir nome do arquivo baseado no tipo
+      const fileName = isMultiMonth ? 'attendance-sheets.zip' : 'attendance-sheet.xlsx'
+      downloadLink.download = fileName
+
+      document.body.appendChild(downloadLink)
+      downloadLink.click()
+      window.URL.revokeObjectURL(downloadUrl)
+      document.body.removeChild(downloadLink)
     } catch (error) {
       setError(error instanceof Error ? error.message : 'Erro desconhecido')
     } finally {
@@ -142,8 +173,8 @@ export function SpreadsheetForm() {
   }
 
   async function handleGenerateDrive(values: SpreadsheetFormValues) {
-    const apiData = transformFormDataToApi(values)
-    generateDriveSpreadsheet.mutate(apiData)
+    const transformedData = transformFormDataToApi(values)
+    generateDriveSpreadsheet.mutate(transformedData)
   }
 
   return (
@@ -270,15 +301,15 @@ export function SpreadsheetForm() {
                     <FormLabel>Data de início</FormLabel>
                     <FormControl>
                       <DatePicker
-                        date={field.value ? new Date(field.value) : undefined}
+                        date={field.value ? new Date(field.value + 'T00:00:00') : undefined}
                         onSelect={date => {
-                          const newDataInicio = date?.toISOString().split('T')[0] || ''
-                          field.onChange(newDataInicio)
+                          const newStartDate = date ? formatDateToLocal(date) : ''
+                          field.onChange(newStartDate)
 
                           // Se a data fim já estiver selecionada e for anterior ou igual à nova data início,
                           // limpa a data fim para forçar o usuário a selecionar uma nova
-                          const currentDataFim = form.getValues('dataFim')
-                          if (currentDataFim && date && new Date(currentDataFim) <= date) {
+                          const currentEndDate = form.getValues('dataFim')
+                          if (currentEndDate && date && new Date(currentEndDate + 'T00:00:00') <= date) {
                             form.setValue('dataFim', '')
                           }
                         }}
@@ -299,11 +330,11 @@ export function SpreadsheetForm() {
                     <FormLabel>Data fim</FormLabel>
                     <FormControl>
                       <DatePicker
-                        date={field.value ? new Date(field.value) : undefined}
-                        onSelect={date => field.onChange(date?.toISOString().split('T')[0] || '')}
+                        date={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                        onSelect={date => field.onChange(date ? formatDateToLocal(date) : '')}
                         placeholder="Selecione a data fim"
                         className="w-full"
-                        fromDate={getMinDataFim(dataInicio)}
+                        fromDate={getMinEndDate(startDate)}
                       />
                     </FormControl>
                     <FormMessage />
@@ -331,6 +362,15 @@ export function SpreadsheetForm() {
 
             {error && <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600">{error}</div>}
 
+            {isMultipleMonths && (
+              <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-700">
+                <p className="text-sm">
+                  <strong>Múltiplos meses detectados:</strong> Será gerado um arquivo ZIP contendo uma planilha completa
+                  para cada mês no período selecionado (cada planilha conterá todas as datas do respectivo mês).
+                </p>
+              </div>
+            )}
+
             <div className="flex gap-3">
               <Button
                 type="button"
@@ -344,7 +384,13 @@ export function SpreadsheetForm() {
 
               <Button type="submit" className="flex-1" disabled={isGenerating || generateDriveSpreadsheet.isPending}>
                 <FileText className="mr-2 h-4 w-4" />
-                {isGenerating ? 'Gerando planilha...' : 'Gerar planilha'}
+                {isGenerating
+                  ? isMultipleMonths
+                    ? 'Gerando planilhas...'
+                    : 'Gerando planilha...'
+                  : isMultipleMonths
+                    ? 'Gerar planilhas (ZIP)'
+                    : 'Gerar planilha'}
               </Button>
 
               <Button
@@ -352,8 +398,8 @@ export function SpreadsheetForm() {
                 variant="secondary"
                 className="flex-1"
                 onClick={async () => {
-                  const isValid = await form.trigger()
-                  if (isValid) {
+                  const isFormValid = await form.trigger()
+                  if (isFormValid) {
                     handleGenerateDrive(form.getValues())
                   }
                 }}

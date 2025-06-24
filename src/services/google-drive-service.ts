@@ -185,9 +185,9 @@ export class GoogleDriveService {
         mimeType: file.mimeType || '',
         size: file.size || undefined,
         modifiedTime: file.modifiedTime || '',
-        parents: file.parents,
-        webViewLink: file.webViewLink,
-        webContentLink: file.webContentLink,
+        parents: file.parents || undefined,
+        webViewLink: file.webViewLink || undefined,
+        webContentLink: file.webContentLink || undefined,
         thumbnailLink: file.thumbnailLink,
         iconLink: file.iconLink,
       }))
@@ -217,11 +217,11 @@ export class GoogleDriveService {
         id: file.id || '',
         name: file.name || '',
         mimeType: file.mimeType || '',
-        size: file.size,
+        size: file.size || undefined,
         modifiedTime: file.modifiedTime || '',
-        parents: file.parents,
-        webViewLink: file.webViewLink,
-        webContentLink: file.webContentLink,
+        parents: file.parents || undefined,
+        webViewLink: file.webViewLink || undefined,
+        webContentLink: file.webContentLink || undefined,
         thumbnailLink: file.thumbnailLink,
         iconLink: file.iconLink,
       }))
@@ -314,9 +314,9 @@ export class GoogleDriveService {
         mimeType: file.mimeType || '',
         size: file.size || undefined,
         modifiedTime: file.modifiedTime || '',
-        parents: file.parents,
-        webViewLink: file.webViewLink,
-        webContentLink: file.webContentLink,
+        parents: file.parents || undefined,
+        webViewLink: file.webViewLink || undefined,
+        webContentLink: file.webContentLink || undefined,
       }
     } catch (error) {
       console.error('Erro ao criar arquivo:', error)
@@ -354,7 +354,7 @@ export class GoogleDriveService {
       return {
         id: file.id || '',
         name: file.name || '',
-        parents: file.parents,
+        parents: file.parents || undefined,
         modifiedTime: file.modifiedTime || '',
       }
     } catch (error) {
@@ -397,9 +397,9 @@ export class GoogleDriveService {
         mimeType: file.mimeType || '',
         size: file.size || undefined,
         modifiedTime: file.modifiedTime || '',
-        parents: file.parents,
-        webViewLink: file.webViewLink,
-        webContentLink: file.webContentLink,
+        parents: file.parents || undefined,
+        webViewLink: file.webViewLink || undefined,
+        webContentLink: file.webContentLink || undefined,
       }
     } catch (error) {
       console.error('Erro ao atualizar arquivo:', error)
@@ -423,7 +423,7 @@ export class GoogleDriveService {
         mimeType: file.mimeType || '',
         size: file.size || undefined,
         modifiedTime: file.modifiedTime || '',
-        parents: file.parents,
+        parents: file.parents || undefined,
       }
     } catch (error) {
       console.error('Erro ao renomear arquivo:', error)
@@ -453,7 +453,7 @@ export class GoogleDriveService {
         mimeType: file.mimeType || '',
         size: file.size || undefined,
         modifiedTime: file.modifiedTime || '',
-        parents: file.parents,
+        parents: file.parents || undefined,
       }
     } catch (error) {
       console.error('Erro ao mover arquivo:', error)
@@ -480,7 +480,7 @@ export class GoogleDriveService {
         mimeType: file.mimeType || '',
         size: file.size || undefined,
         modifiedTime: file.modifiedTime || '',
-        parents: file.parents,
+        parents: file.parents || undefined,
       }
     } catch (error) {
       console.error('Erro ao copiar arquivo:', error)

@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs'
 import path from 'path'
 import { WeekDays, meses, WeekdaySession } from './spreadsheet-schema'
+import { createBrazilianDate, formatDateBrazilian, getMonthNameInPortuguese } from './date-utils'
 
 type SessionRecord = {
   date: Date
@@ -62,13 +63,13 @@ export class ExcelService {
 
     if (data.dataInicio && data.dataFim) {
       // Usar o novo formato com data de início e fim
-      const dataInicio = new Date(data.dataInicio)
-      const dataFim = new Date(data.dataFim)
+      const dataInicio = createBrazilianDate(data.dataInicio)
+      const dataFim = createBrazilianDate(data.dataFim)
 
       // Formato da competência para o período
-      const mesInicio = dataInicio.toLocaleDateString('pt-BR', { month: 'long' })
+      const mesInicio = getMonthNameInPortuguese(dataInicio.getMonth())
       const anoInicio = dataInicio.getFullYear()
-      const mesFim = dataFim.toLocaleDateString('pt-BR', { month: 'long' })
+      const mesFim = getMonthNameInPortuguese(dataFim.getMonth())
       const anoFim = dataFim.getFullYear()
 
       if (anoInicio === anoFim && mesInicio === mesFim) {
@@ -96,9 +97,9 @@ export class ExcelService {
 
     // Initial row for records
     const startRow = 12
-    const endRow = 32 // Última linha a ser usada (inclusive)
+    const endRow = 42 // Expandido para comportar até 31 dias (linha 12 a 42)
 
-    // Limpa apenas as linhas necessárias (da linha 12 até a 32 inclusive)
+    // Limpa as linhas de dados (da linha 12 até a 42 inclusive)
     for (let row = startRow; row <= endRow; row++) {
       worksheet.getCell(`A${row}`).value = null
       worksheet.getCell(`B${row}`).value = null
@@ -107,9 +108,10 @@ export class ExcelService {
       worksheet.getCell(`E${row}`).value = null
     }
 
-    // Fill the records only for the current month
+    // Fill the records
+    let totalSessions = 0
     records.forEach((record, index) => {
-      // Garante que não excedemos a linha 32
+      // Garante que não excedemos a linha 42
       if (startRow + index <= endRow) {
         const row = startRow + index
 
@@ -117,10 +119,11 @@ export class ExcelService {
         worksheet.getCell(`A${row}`).value = index + 1
 
         // Date in DD/MM/YYYY format
-        worksheet.getCell(`B${row}`).value = this.formatDate(record.date)
+        worksheet.getCell(`B${row}`).value = formatDateBrazilian(record.date)
 
         // Sessions per day (dynamic value)
         worksheet.getCell(`C${row}`).value = record.sessions
+        totalSessions += record.sessions
 
         // Fixed value "Presencial"
         worksheet.getCell(`D${row}`).value = 'Presencial'
@@ -128,6 +131,9 @@ export class ExcelService {
         // Column E is left blank (signature)
       }
     })
+
+    // Preenche o total de sessões na célula C44
+    worksheet.getCell('C44').value = totalSessions
 
     // Generate the spreadsheet buffer
     return await workbook.xlsx.writeBuffer()
