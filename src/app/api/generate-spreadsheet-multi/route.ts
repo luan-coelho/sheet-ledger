@@ -1,7 +1,6 @@
 import { ExcelService } from '@/lib/excel-service'
-import { NextRequest, NextResponse } from 'next/server'
 import JSZip from 'jszip'
-import { createBrazilianDate, formatDateISO, getFirstDayOfMonth, getLastDayOfMonth } from '@/lib/date-utils'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
