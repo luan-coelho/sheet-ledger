@@ -4,11 +4,22 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { useCheckExistingDriveFiles } from '@/hooks/use-check-existing-drive-files'
 import { useGenerateDriveSpreadsheet } from '@/hooks/use-generate-drive-spreadsheet'
 import { useGoogleDriveConfigStatus } from '@/hooks/use-google-drive-config'
 import { getNowInBrazil, getFirstDayOfMonth, getLastDayOfMonth, formatDateISO } from '@/lib/date-utils'
@@ -29,6 +40,11 @@ export function SpreadsheetForm() {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
+  const [showOverwriteDialog, setShowOverwriteDialog] = useState(false)
+  const [existingFilesInfo, setExistingFilesInfo] = useState<{
+    existingFiles: Array<{ name: string; modifiedTime: string }>
+    formData: SpreadsheetFormValues
+  } | null>(null)
 
   // Hooks para buscar dados das entidades
   const { data: professionals } = useProfessionals()
@@ -39,6 +55,7 @@ export function SpreadsheetForm() {
   // Hooks para Google Drive
   const { data: driveStatus } = useGoogleDriveConfigStatus()
   const generateDriveSpreadsheet = useGenerateDriveSpreadsheet()
+  const checkExistingFiles = useCheckExistingDriveFiles()
 
   // Helper para converter Date para string local (YYYY-MM-DD)
   const formatDateToLocal = (date: Date) => {
@@ -172,9 +189,57 @@ export function SpreadsheetForm() {
     }
   }
 
-  async function handleGenerateDrive(values: SpreadsheetFormValues) {
+  async function handleGenerateDriveWithCheck(values: SpreadsheetFormValues) {
     const transformedData = transformFormDataToApi(values)
+    const patient = patients?.find(p => p.id === values.patientId)
+
+    if (!patient) {
+      setError('Paciente não encontrado')
+      return
+    }
+
+    // Verificar se existem arquivos no Google Drive
+    try {
+      const result = await checkExistingFiles.mutateAsync({
+        patientName: patient.name,
+        dataInicio: values.dataInicio,
+        dataFim: values.dataFim,
+      })
+
+      if (result.hasExistingFiles) {
+        // Mostrar dialog de confirmação
+        setExistingFilesInfo({
+          existingFiles: result.existingFiles.map(file => ({
+            name: file.name,
+            modifiedTime: file.modifiedTime,
+          })),
+          formData: values,
+        })
+        setShowOverwriteDialog(true)
+      } else {
+        // Gerar diretamente se não há arquivos existentes
+        generateDriveSpreadsheet.mutate(transformedData)
+      }
+    } catch (error) {
+      console.error('Erro ao verificar arquivos existentes:', error)
+      // Se houver erro na verificação, continuar com geração normal
+      generateDriveSpreadsheet.mutate(transformedData)
+    }
+  }
+
+  async function handleConfirmOverwrite() {
+    if (!existingFilesInfo) return
+
+    const transformedData = transformFormDataToApi(existingFilesInfo.formData)
     generateDriveSpreadsheet.mutate(transformedData)
+
+    setShowOverwriteDialog(false)
+    setExistingFilesInfo(null)
+  }
+
+  function handleCancelOverwrite() {
+    setShowOverwriteDialog(false)
+    setExistingFilesInfo(null)
   }
 
   return (
@@ -400,17 +465,26 @@ export function SpreadsheetForm() {
                 onClick={async () => {
                   const isFormValid = await form.trigger()
                   if (isFormValid) {
-                    handleGenerateDrive(form.getValues())
+                    handleGenerateDriveWithCheck(form.getValues())
                   }
                 }}
-                disabled={isGenerating || generateDriveSpreadsheet.isPending || !driveStatus?.isConfigured}
+                disabled={
+                  isGenerating ||
+                  generateDriveSpreadsheet.isPending ||
+                  checkExistingFiles.isPending ||
+                  !driveStatus?.isConfigured
+                }
                 title={
                   !driveStatus?.isConfigured
                     ? 'Configure o Google Drive primeiro nas configurações'
                     : 'Gerar planilhas organizadas por mês no Google Drive'
                 }>
                 <Cloud className="mr-2 h-4 w-4" />
-                {generateDriveSpreadsheet.isPending ? 'Gerando no Drive...' : 'Gerar no Google Drive'}
+                {checkExistingFiles.isPending
+                  ? 'Verificando arquivos...'
+                  : generateDriveSpreadsheet.isPending
+                    ? 'Gerando no Drive...'
+                    : 'Gerar no Google Drive'}
               </Button>
             </div>
           </form>
@@ -421,6 +495,43 @@ export function SpreadsheetForm() {
             <SpreadsheetPreview formData={formValues} onClose={() => setShowPreview(false)} />
           </div>
         )}
+
+        <AlertDialog open={showOverwriteDialog} onOpenChange={setShowOverwriteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Arquivos Existentes Encontrados</AlertDialogTitle>
+              <AlertDialogDescription>
+                Foram encontrados arquivos existentes no Google Drive para este paciente no período selecionado:
+                <div className="mt-3 space-y-2">
+                  {existingFilesInfo?.existingFiles.map((file, index) => (
+                    <div key={index} className="bg-yellow-50 border border-yellow-200 rounded p-2">
+                      <div className="font-medium text-sm">{file.name}</div>
+                      <div className="text-xs text-gray-600">
+                        Última modificação:{' '}
+                        {new Date(file.modifiedTime).toLocaleString('pt-BR', {
+                          day: '2-digit',
+                          month: '2-digit',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <p className="mt-3 text-sm">
+                  Deseja continuar e sobrescrever os arquivos existentes? Esta ação não pode ser desfeita.
+                </p>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={handleCancelOverwrite}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction onClick={handleConfirmOverwrite} className="bg-orange-600 hover:bg-orange-700">
+                Sim, Sobrescrever
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   )

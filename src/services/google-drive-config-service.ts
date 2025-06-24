@@ -59,11 +59,6 @@ export class GoogleDriveConfigService {
         throw new Error('Credenciais OAuth não configuradas. Verifique AUTH_GOOGLE_ID e AUTH_GOOGLE_SECRET.')
       }
 
-      console.log('🔧 Tentando trocar código por tokens...')
-      console.log('Client ID:', this.oauthConfig.clientId.substring(0, 20) + '...')
-      console.log('Redirect URI:', this.oauthConfig.redirectUri)
-      console.log('Código recebido:', code.substring(0, 20) + '...')
-
       const oauth2Client = new google.auth.OAuth2(
         this.oauthConfig.clientId,
         this.oauthConfig.clientSecret,
@@ -71,11 +66,6 @@ export class GoogleDriveConfigService {
       )
 
       const { tokens } = await oauth2Client.getToken(code)
-
-      console.log('✅ Tokens recebidos do Google')
-      console.log('Access Token:', tokens.access_token ? 'Presente' : 'Ausente')
-      console.log('Refresh Token:', tokens.refresh_token ? 'Presente' : 'Ausente')
-      console.log('Expiry Date:', tokens.expiry_date)
 
       if (!tokens.access_token || !tokens.refresh_token) {
         throw new Error('Tokens não recebidos do Google')
@@ -85,8 +75,6 @@ export class GoogleDriveConfigService {
       oauth2Client.setCredentials(tokens)
       const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client })
       const userInfo = await oauth2.userinfo.get()
-
-      console.log('✅ Informações do usuário obtidas:', userInfo.data.email)
 
       const expiresAt = new Date()
       if (tokens.expiry_date) {

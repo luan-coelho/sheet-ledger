@@ -55,12 +55,11 @@ export function SignInForm() {
   return (
     <div className="space-y-6">
       {/* Primary Login Button */}
-      <Button 
-        onClick={handleSignIn} 
-        disabled={isLoading} 
+      <Button
+        onClick={handleSignIn}
+        disabled={isLoading}
         className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg border-0"
-        size="lg"
-      >
+        size="lg">
         {isLoading ? (
           <>
             <Loader2 className="mr-3 h-5 w-5 animate-spin" />
@@ -97,7 +96,8 @@ export function SignInForm() {
         {callbackUrl !== routes.frontend.admin.sheets && (
           <div className="px-4 py-3 rounded-lg bg-blue-50 border border-blue-200">
             <p className="text-sm text-blue-700 text-center">
-              <span className="font-medium">💡 Redirecionamento:</span> Você será direcionado para a página solicitada após o login
+              <span className="font-medium">💡 Redirecionamento:</span> Você será direcionado para a página solicitada
+              após o login
             </p>
           </div>
         )}

@@ -1,5 +1,5 @@
 import { SignInForm } from '@/components/auth/sign-in-form'
-import { FileText, Sparkles, Users, TrendingUp } from 'lucide-react'
+import { FileText, Sparkles } from 'lucide-react'
 import { Suspense } from 'react'
 
 export default function SignInPage() {

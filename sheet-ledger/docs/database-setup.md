@@ -39,7 +39,6 @@ export default {
 Os schemas do banco de dados são organizados em arquivos separados na pasta `src/db/schemas/`. Cada entidade tem seu próprio arquivo de schema:
 
 1. **Estrutura de Arquivos:**
-
    - `src/db/schemas/user-schema.ts`
    - `src/db/schemas/patient-schema.ts`
    - `src/db/schemas/health-plan-schema.ts`

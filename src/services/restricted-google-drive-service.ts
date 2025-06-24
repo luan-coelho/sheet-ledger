@@ -1,5 +1,6 @@
 import { google } from 'googleapis'
 import { Readable } from 'stream'
+import { APP_ROOT_FOLDER_NAME } from './google-drive-service'
 
 // Tipos para arquivos e pastas do Google Drive
 export interface RestrictedDriveFile {
@@ -34,9 +35,6 @@ export interface CreateRestrictedFolderOptions {
   parentFolderId?: string // Será sempre dentro da pasta da aplicação
 }
 
-// Nome da pasta raiz da aplicação
-export const APP_ROOT_FOLDER_NAME = 'planilhas-app'
-
 // Serviço restrito do Google Drive
 export class RestrictedGoogleDriveService {
   private drive: ReturnType<typeof google.drive>
@@ -55,9 +53,7 @@ export class RestrictedGoogleDriveService {
     }
 
     try {
-      console.log(`🔍 Procurando pasta "${APP_ROOT_FOLDER_NAME}"...`)
-
-      // Procurar pela pasta "planilhas-app" na raiz do Drive
+      // Procurar pela pasta "APP_ROOT_FOLDER_NAME" na raiz do Drive
       const response = await this.drive.files.list({
         q: `name='${APP_ROOT_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents`,
         fields: 'files(id,name)',
@@ -67,10 +63,8 @@ export class RestrictedGoogleDriveService {
       if (response.data.files && response.data.files.length > 0) {
         // Pasta encontrada
         this.appRootFolderId = response.data.files[0].id!
-        console.log(`✅ Pasta "${APP_ROOT_FOLDER_NAME}" encontrada: ${this.appRootFolderId}`)
       } else {
         // Criar a pasta
-        console.log(`📁 Criando pasta "${APP_ROOT_FOLDER_NAME}"...`)
         const createResponse = await this.drive.files.create({
           requestBody: {
             name: APP_ROOT_FOLDER_NAME,
@@ -81,7 +75,6 @@ export class RestrictedGoogleDriveService {
         })
 
         this.appRootFolderId = createResponse.data.id!
-        console.log(`✅ Pasta "${APP_ROOT_FOLDER_NAME}" criada: ${this.appRootFolderId}`)
       }
 
       return this.appRootFolderId
@@ -132,8 +125,6 @@ export class RestrictedGoogleDriveService {
         throw new Error('Acesso negado: pasta fora do escopo da aplicação')
       }
 
-      console.log(`📂 Listando arquivos na pasta: ${targetFolderId}`)
-
       const response = await this.drive.files.list({
         q: `'${targetFolderId}' in parents and trashed=false`,
         pageSize: 100,
@@ -154,7 +145,6 @@ export class RestrictedGoogleDriveService {
         iconLink: file.iconLink || undefined,
       }))
 
-      console.log(`✅ Encontrados ${files.length} arquivos/pastas`)
       return files
     } catch (error) {
       console.error('Erro ao listar arquivos:', error)
@@ -166,8 +156,6 @@ export class RestrictedGoogleDriveService {
   async searchFiles(searchTerm: string): Promise<RestrictedDriveFile[]> {
     try {
       const appRootId = await this.ensureAppRootFolder()
-
-      console.log(`🔍 Buscando arquivos com termo: "${searchTerm}"`)
 
       // Buscar recursivamente dentro da pasta da aplicação
       const response = await this.drive.files.list({
@@ -197,7 +185,6 @@ export class RestrictedGoogleDriveService {
         }
       }
 
-      console.log(`✅ Encontrados ${validFiles.length} arquivos válidos`)
       return validFiles
     } catch (error) {
       console.error('Erro ao buscar arquivos:', error)
@@ -217,8 +204,6 @@ export class RestrictedGoogleDriveService {
       if (options.parentFolderId && !(await this.validateFolderAccess(options.parentFolderId))) {
         throw new Error('Acesso negado: pasta pai fora do escopo da aplicação')
       }
-
-      console.log(`📄 Criando arquivo "${options.name}" na pasta: ${parentFolderId}`)
 
       const fileMetadata = {
         name: options.name,
@@ -251,7 +236,6 @@ export class RestrictedGoogleDriveService {
         webContentLink: file.webContentLink || undefined,
       }
 
-      console.log(`✅ Arquivo criado: ${createdFile.id}`)
       return createdFile
     } catch (error) {
       console.error('Erro ao criar arquivo:', error)
@@ -272,8 +256,6 @@ export class RestrictedGoogleDriveService {
         throw new Error('Acesso negado: pasta pai fora do escopo da aplicação')
       }
 
-      console.log(`📁 Criando pasta "${options.name}" na pasta: ${parentFolderId}`)
-
       const response = await this.drive.files.create({
         requestBody: {
           name: options.name,
@@ -291,7 +273,6 @@ export class RestrictedGoogleDriveService {
         modifiedTime: folder.modifiedTime || '',
       }
 
-      console.log(`✅ Pasta criada: ${createdFolder.id}`)
       return createdFolder
     } catch (error) {
       console.error('Erro ao criar pasta:', error)

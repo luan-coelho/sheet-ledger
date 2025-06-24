@@ -55,7 +55,7 @@ export interface UpdateFileOptions {
 }
 
 // Nome da pasta raiz da aplicação
-export const APP_ROOT_FOLDER_NAME = 'planilhas-app'
+export const APP_ROOT_FOLDER_NAME = process.env.NODE_ENV === 'development' ? 'planilhas-app-dev' : 'planilhas-app'
 
 // Configuração do cliente Google Drive
 export class GoogleDriveService {
@@ -75,21 +75,16 @@ export class GoogleDriveService {
     }
 
     try {
-      console.log(`🔍 Procurando pasta "${APP_ROOT_FOLDER_NAME}" no Google Drive...`)
-
-      // Procurar pela pasta "planilhas-app" na raiz do Drive
+      // Procurar pela pasta "APP_ROOT_FOLDER_NAME" na raiz do Drive
       const response = await this.drive.files.list({
         q: `name='${APP_ROOT_FOLDER_NAME}' and mimeType='application/vnd.google-apps.folder' and trashed=false and 'root' in parents`,
         fields: 'files(id,name)',
         pageSize: 1,
       })
 
-      console.log('🔍 Resposta da busca:', response.data)
-
       if (response.data.files && response.data.files.length > 0) {
         // Pasta encontrada
         this.appRootFolderId = response.data.files[0].id!
-        console.log(`✅ Pasta "${APP_ROOT_FOLDER_NAME}" encontrada: ${this.appRootFolderId}`)
       } else {
         // Criar a pasta
         const createResponse = await this.drive.files.create({
@@ -102,7 +97,6 @@ export class GoogleDriveService {
         })
 
         this.appRootFolderId = createResponse.data.id!
-        console.log(`✅ Pasta "${APP_ROOT_FOLDER_NAME}" criada: ${this.appRootFolderId}`)
       }
 
       return this.appRootFolderId

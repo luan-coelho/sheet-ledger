@@ -3,118 +3,35 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Separator } from '@/components/ui/separator'
+import { APP_ROOT_FOLDER_NAME } from '@/services/google-drive-service'
+import { useRestrictedGoogleDrive, type RestrictedDriveFile } from '@/hooks/use-restricted-google-drive'
 import { Calendar, Download, ExternalLink, FileText, Folder, HardDrive, RefreshCw } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { toast } from 'sonner'
 
-interface RestrictedDriveFile {
-  id: string
-  name: string
-  mimeType: string
-  size?: string
-  modifiedTime: string
-  parents?: string[]
-  webViewLink?: string
-  webContentLink?: string
-  thumbnailLink?: string
-  iconLink?: string
-}
-
-interface RestrictedDriveFolder {
-  id: string
-  name: string
-  parents?: string[]
-  modifiedTime: string
-}
-
-interface DriveData {
-  appRootFolder: RestrictedDriveFolder
-  files: RestrictedDriveFile[]
-  currentFolderId: string
-}
-
 export function RestrictedGoogleDriveManager() {
-  const [data, setData] = useState<DriveData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [creating, setCreating] = useState(false)
-  const [showCreateForm, setShowCreateForm] = useState(false)
-  const [createType] = useState<'file' | 'folder'>('folder')
-  const [createName, setCreateName] = useState('')
+  const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(undefined)
 
-  // Carregar arquivos da pasta da aplicação
-  async function loadFiles(folderId?: string) {
-    setLoading(true)
-    try {
-      const url = folderId ? `/api/google-drive/restricted?folderId=${folderId}` : '/api/google-drive/restricted'
-
-      const response = await fetch(url)
-      const result = await response.json()
-
-      if (result.success) {
-        setData(result.data)
-        toast.success('Arquivos carregados com sucesso')
-      } else {
-        toast.error(result.message || 'Erro ao carregar arquivos')
-      }
-    } catch (error) {
-      console.error('Erro ao carregar arquivos:', error)
-      toast.error('Erro ao carregar arquivos')
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  // Criar arquivo ou pasta
-  async function handleCreate() {
-    if (!createName.trim()) {
-      toast.error('Nome é obrigatório')
-      return
-    }
-
-    setCreating(true)
-    try {
-      const response = await fetch('/api/google-drive/restricted', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          type: createType,
-          name: createName,
-          parentFolderId: data?.currentFolderId !== data?.appRootFolder.id ? data?.currentFolderId : undefined,
-        }),
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        toast.success(`${createType === 'folder' ? 'Pasta' : 'Arquivo'} criado com sucesso`)
-        setCreateName('')
-        setShowCreateForm(false)
-        // Recarregar arquivos
-        await loadFiles(data?.currentFolderId)
-      } else {
-        toast.error(result.message || 'Erro ao criar item')
-      }
-    } catch (error) {
-      console.error('Erro ao criar item:', error)
-      toast.error('Erro ao criar item')
-    } finally {
-      setCreating(false)
-    }
-  }
+  const { data, isLoading, error, refetch, isRefetching } = useRestrictedGoogleDrive(currentFolderId)
 
   // Navegar para uma pasta
   function navigateToFolder(folderId: string) {
-    loadFiles(folderId)
+    setCurrentFolderId(folderId)
   }
 
   // Voltar para pasta raiz
   function navigateToRoot() {
-    loadFiles()
+    setCurrentFolderId(undefined)
+  }
+
+  // Atualizar dados
+  async function handleRefresh() {
+    try {
+      await refetch()
+      toast.success('Arquivos atualizados com sucesso')
+    } catch {
+      toast.error('Erro ao atualizar arquivos')
+    }
   }
 
   // Formatar data
@@ -140,10 +57,12 @@ export function RestrictedGoogleDriveManager() {
     return <FileText className="h-5 w-5 text-gray-600" />
   }
 
-  // Carregar arquivos na inicialização
-  useEffect(() => {
-    loadFiles()
-  }, [])
+  // Exibir erro se houver
+  if (error) {
+    toast.error(error.message || 'Erro ao carregar arquivos')
+  }
+
+  const loading = isLoading || isRefetching
 
   return (
     <Card>
@@ -152,17 +71,19 @@ export function RestrictedGoogleDriveManager() {
           <HardDrive className="h-5 w-5" />
           Google Drive - Pasta da Aplicação
         </CardTitle>
-        <CardDescription>Gerenciar arquivos na pasta &quot;planilhas-app&quot; do Google Drive</CardDescription>
+        <CardDescription>
+          Gerenciar arquivos na pasta &quot;{APP_ROOT_FOLDER_NAME}&quot; do Google Drive
+        </CardDescription>
       </CardHeader>
 
       <CardContent className="space-y-6">
         {/* Informações da pasta raiz */}
         {data?.appRootFolder && (
-          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg">
+          <div className="flex items-center justify-between p-3 rounded-lg">
             <div className="flex items-center gap-2">
               <Folder className="h-5 w-5 text-blue-600" />
               <div>
-                <p className="font-medium">{data.appRootFolder.name}</p>
+                <p className="font-medium dark:text-white">{data.appRootFolder.name}</p>
                 <p className="text-sm text-muted-foreground">Pasta raiz da aplicação</p>
               </div>
             </div>
@@ -173,70 +94,19 @@ export function RestrictedGoogleDriveManager() {
         {/* Controles */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <Button onClick={() => loadFiles(data?.currentFolderId)} disabled={loading} variant="outline" size="sm">
+            <Button onClick={handleRefresh} disabled={loading} variant="outline" size="sm">
               <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
               Atualizar
             </Button>
 
-            {data?.currentFolderId !== data?.appRootFolder.id && (
+            {currentFolderId && data?.appRootFolder && currentFolderId !== data.appRootFolder.id && (
               <Button onClick={navigateToRoot} variant="outline" size="sm">
                 <Folder className="h-4 w-4" />
                 Pasta Raiz
               </Button>
             )}
           </div>
-
-          {/* <div className="flex items-center gap-2">
-            <Button
-              onClick={() => {
-                setCreateType('folder')
-                setShowCreateForm(true)
-              }}
-              size="sm">
-              <FolderPlus className="h-4 w-4" />
-              Nova Pasta
-            </Button>
-
-            <Button
-              onClick={() => {
-                setCreateType('file')
-                setShowCreateForm(true)
-              }}
-              variant="outline"
-              size="sm">
-              <Plus className="h-4 w-4" />
-              Novo Arquivo
-            </Button>
-          </div> */}
         </div>
-
-        {/* Formulário de criação */}
-        {showCreateForm && (
-          <div className="p-4 border rounded-lg space-y-4">
-            <div className="flex items-center justify-between">
-              <h4 className="font-medium">Criar {createType === 'folder' ? 'Pasta' : 'Arquivo'}</h4>
-              <Button variant="ghost" size="sm" onClick={() => setShowCreateForm(false)}>
-                Cancelar
-              </Button>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="create-name">Nome</Label>
-              <Input
-                id="create-name"
-                value={createName}
-                onChange={e => setCreateName(e.target.value)}
-                placeholder={`Nome da ${createType === 'folder' ? 'pasta' : 'arquivo'}`}
-              />
-            </div>
-
-            <Button onClick={handleCreate} disabled={creating || !createName.trim()} className="w-full">
-              {creating ? 'Criando...' : `Criar ${createType === 'folder' ? 'Pasta' : 'Arquivo'}`}
-            </Button>
-          </div>
-        )}
-
-        <Separator />
 
         {/* Lista de arquivos */}
         {loading ? (
@@ -244,17 +114,29 @@ export function RestrictedGoogleDriveManager() {
             <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" />
             <p>Carregando arquivos...</p>
           </div>
-        ) : data?.files.length === 0 ? (
+        ) : error ? (
+          <div className="text-center py-8 text-red-600">
+            <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <p>Erro ao carregar arquivos</p>
+            <p className="text-sm text-muted-foreground mt-1">{error.message}</p>
+            <Button onClick={handleRefresh} variant="outline" size="sm" className="mt-4">
+              <RefreshCw className="h-4 w-4" />
+              Tentar novamente
+            </Button>
+          </div>
+        ) : !data?.files || data.files.length === 0 ? (
           <div className="text-center py-8 text-muted-foreground">
             <Folder className="h-12 w-12 mx-auto mb-2 opacity-50" />
             <p>Nenhum arquivo encontrado</p>
           </div>
         ) : (
           <div className="space-y-2">
-            <h4 className="font-medium">Arquivos ({data?.files.length || 0})</h4>
+            <h4 className="font-medium">Arquivos ({data.files.length})</h4>
 
-            {data?.files.map(file => (
-              <div key={file.id} className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50">
+            {data.files.map((file: RestrictedDriveFile) => (
+              <div
+                key={file.id}
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
                 <div className="flex items-center gap-3">
                   {getFileIcon(file.mimeType)}
                   <div className="flex-1">

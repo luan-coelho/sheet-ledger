@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { ExcelService } from '@/lib/excel-service'
 import { auth as getAuth } from '@/lib/auth'
+import { ExcelService } from '@/lib/excel-service'
 import { googleDriveConfigService } from '@/services/google-drive-config-service'
+import { APP_ROOT_FOLDER_NAME } from '@/services/google-drive-service'
 import { google } from 'googleapis'
+import { NextRequest, NextResponse } from 'next/server'
 import { Readable } from 'stream'
 
 // Função para obter os meses entre duas datas
@@ -78,8 +79,6 @@ export async function POST(request: NextRequest) {
     auth.setCredentials({ access_token: accessToken })
     const drive = google.drive({ version: 'v3', auth })
 
-    // Garantir pasta raiz da aplicação
-    const APP_ROOT_FOLDER_NAME = 'planilhas-app'
     let appRootId: string
 
     // Buscar pasta raiz
