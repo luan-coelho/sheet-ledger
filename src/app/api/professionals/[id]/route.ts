@@ -149,4 +149,4 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       { status: 500 },
     )
   }
-} 
+}

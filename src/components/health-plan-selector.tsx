@@ -1,7 +1,7 @@
 'use client'
 
-import { useHealthPlans } from '@/hooks/use-health-plans'
-import { Combobox, ComboboxOption } from '@/components/ui/combobox'
+import { useHealthPlans, useCreateHealthPlan } from '@/hooks/use-health-plans'
+import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface HealthPlanSelectorProps {
@@ -20,6 +20,7 @@ export function HealthPlanSelector({
   disabled = false,
 }: HealthPlanSelectorProps) {
   const { data: healthPlans, isLoading, error } = useHealthPlans()
+  const createHealthPlan = useCreateHealthPlan()
 
   if (isLoading) {
     return <Skeleton className="h-9 w-full" />
@@ -29,22 +30,30 @@ export function HealthPlanSelector({
     return <div className="text-sm text-destructive">Erro ao carregar planos de saúde</div>
   }
 
-  const options: ComboboxOption[] =
+  const options: CreatableComboboxOption[] =
     healthPlans?.map(healthPlan => ({
       value: healthPlan.id,
       label: healthPlan.name,
     })) || []
 
+  const handleCreate = async (name: string) => {
+    const result = await createHealthPlan.mutateAsync({ name })
+    return result.id
+  }
+
   return (
-    <Combobox
+    <CreatableCombobox
       options={options}
       value={value}
       onValueChange={onValueChange}
+      onCreate={handleCreate}
       placeholder={placeholder}
       searchPlaceholder="Buscar plano de saúde..."
       emptyText="Nenhum plano de saúde encontrado."
+      createText="Criar plano de saúde"
       className={className}
       disabled={disabled}
+      isCreating={createHealthPlan.isPending}
     />
   )
 }

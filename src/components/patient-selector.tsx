@@ -1,7 +1,7 @@
 'use client'
 
-import { usePatients } from '@/hooks/use-patients'
-import { Combobox, ComboboxOption } from '@/components/ui/combobox'
+import { usePatients, useCreatePatient } from '@/hooks/use-patients'
+import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface PatientSelectorProps {
@@ -20,6 +20,7 @@ export function PatientSelector({
   disabled = false,
 }: PatientSelectorProps) {
   const { data: patients, isLoading, error } = usePatients()
+  const createPatient = useCreatePatient()
 
   if (isLoading) {
     return <Skeleton className="h-9 w-full" />
@@ -29,22 +30,30 @@ export function PatientSelector({
     return <div className="text-sm text-destructive">Erro ao carregar pacientes</div>
   }
 
-  const options: ComboboxOption[] =
+  const options: CreatableComboboxOption[] =
     patients?.map(patient => ({
       value: patient.id,
       label: patient.name,
     })) || []
 
+  const handleCreate = async (name: string) => {
+    const result = await createPatient.mutateAsync({ name })
+    return result.id
+  }
+
   return (
-    <Combobox
+    <CreatableCombobox
       options={options}
       value={value}
       onValueChange={onValueChange}
+      onCreate={handleCreate}
       placeholder={placeholder}
       searchPlaceholder="Buscar paciente..."
       emptyText="Nenhum paciente encontrado."
+      createText="Criar paciente"
       className={className}
       disabled={disabled}
+      isCreating={createPatient.isPending}
     />
   )
 }

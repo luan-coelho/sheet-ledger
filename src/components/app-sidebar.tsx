@@ -68,7 +68,7 @@ export function AppSidebar() {
   const { data: session } = useSession()
   const { theme } = useTheme()
   const { config } = useThemeConfig()
-  
+
   // Sidebar sempre usa o tema dark
   return (
     <div className="dark">

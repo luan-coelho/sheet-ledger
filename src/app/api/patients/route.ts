@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/app/db'
 import { patientsTable, insertPatientSchema } from '@/app/db/schemas/patient-schema'
-import { desc } from 'drizzle-orm'
+import { asc } from 'drizzle-orm'
 
 // GET /api/patients - List all patients
 export async function GET() {
   try {
-    const allPatients = await db.select().from(patientsTable).orderBy(desc(patientsTable.createdAt))
+    const allPatients = await db.select().from(patientsTable).orderBy(asc(patientsTable.name))
 
     return NextResponse.json({
       success: true,
@@ -77,4 +77,4 @@ export async function POST(request: NextRequest) {
       { status: 500 },
     )
   }
-} 
+}

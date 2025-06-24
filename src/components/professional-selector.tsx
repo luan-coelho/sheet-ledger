@@ -1,7 +1,7 @@
 'use client'
 
-import { useProfessionals } from '@/hooks/use-professionals'
-import { Combobox, ComboboxOption } from '@/components/ui/combobox'
+import { useProfessionals, useCreateProfessional } from '@/hooks/use-professionals'
+import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
 
 interface ProfessionalSelectorProps {
@@ -20,6 +20,7 @@ export function ProfessionalSelector({
   disabled = false,
 }: ProfessionalSelectorProps) {
   const { data: professionals, isLoading, error } = useProfessionals()
+  const createProfessional = useCreateProfessional()
 
   if (isLoading) {
     return <Skeleton className="h-9 w-full" />
@@ -29,22 +30,30 @@ export function ProfessionalSelector({
     return <div className="text-sm text-destructive">Erro ao carregar profissionais</div>
   }
 
-  const options: ComboboxOption[] =
+  const options: CreatableComboboxOption[] =
     professionals?.map(professional => ({
       value: professional.id,
       label: professional.name,
     })) || []
 
+  const handleCreate = async (name: string) => {
+    const result = await createProfessional.mutateAsync({ name })
+    return result.id
+  }
+
   return (
-    <Combobox
+    <CreatableCombobox
       options={options}
       value={value}
       onValueChange={onValueChange}
+      onCreate={handleCreate}
       placeholder={placeholder}
       searchPlaceholder="Buscar profissional..."
       emptyText="Nenhum profissional encontrado."
+      createText="Criar profissional"
       className={className}
       disabled={disabled}
+      isCreating={createProfessional.isPending}
     />
   )
 }

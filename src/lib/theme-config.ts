@@ -37,7 +37,7 @@ interface SystemConfigStore {
 
 export const useSystemConfig = create<SystemConfigStore>()(
   persist(
-    (set) => ({
+    set => ({
       config: {
         theme: {
           reducedMotion: false,
@@ -89,17 +89,17 @@ export const useSystemConfig = create<SystemConfigStore>()(
     }),
     {
       name: 'sheet-ledger-system-config',
-    }
-  )
+    },
+  ),
 )
 
 // Para compatibilidade com código existente
 export const useThemeConfig = () => {
   const { config, updateThemeConfig } = useSystemConfig()
-  return { 
-    config: config.theme, 
-    updateConfig: updateThemeConfig 
+  return {
+    config: config.theme,
+    updateConfig: updateThemeConfig,
   }
 }
 
-export const getThemeConfig = () => useSystemConfig.getState().config.theme 
+export const getThemeConfig = () => useSystemConfig.getState().config.theme
