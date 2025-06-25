@@ -217,8 +217,8 @@ export function SpreadsheetForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Profissional e Nº conselho */}
-            <div className="grid gap-4 md:grid-cols-2">
+            {/* Todos os campos em um grid único para preenchimento 100% das linhas */}
+            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               <FormField
                 control={form.control}
                 name="professionalId"
@@ -250,10 +250,7 @@ export function SpreadsheetForm() {
                   </FormItem>
                 )}
               />
-            </div>
 
-            {/* Sessão autorizada e Paciente */}
-            <div className="grid gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="authorizedSession"
@@ -285,10 +282,7 @@ export function SpreadsheetForm() {
                   </FormItem>
                 )}
               />
-            </div>
 
-            {/* Responsável e Plano de saúde */}
-            <div className="grid gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="guardianId"
@@ -324,10 +318,7 @@ export function SpreadsheetForm() {
                   </FormItem>
                 )}
               />
-            </div>
 
-            {/* Datas */}
-            <div className="grid gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
                 name="dataInicio"
@@ -386,12 +377,16 @@ export function SpreadsheetForm() {
               name="weekDaySessions"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="flex justify-center">Dias da semana e sessões</FormLabel>
-                  <FormDescription className="text-center">
+                  <FormLabel className="text-center block sm:flex sm:justify-center">
+                    Dias da semana e sessões
+                  </FormLabel>
+                  <FormDescription className="text-center text-xs sm:text-sm">
                     Selecione os dias de atendimento e configure a quantidade de sessões por dia
                   </FormDescription>
                   <FormControl>
-                    <WeekdaySessionSelector value={field.value} onChange={field.onChange} />
+                    <div className="w-full max-w-4xl mx-auto">
+                      <WeekdaySessionSelector value={field.value} onChange={field.onChange} />
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -416,36 +411,42 @@ export function SpreadsheetForm() {
             )}
 
             {/* Botões de ação */}
-            <div className="flex gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Button
                 type="button"
                 variant="outline"
-                className="flex-1"
+                className="w-full sm:flex-1"
                 onClick={handlePreview}
                 disabled={isLoading || isCheckingFiles}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eye className="mr-2 h-4 w-4" />}
-                Visualizar Preview
+                <span className="hidden sm:inline">Visualizar Preview</span>
+                <span className="sm:hidden">Preview</span>
               </Button>
 
-              <Button type="submit" className="flex-1" disabled={isLoading || isCheckingFiles}>
+              <Button type="submit" className="w-full sm:flex-1" disabled={isLoading || isCheckingFiles}>
                 {generateSpreadsheet.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <FileText className="mr-2 h-4 w-4" />
                 )}
-                {generateSpreadsheet.isPending
-                  ? isMultipleMonths
-                    ? 'Gerando planilhas...'
-                    : 'Gerando planilha...'
-                  : isMultipleMonths
-                    ? 'Gerar planilhas (ZIP)'
-                    : 'Gerar planilha'}
+                <span className="hidden sm:inline">
+                  {generateSpreadsheet.isPending
+                    ? isMultipleMonths
+                      ? 'Gerando planilhas...'
+                      : 'Gerando planilha...'
+                    : isMultipleMonths
+                      ? 'Gerar planilhas (ZIP)'
+                      : 'Gerar planilha'}
+                </span>
+                <span className="sm:hidden">
+                  {generateSpreadsheet.isPending ? 'Gerando...' : isMultipleMonths ? 'Gerar ZIP' : 'Gerar'}
+                </span>
               </Button>
 
               <Button
                 type="button"
                 variant="secondary"
-                className="flex-1"
+                className="w-full sm:flex-1"
                 onClick={async () => {
                   const isFormValid = await form.trigger()
                   if (isFormValid) {
@@ -463,11 +464,16 @@ export function SpreadsheetForm() {
                 ) : (
                   <Cloud className="mr-2 h-4 w-4" />
                 )}
-                {isCheckingFiles
-                  ? 'Verificando arquivos...'
-                  : generateDriveSpreadsheet.isPending
-                    ? 'Gerando no Drive...'
-                    : 'Gerar no Google Drive'}
+                <span className="hidden sm:inline">
+                  {isCheckingFiles
+                    ? 'Verificando arquivos...'
+                    : generateDriveSpreadsheet.isPending
+                      ? 'Gerando no Drive...'
+                      : 'Gerar no Google Drive'}
+                </span>
+                <span className="sm:hidden">
+                  {isCheckingFiles ? 'Verificando...' : generateDriveSpreadsheet.isPending ? 'Drive...' : 'Drive'}
+                </span>
               </Button>
             </div>
           </form>

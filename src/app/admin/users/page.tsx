@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { Plus, MoreHorizontal, Pencil, UserCheck, UserX, Loader2, Search, X } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
@@ -41,17 +42,25 @@ export default function UsuariosPage() {
   const [searchFilter, setSearchFilter] = useState('')
   const itemsPerPage = 10
 
+  const { data: session } = useSession()
   const { data: users, isLoading, error } = useUsers()
   const deleteMutation = useDeleteUser()
   const toggleStatusMutation = useToggleUserStatus()
 
-  // Filtrar usuários por nome ou email
+  // Filtrar usuários por nome ou email, excluindo o usuário logado
   const filteredUsers =
-    users?.filter(
-      user =>
+    users?.filter(user => {
+      // Excluir o usuário logado
+      if (session?.user?.email && user.email === session.user.email) {
+        return false
+      }
+
+      // Aplicar filtro de pesquisa
+      return (
         user.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchFilter.toLowerCase()),
-    ) || []
+        user.email.toLowerCase().includes(searchFilter.toLowerCase())
+      )
+    }) || []
 
   // Calcular paginação dos usuários filtrados
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
@@ -224,22 +233,27 @@ export default function UsuariosPage() {
             )}
           </CardDescription>
 
-          {/* Barra de pesquisa */}
-          <div className="flex items-center space-x-2">
-            <div className="relative flex-1">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+          {/* Campo de filtro */}
+          <div className="flex items-center space-x-2 mb-6">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
               <Input
-                placeholder="Buscar por nome ou e-mail..."
+                placeholder="Buscar por nome..."
                 value={searchFilter}
                 onChange={e => handleSearchChange(e.target.value)}
-                className="pl-8"
+                className="pl-10 pr-10"
               />
+              {searchFilter && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearSearch}
+                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted">
+                  <X className="h-3 w-3" />
+                  <span className="sr-only">Limpar busca</span>
+                </Button>
+              )}
             </div>
-            {searchFilter && (
-              <Button variant="outline" size="icon" onClick={clearSearch}>
-                <X className="h-4 w-4" />
-              </Button>
-            )}
           </div>
         </CardHeader>
 
