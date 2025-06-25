@@ -1,7 +1,7 @@
 import { QueryProvider } from '@/components/query-provider'
 import { SessionProvider } from '@/components/session-provider'
-import { ThemeProvider } from '@/components/theme-provider'
 import { ThemeConfigProvider } from '@/components/theme-config-provider'
+import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
@@ -18,7 +18,7 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Sheet Ledger - Gestão de Planilhas',
+  title: 'Sistema - Gestão de Planilhas',
   description: 'Sistema de gestão de planilhas para profissionais de saúde',
 }
 
@@ -40,7 +40,13 @@ export default function RootLayout({
             <SessionProvider>
               <QueryProvider>
                 {children}
-                <Toaster richColors expand />
+                <Toaster
+                  expand
+                  richColors
+                  toastOptions={{
+                    duration: 5000,
+                  }}
+                />
               </QueryProvider>
             </SessionProvider>
           </ThemeConfigProvider>

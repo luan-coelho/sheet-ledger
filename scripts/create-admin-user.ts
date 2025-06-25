@@ -9,15 +9,51 @@ import { eq } from 'drizzle-orm'
  * Script para criar um usuário administrador
  *
  * Uso:
- * npx tsx scripts/create-admin-user.ts
+ * npx tsx scripts/create-admin-user.ts <email> [nome]
  *
- * Ou com nome customizado:
- * npx tsx scripts/create-admin-user.ts "Nome do Admin"
+ * Exemplos:
+ * npx tsx scripts/create-admin-user.ts admin@example.com
+ * npx tsx scripts/create-admin-user.ts admin@example.com "João Silva"
+ *
+ * Se não informar argumentos, usará valores padrão
  */
 
+function parseArguments() {
+  const args = process.argv.slice(2)
+
+  // Valores padrão
+  let email = 'lumyth.br@gmail.com'
+  let name = 'Administrador'
+
+  // Se argumentos foram fornecidos
+  if (args.length > 0) {
+    email = args[0]
+
+    if (args.length > 1) {
+      name = args[1]
+    } else {
+      // Se só o email foi fornecido, usar parte antes do @ como nome
+      name = email.split('@')[0].charAt(0).toUpperCase() + email.split('@')[0].slice(1)
+    }
+  }
+
+  // Validação básica do email
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    console.error('❌ Email inválido fornecido:', email)
+    console.log('💡 Use o formato: email@dominio.com')
+    process.exit(1)
+  }
+
+  return { email, name }
+}
+
 async function createAdminUser() {
-  const email = 'lumyth.br@gmail.com'
-  const name = 'Administrador'
+  const { email, name } = parseArguments()
+
+  console.log('📧 Email:', email)
+  console.log('👤 Nome:', name)
+  console.log()
 
   try {
     console.log('🔍 Verificando se o usuário já existe...')

@@ -1,6 +1,6 @@
 # Configuração do Google Drive
 
-Este guia descreve como configurar a integração com Google Drive para o Sheet Ledger.
+Este guia descreve como configurar a integração com Google Drive para o Sistema.
 
 ## Nova Arquitetura
 
@@ -38,7 +38,7 @@ A partir da versão atual, o Google Drive é configurado uma única vez para tod
 2. Clique em **+ CRIAR CREDENCIAIS** > **ID do cliente OAuth**
 3. Selecione **Aplicativo da Web**
 4. Configure:
-   - **Nome**: Sheet Ledger - Google Drive
+   - **Nome**: Sistema - Google Drive
    - **URIs de origem autorizados**:
      - `http://localhost:3000` (desenvolvimento)
      - `https://seudominio.com` (produção)

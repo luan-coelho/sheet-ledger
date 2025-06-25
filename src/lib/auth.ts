@@ -13,12 +13,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       profile(profile) {
         return { ...profile }
       },
+      authorization: {
+        params: {
+          prompt: 'select_account',
+        },
+      },
     }),
   ],
   secret: process.env.AUTH_SECRET,
   session: {
     strategy: 'jwt',
-    maxAge: 30 * 24 * 60 * 60, // 30 dias
+    maxAge: 1 * 24 * 60 * 60, // 1 dia
   },
   pages: {
     signIn: routes.frontend.auth.login,
