@@ -40,7 +40,6 @@ export async function POST(request: NextRequest) {
     let accessToken: string
     try {
       accessToken = await googleDriveConfigService.getValidAccessToken()
-      console.log('✅ Token válido obtido para Google Drive')
     } catch (error) {
       console.error('❌ Erro ao obter token do Google Drive:', error)
       return NextResponse.json(
@@ -90,7 +89,6 @@ export async function POST(request: NextRequest) {
 
     if (rootSearch.data.files && rootSearch.data.files.length > 0) {
       appRootId = rootSearch.data.files[0].id!
-      console.log(`✅ Pasta "${APP_ROOT_FOLDER_NAME}" encontrada: ${appRootId}`)
     } else {
       // Criar pasta raiz
       const rootFolder = await drive.files.create({
@@ -102,7 +100,6 @@ export async function POST(request: NextRequest) {
         fields: 'id,name',
       })
       appRootId = rootFolder.data.id!
-      console.log(`✅ Pasta "${APP_ROOT_FOLDER_NAME}" criada: ${appRootId}`)
     }
 
     // Buscar ou criar pasta do paciente
@@ -118,7 +115,6 @@ export async function POST(request: NextRequest) {
 
     if (patientSearch.data.files && patientSearch.data.files.length > 0) {
       patientFolderId = patientSearch.data.files[0].id!
-      console.log(`✅ Pasta do paciente "${patientFolderName}" encontrada: ${patientFolderId}`)
     } else {
       // Criar nova pasta para o paciente
       const patientFolder = await drive.files.create({
@@ -130,7 +126,6 @@ export async function POST(request: NextRequest) {
         fields: 'id,name',
       })
       patientFolderId = patientFolder.data.id!
-      console.log(`✅ Pasta do paciente "${patientFolderName}" criada: ${patientFolderId}`)
     }
 
     // Obter meses do período
@@ -179,7 +174,6 @@ export async function POST(request: NextRequest) {
           },
         })
         fileId = updatedFile.data.id!
-        console.log(`✅ Arquivo "${fileName}" atualizado: ${fileId}`)
       } else {
         // Criar stream novamente para criar arquivo (streams são consumidos)
         const createStream = new Readable()
@@ -200,7 +194,6 @@ export async function POST(request: NextRequest) {
           fields: 'id,name',
         })
         fileId = newFile.data.id!
-        console.log(`✅ Arquivo "${fileName}" criado: ${fileId}`)
       }
 
       createdFiles.push({

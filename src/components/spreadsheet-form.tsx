@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
+import { Cloud, Eye, FileText, Loader2 } from 'lucide-react'
 
 import {
   AlertDialog,
@@ -16,11 +17,11 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { DatePicker } from '@/components/ui/date-picker'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { useCheckExistingDriveFiles } from '@/hooks/use-check-existing-drive-files'
-import { useGenerateDriveSpreadsheet } from '@/hooks/use-generate-drive-spreadsheet'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { DatePicker } from '@/components/ui/date-picker'
+
 import { useGoogleDriveConfigStatus } from '@/hooks/use-google-drive-config'
 import { getNowInBrazil, getFirstDayOfMonth, getLastDayOfMonth, formatDateISO } from '@/lib/date-utils'
 import { useGuardians } from '@/hooks/use-guardians'
@@ -28,23 +29,33 @@ import { useHealthPlans } from '@/hooks/use-health-plans'
 import { usePatients } from '@/hooks/use-patients'
 import { useProfessionals } from '@/hooks/use-professionals'
 import { WeekDays, spreadsheetFormSchema, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
-import { Cloud, Eye, FileText } from 'lucide-react'
+
+import {
+  useGenerateSpreadsheet,
+  useGenerateDriveSpreadsheet,
+  useCheckExistingFiles,
+  type TransformedFormData,
+  type CheckExistingFilesResponse,
+} from '@/hooks/use-spreadsheet-mutations'
+
 import { GuardianSelector } from './guardian-selector'
 import { HealthPlanSelector } from './health-plan-selector'
 import { PatientSelector } from './patient-selector'
 import { ProfessionalSelector } from './professional-selector'
 import { SpreadsheetPreview } from './spreadsheet-preview'
 import { WeekdaySessionSelector } from './weekday-session-selector'
+import { Separator } from './ui/separator'
+import { toast } from 'sonner'
+
+interface ExistingFilesInfo {
+  existingFiles: CheckExistingFilesResponse['existingFiles']
+  formData: SpreadsheetFormValues
+}
 
 export function SpreadsheetForm() {
-  const [isGenerating, setIsGenerating] = useState(false)
-  const [error, setError] = useState<string | null>(null)
   const [showPreview, setShowPreview] = useState(false)
   const [showOverwriteDialog, setShowOverwriteDialog] = useState(false)
-  const [existingFilesInfo, setExistingFilesInfo] = useState<{
-    existingFiles: Array<{ name: string; modifiedTime: string }>
-    formData: SpreadsheetFormValues
-  } | null>(null)
+  const [existingFilesInfo, setExistingFilesInfo] = useState<ExistingFilesInfo | null>(null)
 
   // Hooks para buscar dados das entidades
   const { data: professionals } = useProfessionals()
@@ -54,8 +65,11 @@ export function SpreadsheetForm() {
 
   // Hooks para Google Drive
   const { data: driveStatus } = useGoogleDriveConfigStatus()
+
+  // Mutations
+  const generateSpreadsheet = useGenerateSpreadsheet()
   const generateDriveSpreadsheet = useGenerateDriveSpreadsheet()
-  const checkExistingFiles = useCheckExistingDriveFiles()
+  const checkExistingFiles = useCheckExistingFiles()
 
   // Helper para converter Date para string local (YYYY-MM-DD)
   const formatDateToLocal = (date: Date) => {
@@ -85,10 +99,8 @@ export function SpreadsheetForm() {
     },
   })
 
-  // Watch form values for real-time preview updates
+  // Watch form values para preview e validação
   const formValues = form.watch()
-
-  // Watch data início para validação da data fim
   const startDate = form.watch('dataInicio')
   const endDate = form.watch('dataFim')
 
@@ -108,16 +120,8 @@ export function SpreadsheetForm() {
     return date
   }
 
-  async function handlePreview() {
-    const isFormValid = await form.trigger()
-    if (isFormValid) {
-      setShowPreview(true)
-      setError(null)
-    }
-  }
-
   // Função para transformar dados do formulário para API
-  function transformFormDataToApi(values: SpreadsheetFormValues) {
+  function transformFormDataToApi(values: SpreadsheetFormValues): TransformedFormData {
     const professional = professionals?.find(p => p.id === values.professionalId)
     const patient = patients?.find(p => p.id === values.patientId)
     const guardian = guardians?.find(g => g.id === values.guardianId)
@@ -136,65 +140,23 @@ export function SpreadsheetForm() {
     }
   }
 
-  async function handleSubmit(values: SpreadsheetFormValues) {
-    try {
-      setIsGenerating(true)
-      setError(null)
-
-      const transformedData = transformFormDataToApi(values)
-
-      // Verificar se o período abrange mais de um mês
-      const startDateObj = new Date(values.dataInicio + 'T00:00:00')
-      const endDateObj = new Date(values.dataFim + 'T00:00:00')
-      const isMultiMonth =
-        startDateObj.getMonth() !== endDateObj.getMonth() || startDateObj.getFullYear() !== endDateObj.getFullYear()
-
-      // Usar a API apropriada baseada no período
-      const apiEndpoint = isMultiMonth ? '/api/generate-spreadsheet-multi' : '/api/generate-spreadsheet'
-
-      // Make API request
-      const response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(transformedData),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Error generating spreadsheet')
-      }
-
-      // Get blob from response
-      const blob = await response.blob()
-
-      // Create download link and click it
-      const downloadUrl = window.URL.createObjectURL(blob)
-      const downloadLink = document.createElement('a')
-      downloadLink.href = downloadUrl
-
-      // Definir nome do arquivo baseado no tipo
-      const fileName = isMultiMonth ? 'attendance-sheets.zip' : 'attendance-sheet.xlsx'
-      downloadLink.download = fileName
-
-      document.body.appendChild(downloadLink)
-      downloadLink.click()
-      window.URL.revokeObjectURL(downloadUrl)
-      document.body.removeChild(downloadLink)
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Erro desconhecido')
-    } finally {
-      setIsGenerating(false)
+  async function handlePreview() {
+    const isFormValid = await form.trigger()
+    if (isFormValid) {
+      setShowPreview(true)
     }
   }
 
-  async function handleGenerateDriveWithCheck(values: SpreadsheetFormValues) {
+  function handleSubmit(values: SpreadsheetFormValues) {
     const transformedData = transformFormDataToApi(values)
+    generateSpreadsheet.mutate(transformedData)
+  }
+
+  async function handleGenerateDriveWithCheck(values: SpreadsheetFormValues) {
     const patient = patients?.find(p => p.id === values.patientId)
 
     if (!patient) {
-      setError('Paciente não encontrado')
+      form.setError('patientId', { message: 'Paciente não encontrado' })
       return
     }
 
@@ -209,25 +171,24 @@ export function SpreadsheetForm() {
       if (result.hasExistingFiles) {
         // Mostrar dialog de confirmação
         setExistingFilesInfo({
-          existingFiles: result.existingFiles.map(file => ({
-            name: file.name,
-            modifiedTime: file.modifiedTime,
-          })),
+          existingFiles: result.existingFiles,
           formData: values,
         })
         setShowOverwriteDialog(true)
       } else {
         // Gerar diretamente se não há arquivos existentes
+        const transformedData = transformFormDataToApi(values)
         generateDriveSpreadsheet.mutate(transformedData)
       }
     } catch (error) {
-      console.error('Erro ao verificar arquivos existentes:', error)
       // Se houver erro na verificação, continuar com geração normal
+      const transformedData = transformFormDataToApi(values)
       generateDriveSpreadsheet.mutate(transformedData)
+      toast.error(error instanceof Error ? error.message : 'Erro ao verificar arquivos existentes')
     }
   }
 
-  async function handleConfirmOverwrite() {
+  function handleConfirmOverwrite() {
     if (!existingFilesInfo) return
 
     const transformedData = transformFormDataToApi(existingFilesInfo.formData)
@@ -242,6 +203,11 @@ export function SpreadsheetForm() {
     setExistingFilesInfo(null)
   }
 
+  // Estados de loading e error
+  const isLoading = generateSpreadsheet.isPending || generateDriveSpreadsheet.isPending
+  const isCheckingFiles = checkExistingFiles.isPending
+  const error = generateSpreadsheet.error || generateDriveSpreadsheet.error || checkExistingFiles.error
+
   return (
     <Card className="w-full">
       <CardHeader>
@@ -251,6 +217,7 @@ export function SpreadsheetForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+            {/* Profissional e Nº conselho */}
             <div className="grid gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -285,6 +252,7 @@ export function SpreadsheetForm() {
               />
             </div>
 
+            {/* Sessão autorizada e Paciente */}
             <div className="grid gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -319,6 +287,7 @@ export function SpreadsheetForm() {
               />
             </div>
 
+            {/* Responsável e Plano de saúde */}
             <div className="grid gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -357,6 +326,7 @@ export function SpreadsheetForm() {
               />
             </div>
 
+            {/* Datas */}
             <div className="grid gap-4 md:grid-cols-2">
               <FormField
                 control={form.control}
@@ -366,6 +336,7 @@ export function SpreadsheetForm() {
                     <FormLabel>Data de início</FormLabel>
                     <FormControl>
                       <DatePicker
+                        className="w-full"
                         date={field.value ? new Date(field.value + 'T00:00:00') : undefined}
                         onSelect={date => {
                           const newStartDate = date ? formatDateToLocal(date) : ''
@@ -379,7 +350,6 @@ export function SpreadsheetForm() {
                           }
                         }}
                         placeholder="Selecione a data de início"
-                        className="w-full"
                       />
                     </FormControl>
                     <FormMessage />
@@ -395,10 +365,10 @@ export function SpreadsheetForm() {
                     <FormLabel>Data fim</FormLabel>
                     <FormControl>
                       <DatePicker
+                        className="w-full"
                         date={field.value ? new Date(field.value + 'T00:00:00') : undefined}
                         onSelect={date => field.onChange(date ? formatDateToLocal(date) : '')}
                         placeholder="Selecione a data fim"
-                        className="w-full"
                         fromDate={getMinEndDate(startDate)}
                       />
                     </FormControl>
@@ -408,13 +378,16 @@ export function SpreadsheetForm() {
               />
             </div>
 
+            <Separator />
+
+            {/* Dias da semana e sessões */}
             <FormField
               control={form.control}
               name="weekDaySessions"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Dias da semana e sessões</FormLabel>
-                  <FormDescription>
+                  <FormLabel className="flex justify-center">Dias da semana e sessões</FormLabel>
+                  <FormDescription className="text-center">
                     Selecione os dias de atendimento e configure a quantidade de sessões por dia
                   </FormDescription>
                   <FormControl>
@@ -425,31 +398,42 @@ export function SpreadsheetForm() {
               )}
             />
 
-            {error && <div className="p-3 bg-red-50 border border-red-200 rounded-md text-red-600">{error}</div>}
-
-            {isMultipleMonths && (
-              <div className="p-3 bg-blue-50 border border-blue-200 rounded-md text-blue-700">
-                <p className="text-sm">
-                  <strong>Múltiplos meses detectados:</strong> Será gerado um arquivo ZIP contendo uma planilha completa
-                  para cada mês no período selecionado (cada planilha conterá todas as datas do respectivo mês).
-                </p>
-              </div>
+            {/* Mensagens de erro */}
+            {error && (
+              <Alert variant="destructive">
+                <AlertDescription>{error.message}</AlertDescription>
+              </Alert>
             )}
 
+            {/* Aviso sobre múltiplos meses */}
+            {isMultipleMonths && (
+              <Alert>
+                <AlertDescription>
+                  <strong>Múltiplos meses detectados:</strong> Será gerado um arquivo ZIP contendo uma planilha completa
+                  para cada mês no período selecionado (cada planilha conterá todas as datas do respectivo mês).
+                </AlertDescription>
+              </Alert>
+            )}
+
+            {/* Botões de ação */}
             <div className="flex gap-3">
               <Button
                 type="button"
                 variant="outline"
                 className="flex-1"
                 onClick={handlePreview}
-                disabled={isGenerating || generateDriveSpreadsheet.isPending}>
-                <Eye className="mr-2 h-4 w-4" />
+                disabled={isLoading || isCheckingFiles}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eye className="mr-2 h-4 w-4" />}
                 Visualizar Preview
               </Button>
 
-              <Button type="submit" className="flex-1" disabled={isGenerating || generateDriveSpreadsheet.isPending}>
-                <FileText className="mr-2 h-4 w-4" />
-                {isGenerating
+              <Button type="submit" className="flex-1" disabled={isLoading || isCheckingFiles}>
+                {generateSpreadsheet.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="mr-2 h-4 w-4" />
+                )}
+                {generateSpreadsheet.isPending
                   ? isMultipleMonths
                     ? 'Gerando planilhas...'
                     : 'Gerando planilha...'
@@ -468,19 +452,18 @@ export function SpreadsheetForm() {
                     handleGenerateDriveWithCheck(form.getValues())
                   }
                 }}
-                disabled={
-                  isGenerating ||
-                  generateDriveSpreadsheet.isPending ||
-                  checkExistingFiles.isPending ||
-                  !driveStatus?.isConfigured
-                }
+                disabled={isLoading || isCheckingFiles || !driveStatus?.isConfigured}
                 title={
                   !driveStatus?.isConfigured
                     ? 'Configure o Google Drive primeiro nas configurações'
                     : 'Gerar planilhas organizadas por mês no Google Drive'
                 }>
-                <Cloud className="mr-2 h-4 w-4" />
-                {checkExistingFiles.isPending
+                {isCheckingFiles || generateDriveSpreadsheet.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Cloud className="mr-2 h-4 w-4" />
+                )}
+                {isCheckingFiles
                   ? 'Verificando arquivos...'
                   : generateDriveSpreadsheet.isPending
                     ? 'Gerando no Drive...'
@@ -490,12 +473,14 @@ export function SpreadsheetForm() {
           </form>
         </Form>
 
+        {/* Preview */}
         {showPreview && (
           <div className="mt-6">
             <SpreadsheetPreview formData={formValues} onClose={() => setShowPreview(false)} />
           </div>
         )}
 
+        {/* Dialog de confirmação para sobrescrever arquivos */}
         <AlertDialog open={showOverwriteDialog} onOpenChange={setShowOverwriteDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
@@ -504,8 +489,8 @@ export function SpreadsheetForm() {
                 Foram encontrados arquivos existentes no Google Drive para este paciente no período selecionado:
                 <div className="mt-3 space-y-2">
                   {existingFilesInfo?.existingFiles.map((file, index) => (
-                    <div key={index} className="bg-yellow-50 border border-yellow-200 rounded p-2">
-                      <div className="font-medium text-sm">{file.name}</div>
+                    <div key={index} className="border border-primary/80 rounded p-2">
+                      <span className="font-medium text-sm">{file.name}</span>
                       <div className="text-xs text-gray-600">
                         Última modificação:{' '}
                         {new Date(file.modifiedTime).toLocaleString('pt-BR', {

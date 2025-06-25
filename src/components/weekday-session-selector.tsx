@@ -61,10 +61,9 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
   const totalSessions = selectedDays.reduce((total, item) => total + item.sessions, 0)
 
   return (
-    <div className={cn('space-y-4', className)}>
+    <div className={cn('space-y-4 p-3', className)}>
       {/* Day Selection */}
       <div>
-        <Label className="text-sm font-medium mb-2 block">Selecione os dias da semana</Label>
         <div className="flex justify-center space-x-2">
           {weekdayItems.map(item => {
             const isSelected = isDaySelected(item.key)

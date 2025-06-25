@@ -3,11 +3,12 @@
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { APP_ROOT_FOLDER_NAME } from '@/services/google-drive-service'
 import { useRestrictedGoogleDrive, type RestrictedDriveFile } from '@/hooks/use-restricted-google-drive'
 import { Calendar, Download, ExternalLink, FileText, Folder, HardDrive, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+
+const APP_ROOT_FOLDER_NAME = process.env.NODE_ENV === 'development' ? 'planilhas-app-dev' : 'planilhas-app'
 
 export function RestrictedGoogleDriveManager() {
   const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(undefined)
