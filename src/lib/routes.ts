@@ -47,6 +47,11 @@ export const routes = {
         index: '/admin/google-drive',
         folder: (folderId: string) => `/admin/google-drive/pasta/${validateId(folderId)}`,
       },
+      users: {
+        index: '/admin/users',
+        create: '/admin/users/novo',
+        edit: (id: string) => `/admin/users/${validateId(id)}/editar`,
+      },
     },
 
     // Autenticação

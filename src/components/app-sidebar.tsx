@@ -53,6 +53,15 @@ const items = [
   },
 ]
 
+// Menu items de usuários (administração)
+const userManagementItems = [
+  {
+    title: 'Usuários',
+    url: routes.frontend.admin.users.index,
+    icon: Users,
+  },
+]
+
 // Menu items de configuração
 const configItems = [
   {
@@ -92,6 +101,24 @@ export function AppSidebar() {
             <SidebarGroupContent>
               <SidebarMenu>
                 {items.map(item => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <a href={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+
+          <SidebarGroup>
+            <SidebarGroupLabel>Administração</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {userManagementItems.map(item => (
                   <SidebarMenuItem key={item.title}>
                     <SidebarMenuButton asChild>
                       <a href={item.url}>
