@@ -14,7 +14,7 @@ export const usersTable = pgTable('users', {
 export const insertUserSchema = z.object({
   name: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   email: z.string().email('E-mail deve ter um formato válido'),
-  active: z.boolean().default(true),
+  active: z.boolean(),
 })
 
 export const updateUserSchema = insertUserSchema.partial().extend({

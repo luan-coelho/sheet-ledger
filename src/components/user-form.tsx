@@ -10,6 +10,7 @@ import { insertUserSchema, UserFormValues, User } from '@/app/db/schemas/user-sc
 import { useCreateUser, useUpdateUser } from '@/hooks/use-users'
 import { useEffect } from 'react'
 import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 interface UserFormProps {
   user?: User
@@ -19,7 +20,6 @@ interface UserFormProps {
 
 export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
   const isEditing = !!user
-
   const form = useForm<UserFormValues>({
     resolver: zodResolver(insertUserSchema),
     defaultValues: {
@@ -59,6 +59,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
       form.reset()
       onSuccess?.()
     } catch (error) {
+      toast.error('Erro ao salvar usuário')
       console.error('Erro ao salvar usuário:', error)
     }
   }
