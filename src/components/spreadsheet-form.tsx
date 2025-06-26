@@ -45,6 +45,7 @@ import { ProfessionalSelector } from './professional-selector'
 import { SpreadsheetPreview } from './spreadsheet-preview'
 import { WeekdaySessionSelector } from './weekday-session-selector'
 import { Separator } from './ui/separator'
+import { TimePickerDemo } from './ui/time-picker'
 import { toast } from 'sonner'
 
 interface ExistingFilesInfo {
@@ -96,6 +97,8 @@ export function SpreadsheetForm() {
       weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }],
       dataInicio: formatDateISO(firstDayOfMonth),
       dataFim: formatDateISO(lastDayOfMonth),
+      horarioInicio: '08:00',
+      horarioFim: '17:00',
     },
   })
 
@@ -137,6 +140,8 @@ export function SpreadsheetForm() {
       weekDaySessions: values.weekDaySessions,
       dataInicio: values.dataInicio,
       dataFim: values.dataFim,
+      horarioInicio: values.horarioInicio,
+      horarioFim: values.horarioFim,
     }
   }
 
@@ -392,6 +397,49 @@ export function SpreadsheetForm() {
                 </FormItem>
               )}
             />
+
+            {/* Horários de atendimento */}
+            <div className="flex flex-col items-center gap-4">
+              <div className="flex items-center gap-4">
+                <FormField
+                  control={form.control}
+                  name="horarioInicio"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col items-center">
+                      <FormLabel className="text-center">Horário início</FormLabel>
+                      <FormControl>
+                        <TimePickerDemo
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Selecione horário início"
+                          className="w-auto"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="horarioFim"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col items-center">
+                      <FormLabel className="text-center">Horário fim</FormLabel>
+                      <FormControl>
+                        <TimePickerDemo
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="Selecione horário fim"
+                          className="w-auto"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
 
             {/* Mensagens de erro */}
             {error && (

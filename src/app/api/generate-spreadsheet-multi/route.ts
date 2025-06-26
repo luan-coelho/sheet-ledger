@@ -17,6 +17,8 @@ export async function POST(request: NextRequest) {
       'weekDaySessions',
       'dataInicio',
       'dataFim',
+      'horarioInicio',
+      'horarioFim',
     ]
 
     const missingFields = requiredFields.filter(field => !data[field])

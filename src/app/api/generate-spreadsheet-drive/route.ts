@@ -60,6 +60,8 @@ export async function POST(request: NextRequest) {
       weekDaySessions,
       dataInicio,
       dataFim,
+      horarioInicio,
+      horarioFim,
     } = body
 
     if (!dataInicio || !dataFim) {
@@ -145,6 +147,8 @@ export async function POST(request: NextRequest) {
         weekDaySessions,
         dataInicio: monthInfo.startDate.toISOString().split('T')[0],
         dataFim: monthInfo.endDate.toISOString().split('T')[0],
+        horarioInicio,
+        horarioFim,
       })
 
       // Nome do arquivo: "Janeiro 2024.xlsx"

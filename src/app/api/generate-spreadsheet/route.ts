@@ -14,6 +14,8 @@ export async function POST(request: NextRequest) {
       'responsible',
       'healthPlan',
       'weekDaySessions',
+      'horarioInicio',
+      'horarioFim',
     ]
 
     const missingFields = requiredFields.filter(field => !data[field])

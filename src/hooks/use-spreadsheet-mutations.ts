@@ -12,6 +12,8 @@ export interface TransformedFormData {
   weekDaySessions: Array<{ day: WeekDays; sessions: number }>
   dataInicio: string
   dataFim: string
+  horarioInicio: string
+  horarioFim: string
 }
 
 export interface GenerateSpreadsheetResponse {

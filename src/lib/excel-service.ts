@@ -27,6 +27,8 @@ export class ExcelService {
     weekDaySessions: WeekdaySession[]
     dataInicio?: string
     dataFim?: string
+    horarioInicio?: string
+    horarioFim?: string
     competencia?: {
       mes: string
       ano: string
@@ -94,6 +96,11 @@ export class ExcelService {
 
     // Fill the competência field in row 17 (cells H17, I17, J17, K17 are merged)
     worksheet.getCell('H17').value = competenciaText
+
+    // Fill the time period in H20
+    if (data.horarioInicio && data.horarioFim) {
+      worksheet.getCell('H20').value = `${data.horarioInicio} - ${data.horarioFim}`
+    }
 
     // Initial row for records
     const startRow = 12
