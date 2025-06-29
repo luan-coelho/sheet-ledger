@@ -2,8 +2,8 @@ import { useMutation } from '@tanstack/react-query'
 
 interface CheckExistingFilesData {
   patientName: string
-  dataInicio: string
-  dataFim: string
+  startDate: string
+  endDate: string
 }
 
 interface ExistingFile {

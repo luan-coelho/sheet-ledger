@@ -95,17 +95,17 @@ export function SpreadsheetForm() {
       guardianId: '',
       healthPlanId: '',
       weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }],
-      dataInicio: formatDateISO(firstDayOfMonth),
-      dataFim: formatDateISO(lastDayOfMonth),
-      horarioInicio: '08:00',
-      horarioFim: '17:00',
+      startDate: formatDateISO(firstDayOfMonth),
+      endDate: formatDateISO(lastDayOfMonth),
+      startTime: '08:00',
+      endTime: '17:00',
     },
   })
 
   // Watch form values para preview e validação
   const formValues = form.watch()
-  const startDate = form.watch('dataInicio')
-  const endDate = form.watch('dataFim')
+  const startDate = form.watch('startDate')
+  const endDate = form.watch('endDate')
 
   // Verificar se o período abrange múltiplos meses
   const isMultipleMonths = (() => {
@@ -138,10 +138,10 @@ export function SpreadsheetForm() {
       responsible: guardian?.name || '',
       healthPlan: healthPlan?.name || '',
       weekDaySessions: values.weekDaySessions,
-      dataInicio: values.dataInicio,
-      dataFim: values.dataFim,
-      horarioInicio: values.horarioInicio,
-      horarioFim: values.horarioFim,
+      startDate: values.startDate,
+      endDate: values.endDate,
+      startTime: values.startTime,
+      endTime: values.endTime,
     }
   }
 
@@ -169,8 +169,8 @@ export function SpreadsheetForm() {
     try {
       const result = await checkExistingFiles.mutateAsync({
         patientName: patient.name,
-        dataInicio: values.dataInicio,
-        dataFim: values.dataFim,
+        startDate: values.startDate,
+        endDate: values.endDate,
       })
 
       if (result.hasExistingFiles) {
@@ -326,7 +326,7 @@ export function SpreadsheetForm() {
 
               <FormField
                 control={form.control}
-                name="dataInicio"
+                name="startDate"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Data de início</FormLabel>
@@ -340,9 +340,9 @@ export function SpreadsheetForm() {
 
                           // Se a data fim já estiver selecionada e for anterior ou igual à nova data início,
                           // limpa a data fim para forçar o usuário a selecionar uma nova
-                          const currentEndDate = form.getValues('dataFim')
+                          const currentEndDate = form.getValues('endDate')
                           if (currentEndDate && date && new Date(currentEndDate + 'T00:00:00') <= date) {
-                            form.setValue('dataFim', '')
+                            form.setValue('endDate', '')
                           }
                         }}
                         placeholder="Selecione a data de início"
@@ -355,7 +355,7 @@ export function SpreadsheetForm() {
 
               <FormField
                 control={form.control}
-                name="dataFim"
+                name="endDate"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Data fim</FormLabel>
@@ -403,7 +403,7 @@ export function SpreadsheetForm() {
               <div className="flex items-center gap-4">
                 <FormField
                   control={form.control}
-                  name="horarioInicio"
+                  name="startTime"
                   render={({ field }) => (
                     <FormItem className="flex flex-col items-center">
                       <FormLabel className="text-center">Horário início</FormLabel>
@@ -422,7 +422,7 @@ export function SpreadsheetForm() {
 
                 <FormField
                   control={form.control}
-                  name="horarioFim"
+                  name="endTime"
                   render={({ field }) => (
                     <FormItem className="flex flex-col items-center">
                       <FormLabel className="text-center">Horário fim</FormLabel>

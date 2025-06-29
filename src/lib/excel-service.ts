@@ -9,13 +9,13 @@ type SessionRecord = {
 }
 
 /**
- * Service for generating Excel spreadsheets based on a template
+ * Service para gerar planilhas Excel baseadas em um template
  */
 export class ExcelService {
   /**
-   * Generates an attendance spreadsheet based on the template
-   * @param data Data to fill the spreadsheet
-   * @returns Buffer containing the generated spreadsheet
+   * Gera uma planilha de atendimento baseada no template
+   * @param data Dados para preencher a planilha
+   * @returns Buffer contendo a planilha gerada
    */
   static async generateAttendanceSheet(data: {
     professional: string
@@ -25,28 +25,28 @@ export class ExcelService {
     responsible: string
     healthPlan: string
     weekDaySessions: WeekdaySession[]
-    dataInicio?: string
-    dataFim?: string
-    horarioInicio?: string
-    horarioFim?: string
-    competencia?: {
-      mes: string
-      ano: string
+    startDate?: string
+    endDate?: string
+    startTime?: string
+    endTime?: string
+    competency?: {
+      month: string
+      year: string
     }
   }): Promise<ArrayBuffer> {
-    // Load the template file
-    const templatePath = path.join(process.cwd(), 'src/data/modelo.xlsx')
+    // Carrega o arquivo template
+    const templatePath = path.join(process.cwd(), 'src/data/model.xlsx')
     const workbook = new ExcelJS.Workbook()
     await workbook.xlsx.readFile(templatePath)
 
-    // Get the first worksheet
+    // Obtém a primeira planilha
     const worksheet = workbook.getWorksheet(1)
 
     if (!worksheet) {
-      throw new Error('Worksheet not found in template file')
+      throw new Error('Planilha não encontrada no arquivo template')
     }
 
-    // Fill the merged cells of columns C and D (row 3 to 8)
+    // Preenche as células mescladas das colunas C e D (linha 3 a 8)
     worksheet.getCell('C3').value = data.professional
     worksheet.getCell('C4').value = data.licenseNumber
     worksheet.getCell('C5').value = data.authorizedSession
@@ -54,55 +54,55 @@ export class ExcelService {
     worksheet.getCell('C7').value = data.responsible
     worksheet.getCell('C8').value = data.healthPlan
 
-    // Format weekdays to SEG Á SEX format
+    // Formata os dias da semana para o formato SEG Á SEX
     const weekDaysString = this.formatWeekDaysRangeWithSessions(data.weekDaySessions)
 
-    // Fill row 14 with weekdays
-    worksheet.getCell('H14').value = weekDaysString
+    // Preenche a linha 14 com os dias da semana (agora na coluna J)
+    worksheet.getCell('J14').value = weekDaysString
 
     let records: SessionRecord[]
-    let competenciaText: string
+    let competencyText: string
 
-    if (data.dataInicio && data.dataFim) {
+    if (data.startDate && data.endDate) {
       // Usar o novo formato com data de início e fim
-      const dataInicio = createBrazilianDate(data.dataInicio)
-      const dataFim = createBrazilianDate(data.dataFim)
+      const startDateObj = createBrazilianDate(data.startDate)
+      const endDateObj = createBrazilianDate(data.endDate)
 
       // Formato da competência para o período
-      const mesInicio = getMonthNameInPortuguese(dataInicio.getMonth())
-      const anoInicio = dataInicio.getFullYear()
-      const mesFim = getMonthNameInPortuguese(dataFim.getMonth())
-      const anoFim = dataFim.getFullYear()
+      const startMonth = getMonthNameInPortuguese(startDateObj.getMonth())
+      const startYear = startDateObj.getFullYear()
+      const endMonth = getMonthNameInPortuguese(endDateObj.getMonth())
+      const endYear = endDateObj.getFullYear()
 
-      if (anoInicio === anoFim && mesInicio === mesFim) {
-        competenciaText = `${mesInicio.toUpperCase()}/${anoInicio}`
+      if (startYear === endYear && startMonth === endMonth) {
+        competencyText = `${startMonth.toUpperCase()}/${startYear}`
       } else {
-        competenciaText = `${mesInicio.toUpperCase()}/${anoInicio} - ${mesFim.toUpperCase()}/${anoFim}`
+        competencyText = `${startMonth.toUpperCase()}/${startYear} - ${endMonth.toUpperCase()}/${endYear}`
       }
 
-      records = this.generateRecordsForPeriodWithSessions(dataInicio, dataFim, data.weekDaySessions)
-    } else if (data.competencia) {
+      records = this.generateRecordsForPeriodWithSessions(startDateObj, endDateObj, data.weekDaySessions)
+    } else if (data.competency) {
       // Manter compatibilidade com o formato antigo
-      const mesIndex = parseInt(data.competencia.mes)
-      const mesNome = meses.find(m => parseInt(m.value) === mesIndex)?.label || 'Janeiro'
-      competenciaText = `${mesNome.toUpperCase()}/${data.competencia.ano}`
+      const monthIndex = parseInt(data.competency.month)
+      const monthName = meses.find(m => parseInt(m.value) === monthIndex)?.label || 'Janeiro'
+      competencyText = `${monthName.toUpperCase()}/${data.competency.year}`
 
-      const mesCompetencia = parseInt(data.competencia.mes)
-      const anoCompetencia = parseInt(data.competencia.ano)
-      records = this.generateRecordsForMonthWithSessions(anoCompetencia, mesCompetencia, data.weekDaySessions)
+      const competencyMonth = parseInt(data.competency.month)
+      const competencyYear = parseInt(data.competency.year)
+      records = this.generateRecordsForMonthWithSessions(competencyYear, competencyMonth, data.weekDaySessions)
     } else {
       throw new Error('É necessário informar a data de início e fim ou a competência')
     }
 
-    // Fill the competência field in row 17 (cells H17, I17, J17, K17 are merged)
-    worksheet.getCell('H17').value = competenciaText
+    // Preenche o campo de competência na linha 17 (agora na coluna J)
+    worksheet.getCell('J17').value = competencyText
 
-    // Fill the time period in H20
-    if (data.horarioInicio && data.horarioFim) {
-      worksheet.getCell('H20').value = `${data.horarioInicio} - ${data.horarioFim}`
+    // Preenche o período de horário em J20 (agora na coluna J)
+    if (data.startTime && data.endTime) {
+      worksheet.getCell('J20').value = `${data.startTime} - ${data.endTime}`
     }
 
-    // Initial row for records
+    // Linha inicial para os registros
     const startRow = 12
     const endRow = 42 // Expandido para comportar até 31 dias (linha 12 a 42)
 
@@ -113,48 +113,55 @@ export class ExcelService {
       worksheet.getCell(`C${row}`).value = null
       worksheet.getCell(`D${row}`).value = null
       worksheet.getCell(`E${row}`).value = null
+      worksheet.getCell(`F${row}`).value = null
     }
 
-    // Fill the records
+    // Preenche os registros
     let totalSessions = 0
     records.forEach((record, index) => {
       // Garante que não excedemos a linha 42
       if (startRow + index <= endRow) {
         const row = startRow + index
 
-        // Sequential number
+        // Número sequencial
         worksheet.getCell(`A${row}`).value = index + 1
 
-        // Date in DD/MM/YYYY format
+        // Data no formato DD/MM/YYYY
         worksheet.getCell(`B${row}`).value = formatDateBrazilian(record.date)
 
-        // Sessions per day (dynamic value)
-        worksheet.getCell(`C${row}`).value = record.sessions
+        // Horário de início (agora na coluna C)
+        worksheet.getCell(`C${row}`).value = data.startTime || ''
+
+        // Horário de fim (agora na coluna D)
+        worksheet.getCell(`D${row}`).value = data.endTime || ''
+
+        // Sessões por dia (agora na coluna E)
+        worksheet.getCell(`E${row}`).value = record.sessions
         totalSessions += record.sessions
 
-        // Fixed value "Presencial"
-        worksheet.getCell(`D${row}`).value = 'Presencial'
+        // Valor fixo "Presencial" (agora na coluna F)
+        worksheet.getCell(`F${row}`).value = 'Presencial'
 
-        // Column E is left blank (signature)
+        // Coluna G fica em branco (assinatura)
       }
     })
 
     // Preenche o total de sessões na célula C44
     worksheet.getCell('C44').value = totalSessions
 
-    // Generate the spreadsheet buffer
+    // Gera o buffer da planilha
     return await workbook.xlsx.writeBuffer()
   }
 
   /**
-   * Formats the weekdays array to a SEG Á SEX format
-   * @param weekdays Array of selected weekdays
-   * @returns Formatted string in SEG Á SEX format
+   * Formata o array de dias da semana para o formato SEG Á SEX
+   * @param weekdays Array de dias da semana selecionados
+   * @returns String formatada no formato SEG Á SEX
    */
   private static formatWeekDaysRange(weekdays: WeekDays[]): string {
     if (weekdays.length === 0) return ''
 
-    // Define day abbreviations
+    // Define abreviações dos dias
     const dayAbbreviations: Record<WeekDays, string> = {
       [WeekDays.MONDAY]: 'SEG',
       [WeekDays.TUESDAY]: 'TER',
@@ -165,26 +172,26 @@ export class ExcelService {
       [WeekDays.SUNDAY]: 'DOM',
     }
 
-    // Sort weekdays to find continuous ranges
+    // Ordena os dias da semana para encontrar intervalos contínuos
     const sortedDayIndices = weekdays.map(day => this.getDayIndex(day)).sort((a, b) => a - b)
 
-    // Check if weekdays are consecutive
+    // Verifica se os dias da semana são consecutivos
     const isConsecutive = sortedDayIndices.every((dayIndex, i, array) => i === 0 || dayIndex === array[i - 1] + 1)
 
     if (isConsecutive && sortedDayIndices.length > 1) {
-      // Get first and last day
+      // Obtém o primeiro e último dia
       const firstDay = this.getDayByIndex(sortedDayIndices[0])
       const lastDay = this.getDayByIndex(sortedDayIndices[sortedDayIndices.length - 1])
 
       return `${dayAbbreviations[firstDay]} Á ${dayAbbreviations[lastDay]}`
     } else {
-      // Return comma-separated list of days if not consecutive
+      // Retorna lista separada por vírgulas se não for consecutivo
       return weekdays.map(day => dayAbbreviations[day]).join(', ')
     }
   }
 
   /**
-   * Gets the numerical index of a weekday (0-6)
+   * Obtém o índice numérico de um dia da semana (0-6)
    */
   private static getDayIndex(day: WeekDays): number {
     const dayIndices: Record<WeekDays, number> = {
@@ -201,7 +208,7 @@ export class ExcelService {
   }
 
   /**
-   * Gets the weekday by its numeric index
+   * Obtém o dia da semana pelo seu índice numérico
    */
   private static getDayByIndex(index: number): WeekDays {
     const days = [
@@ -218,11 +225,11 @@ export class ExcelService {
   }
 
   /**
-   * Generates records for a specific month and year, filtered by selected days of week
-   * @param year Year
-   * @param month Month (0-11)
-   * @param daysOfWeek Array of day indices (0 = Monday, 6 = Sunday)
-   * @returns Array of dates representing selected days
+   * Gera registros para um mês e ano específicos, filtrados pelos dias da semana selecionados
+   * @param year Ano
+   * @param month Mês (0-11)
+   * @param daysOfWeek Array de índices de dias (0 = Segunda, 6 = Domingo)
+   * @returns Array de datas representando os dias selecionados
    */
   private static generateRecordsForMonth(year: number, month: number, daysOfWeek: number[]): Date[] {
     const selectedDays: Date[] = []
@@ -239,9 +246,9 @@ export class ExcelService {
     }
 
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      // Convert JS day (0 = Sunday) to our day (0 = Monday)
-      const jsDay = d.getDay() // 0 = Sunday, 1 = Monday, etc.
-      const ourDay = jsDay === 0 ? 6 : jsDay - 1 // Convert to 0 = Monday, 6 = Sunday
+      // Converte dia JS (0 = Domingo) para nosso dia (0 = Segunda)
+      const jsDay = d.getDay() // 0 = Domingo, 1 = Segunda, etc.
+      const ourDay = jsDay === 0 ? 6 : jsDay - 1 // Converte para 0 = Segunda, 6 = Domingo
 
       if (daysOfWeek.includes(ourDay)) {
         selectedDays.push(new Date(d))
@@ -252,9 +259,9 @@ export class ExcelService {
   }
 
   /**
-   * Formats a date to DD/MM/YYYY pattern
-   * @param date Date to be formatted
-   * @returns String in DD/MM/YYYY format
+   * Formata uma data para o padrão DD/MM/YYYY
+   * @param date Data a ser formatada
+   * @returns String no formato DD/MM/YYYY
    */
   private static formatDate(date: Date): string {
     const day = String(date.getDate()).padStart(2, '0')
@@ -265,14 +272,14 @@ export class ExcelService {
   }
 
   /**
-   * Formats weekdays range with sessions for display
-   * @param weekDaySessions Array of weekday sessions configuration
-   * @returns Formatted string like "SEG(4), TER(4), QUA(4)"
+   * Formata intervalo de dias da semana com sessões para exibição
+   * @param weekDaySessions Array de configuração de sessões por dia da semana
+   * @returns String formatada como "SEG(4), TER(4), QUA(4)"
    */
   private static formatWeekDaysRangeWithSessions(weekDaySessions: WeekdaySession[]): string {
     if (weekDaySessions.length === 0) return ''
 
-    // Map weekdays to abbreviations
+    // Mapeia dias da semana para abreviações
     const dayAbbreviations: Record<WeekDays, string> = {
       [WeekDays.MONDAY]: 'SEG',
       [WeekDays.TUESDAY]: 'TER',
@@ -283,18 +290,18 @@ export class ExcelService {
       [WeekDays.SUNDAY]: 'DOM',
     }
 
-    // Sort weekdays by their index
+    // Ordena os dias da semana pelo seu índice
     const sortedSessions = [...weekDaySessions].sort((a, b) => this.getDayIndex(a.day) - this.getDayIndex(b.day))
 
     return sortedSessions.map(({ day, sessions }) => `${dayAbbreviations[day]}(${sessions})`).join(', ')
   }
 
   /**
-   * Generates records with sessions for a specific month and year
-   * @param year Year
-   * @param month Month (0-11)
-   * @param weekDaySessions Array of weekday sessions configuration
-   * @returns Array of session records
+   * Gera registros com sessões para um mês e ano específicos
+   * @param year Ano
+   * @param month Mês (0-11)
+   * @param weekDaySessions Array de configuração de sessões por dia da semana
+   * @returns Array de registros de sessão
    */
   private static generateRecordsForMonthWithSessions(
     year: number,
@@ -305,7 +312,7 @@ export class ExcelService {
     const startDate = new Date(year, month, 1)
     const endDate = new Date(year, month + 1, 0)
 
-    // Create a map for quick lookup of sessions by day
+    // Cria um mapa para busca rápida de sessões por dia
     const sessionsMap = new Map<WeekDays, number>()
     weekDaySessions.forEach(({ day, sessions }) => {
       sessionsMap.set(day, sessions)
@@ -320,8 +327,8 @@ export class ExcelService {
     }
 
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      // Convert JS day (0 = Sunday) to our day enum
-      const jsDay = d.getDay() // 0 = Sunday, 1 = Monday, etc.
+      // Converte dia JS (0 = Domingo) para nosso enum de dia
+      const jsDay = d.getDay() // 0 = Domingo, 1 = Segunda, etc.
       const ourDay = this.getWeekDayFromJSDay(jsDay)
 
       if (sessionsMap.has(ourDay)) {
@@ -336,32 +343,32 @@ export class ExcelService {
   }
 
   /**
-   * Generates records for a specific period (from dataInicio to dataFim), filtered by selected weekdays
-   * @param dataInicio Start date
-   * @param dataFim End date
-   * @param weekDaySessions Array of weekday sessions configuration
-   * @returns Array of session records for the period
+   * Gera registros para um período específico (de startDate até endDate), filtrados pelos dias da semana selecionados
+   * @param startDate Data de início
+   * @param endDate Data de fim
+   * @param weekDaySessions Array de configuração de sessões por dia da semana
+   * @returns Array de registros de sessão para o período
    */
   private static generateRecordsForPeriodWithSessions(
-    dataInicio: Date,
-    dataFim: Date,
+    startDate: Date,
+    endDate: Date,
     weekDaySessions: WeekdaySession[],
   ): SessionRecord[] {
     const records: SessionRecord[] = []
 
-    // Create a map of weekdays to session counts for faster lookup
+    // Cria um mapa de dias da semana para contagem de sessões para busca mais rápida
     const weekDaySessionMap = new Map<WeekDays, number>()
     weekDaySessions.forEach(ws => {
       weekDaySessionMap.set(ws.day, ws.sessions)
     })
 
-    // Iterate through each day in the period
-    const currentDate = new Date(dataInicio)
-    while (currentDate <= dataFim) {
+    // Itera através de cada dia no período
+    const currentDate = new Date(startDate)
+    while (currentDate <= endDate) {
       const jsDay = currentDate.getDay()
       const weekDay = this.getWeekDayFromJSDay(jsDay)
 
-      // Check if this weekday is selected
+      // Verifica se este dia da semana está selecionado
       if (weekDaySessionMap.has(weekDay)) {
         const sessions = weekDaySessionMap.get(weekDay)!
         records.push({
@@ -370,7 +377,7 @@ export class ExcelService {
         })
       }
 
-      // Move to next day
+      // Move para o próximo dia
       currentDate.setDate(currentDate.getDate() + 1)
     }
 
@@ -378,9 +385,9 @@ export class ExcelService {
   }
 
   /**
-   * Converts JS day index to WeekDays enum
-   * @param jsDay JS day index (0 = Sunday, 1 = Monday, etc.)
-   * @returns WeekDays enum value
+   * Converte índice de dia JS para enum WeekDays
+   * @param jsDay Índice de dia JS (0 = Domingo, 1 = Segunda, etc.)
+   * @returns Valor do enum WeekDays
    */
   private static getWeekDayFromJSDay(jsDay: number): WeekDays {
     switch (jsDay) {

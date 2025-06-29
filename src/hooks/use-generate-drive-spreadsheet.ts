@@ -10,8 +10,8 @@ interface GenerateDriveSpreadsheetData {
   responsible: string
   healthPlan: string
   weekDaySessions: SpreadsheetFormValues['weekDaySessions']
-  dataInicio: string
-  dataFim: string
+  startDate: string
+  endDate: string
 }
 
 interface GenerateDriveSpreadsheetResponse {

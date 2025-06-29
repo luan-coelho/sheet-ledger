@@ -15,10 +15,10 @@ export async function POST(request: NextRequest) {
       'responsible',
       'healthPlan',
       'weekDaySessions',
-      'dataInicio',
-      'dataFim',
-      'horarioInicio',
-      'horarioFim',
+      'startDate',
+      'endDate',
+      'startTime',
+      'endTime',
     ]
 
     const missingFields = requiredFields.filter(field => !data[field])
@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Missing required fields: ${missingFields.join(', ')}` }, { status: 400 })
     }
 
-    const startDate = new Date(data.dataInicio + 'T00:00:00')
-    const endDate = new Date(data.dataFim + 'T00:00:00')
+    const startDate = new Date(data.startDate + 'T00:00:00')
+    const endDate = new Date(data.endDate + 'T00:00:00')
 
     // Gerar lista de meses no período
     const months = getMonthsInPeriod(startDate, endDate)
@@ -54,8 +54,8 @@ export async function POST(request: NextRequest) {
       // Cada planilha deve conter o mês completo
       const monthData = {
         ...data,
-        dataInicio: formatDateToString(monthStartDate),
-        dataFim: formatDateToString(monthEndDate),
+        startDate: formatDateToString(monthStartDate),
+        endDate: formatDateToString(monthEndDate),
       }
 
       const spreadsheetBuffer = await ExcelService.generateAttendanceSheet(monthData)

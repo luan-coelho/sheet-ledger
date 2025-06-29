@@ -145,10 +145,10 @@ export async function POST(request: NextRequest) {
         responsible,
         healthPlan,
         weekDaySessions,
-        dataInicio: monthInfo.startDate.toISOString().split('T')[0],
-        dataFim: monthInfo.endDate.toISOString().split('T')[0],
-        horarioInicio,
-        horarioFim,
+        startDate: monthInfo.startDate.toISOString().split('T')[0],
+        endDate: monthInfo.endDate.toISOString().split('T')[0],
+        startTime: horarioInicio,
+        endTime: horarioFim,
       })
 
       // Nome do arquivo: "Janeiro 2024.xlsx"

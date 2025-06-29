@@ -14,14 +14,14 @@ export async function POST(request: NextRequest) {
       'responsible',
       'healthPlan',
       'weekDaySessions',
-      'horarioInicio',
-      'horarioFim',
+      'startTime',
+      'endTime',
     ]
 
     const missingFields = requiredFields.filter(field => !data[field])
 
     if (missingFields.length > 0) {
-      return NextResponse.json({ error: `Missing required fields: ${missingFields.join(', ')}` }, { status: 400 })
+      return NextResponse.json({ error: `Campos obrigatórios faltando: ${missingFields.join(', ')}` }, { status: 400 })
     }
 
     // Generate the attendance spreadsheet
@@ -36,9 +36,9 @@ export async function POST(request: NextRequest) {
 
     return response
   } catch (error) {
-    console.error('Error generating spreadsheet:', error)
+    console.error('Erro ao gerar planilha:', error)
     return NextResponse.json(
-      { error: 'Error generating spreadsheet. Please verify your data and try again.' },
+      { error: 'Erro ao gerar planilha. Por favor, verifique os dados e tente novamente.' },
       { status: 500 },
     )
   }

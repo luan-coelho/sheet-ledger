@@ -10,10 +10,10 @@ export interface TransformedFormData {
   responsible: string
   healthPlan: string
   weekDaySessions: Array<{ day: WeekDays; sessions: number }>
-  dataInicio: string
-  dataFim: string
-  horarioInicio: string
-  horarioFim: string
+  startDate: string
+  endDate: string
+  startTime: string
+  endTime: string
 }
 
 export interface GenerateSpreadsheetResponse {
@@ -31,16 +31,16 @@ export interface CheckExistingFilesResponse {
 
 export interface CheckExistingFilesParams {
   patientName: string
-  dataInicio: string
-  dataFim: string
+  startDate: string
+  endDate: string
 }
 
 // Hook para gerar planilha local
 export function useGenerateSpreadsheet() {
   return useMutation<GenerateSpreadsheetResponse, Error, TransformedFormData>({
     mutationFn: async data => {
-      const startDateObj = new Date(data.dataInicio + 'T00:00:00')
-      const endDateObj = new Date(data.dataFim + 'T00:00:00')
+      const startDateObj = new Date(data.startDate + 'T00:00:00')
+      const endDateObj = new Date(data.endDate + 'T00:00:00')
       const isMultiMonth =
         startDateObj.getMonth() !== endDateObj.getMonth() || startDateObj.getFullYear() !== endDateObj.getFullYear()
 
@@ -106,7 +106,7 @@ export function useGenerateDriveSpreadsheet() {
 // Hook para verificar arquivos existentes no Google Drive
 export function useCheckExistingFiles() {
   return useMutation<CheckExistingFilesResponse, Error, CheckExistingFilesParams>({
-    mutationFn: async ({ patientName, dataInicio, dataFim }) => {
+    mutationFn: async ({ patientName, startDate, endDate }) => {
       const response = await fetch('/api/google-drive/check-existing-files', {
         method: 'POST',
         headers: {
@@ -114,8 +114,8 @@ export function useCheckExistingFiles() {
         },
         body: JSON.stringify({
           patientName,
-          dataInicio,
-          dataFim,
+          startDate,
+          endDate,
         }),
       })
 

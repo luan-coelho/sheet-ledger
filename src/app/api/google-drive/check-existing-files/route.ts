@@ -44,14 +44,14 @@ export async function POST(request: NextRequest) {
 
     // Parse do body da requisição
     const body = await request.json()
-    const { patientName, dataInicio, dataFim } = body
+    const { patientName, startDate: startDateStr, endDate: endDateStr } = body
 
-    if (!patientName || !dataInicio || !dataFim) {
+    if (!patientName || !startDateStr || !endDateStr) {
       return NextResponse.json({ error: 'Nome do paciente, data de início e fim são obrigatórios' }, { status: 400 })
     }
 
-    const startDate = new Date(dataInicio)
-    const endDate = new Date(dataFim)
+    const startDate = new Date(startDateStr)
+    const endDate = new Date(endDateStr)
 
     // Inicializar cliente do Google Drive
     const auth = new google.auth.OAuth2()

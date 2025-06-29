@@ -47,43 +47,49 @@ export const spreadsheetFormSchema = z
         }),
       )
       .min(1, 'Selecione pelo menos um dia da semana'),
-    dataInicio: z.string().min(1, 'Data de início é obrigatória'),
-    dataFim: z.string().min(1, 'Data fim é obrigatória'),
-    horarioInicio: z.string().min(1, 'Horário de início é obrigatório').regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de horário inválido (HH:MM)'),
-    horarioFim: z.string().min(1, 'Horário fim é obrigatório').regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de horário inválido (HH:MM)'),
+    startDate: z.string().min(1, 'Data de início é obrigatória'),
+    endDate: z.string().min(1, 'Data fim é obrigatória'),
+    startTime: z
+      .string()
+      .min(1, 'Horário de início é obrigatório')
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de horário inválido (HH:MM)'),
+    endTime: z
+      .string()
+      .min(1, 'Horário fim é obrigatório')
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de horário inválido (HH:MM)'),
   })
   .refine(
     data => {
-      if (!data.dataInicio || !data.dataFim) return true // Deixa a validação de campos obrigatórios para o schema principal
+      if (!data.startDate || !data.endDate) return true // Deixa a validação de campos obrigatórios para o schema principal
 
-      const dataInicio = new Date(data.dataInicio)
-      const dataFim = new Date(data.dataFim)
+      const startDate = new Date(data.startDate)
+      const endDate = new Date(data.endDate)
 
       // Verifica se as datas são válidas
-      if (isNaN(dataInicio.getTime()) || isNaN(dataFim.getTime())) return true
+      if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) return true
 
-      return dataInicio < dataFim
+      return startDate < endDate
     },
     {
       message: 'Data fim deve ser posterior à data de início',
-      path: ['dataFim'],
+      path: ['endDate'],
     },
   )
   .refine(
     data => {
-      if (!data.horarioInicio || !data.horarioFim) return true // Deixa a validação de campos obrigatórios para o schema principal
+      if (!data.startTime || !data.endTime) return true // Deixa a validação de campos obrigatórios para o schema principal
 
-      const [horaInicio, minutoInicio] = data.horarioInicio.split(':').map(Number)
-      const [horaFim, minutoFim] = data.horarioFim.split(':').map(Number)
+      const [startHour, startMinute] = data.startTime.split(':').map(Number)
+      const [endHour, endMinute] = data.endTime.split(':').map(Number)
 
-      const inicioEmMinutos = horaInicio * 60 + minutoInicio
-      const fimEmMinutos = horaFim * 60 + minutoFim
+      const startTimeInMinutes = startHour * 60 + startMinute
+      const endTimeInMinutes = endHour * 60 + endMinute
 
-      return inicioEmMinutos < fimEmMinutos
+      return startTimeInMinutes < endTimeInMinutes
     },
     {
       message: 'Horário fim deve ser posterior ao horário de início',
-      path: ['horarioFim'],
+      path: ['endTime'],
     },
   )
 
