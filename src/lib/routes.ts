@@ -56,7 +56,7 @@ export const routes = {
 
     // Autenticação
     auth: {
-      login: '/auth/signin',
+      signIn: '/auth/signin',
     },
   },
 

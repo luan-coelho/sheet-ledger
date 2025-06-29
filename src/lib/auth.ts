@@ -29,10 +29,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     maxAge: 1 * 24 * 60 * 60, // 1 dia
   },
   pages: {
-    signIn: routes.frontend.auth.login,
-    signOut: routes.frontend.auth.login,
-    newUser: routes.frontend.auth.login,
-    error: routes.frontend.auth.login,
+    signIn: routes.frontend.auth.signIn,
+    signOut: routes.frontend.auth.signIn,
+    newUser: routes.frontend.auth.signIn,
+    error: routes.frontend.auth.signIn,
   },
   callbacks: {
     async signIn({ user, account }) {

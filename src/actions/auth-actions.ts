@@ -111,7 +111,7 @@ export async function handleSignOut(redirectTo?: string): Promise<SignOutResult>
     }
 
     // Default redirect URL se não fornecido
-    const redirectUrl = redirectTo || routes.frontend.auth.login
+    const redirectUrl = redirectTo || routes.frontend.auth.signIn
 
     await signOut({
       redirectTo: redirectUrl,

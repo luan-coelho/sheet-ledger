@@ -19,7 +19,7 @@ interface SignOutButtonProps {
 export function SignOutButton({ variant = 'ghost', size = 'default', className, redirectTo }: SignOutButtonProps) {
   // Server action wrapper para logout
   const signOutAction = async () => {
-    const result = await handleSignOut(redirectTo || routes.frontend.auth.login)
+    const result = await handleSignOut(redirectTo || routes.frontend.auth.signIn)
 
     if (!result.success && result.error) {
       toast.error(result.error)
