@@ -1,6 +1,8 @@
 'use client'
 
+import { Settings, User } from 'lucide-react'
 import { useSession } from 'next-auth/react'
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -9,16 +11,16 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { UserAvatar } from './user-avatar'
-import { SignOutButton } from './sign-out-button'
+
 import { SignInButton } from './sign-in-button'
-import { User, Settings } from 'lucide-react'
+import { SignOutButton } from './sign-out-button'
+import { UserAvatar } from './user-avatar'
 
 export function UserMenu() {
   const { data: session, status } = useSession()
 
   if (status === 'loading') {
-    return <div className="h-8 w-8 animate-pulse rounded-full bg-muted" />
+    return <div className="bg-muted h-8 w-8 animate-pulse rounded-full" />
   }
 
   if (!session?.user) {
@@ -35,8 +37,8 @@ export function UserMenu() {
       <DropdownMenuContent className="w-56" align="end" forceMount>
         <DropdownMenuLabel className="font-normal">
           <div className="flex flex-col space-y-1">
-            <p className="text-sm font-medium leading-none">{session.user.name}</p>
-            <p className="text-xs leading-none text-muted-foreground">{session.user.email}</p>
+            <p className="text-sm leading-none font-medium">{session.user.name}</p>
+            <p className="text-muted-foreground text-xs leading-none">{session.user.email}</p>
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />

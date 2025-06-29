@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { cn } from '@/lib/utils'
-import { WeekDays, WeekdaySession } from '@/lib/spreadsheet-schema'
+import { useEffect, useState } from 'react'
+
+import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Badge } from '@/components/ui/badge'
+
+import { WeekDays, WeekdaySession } from '@/lib/spreadsheet-schema'
+import { cn } from '@/lib/utils'
 
 export type WeekdaySessionSelectorProps = {
   className?: string
@@ -64,7 +66,7 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
     <div className={cn('space-y-4 p-3', className)}>
       {/* Day Selection */}
       <div>
-        <div className="flex justify-center flex-wrap gap-2 sm:space-x-2 sm:gap-0">
+        <div className="flex flex-wrap justify-center gap-2 sm:gap-0 sm:space-x-2">
           {weekdayItems.map(item => {
             const isSelected = isDaySelected(item.key)
             return (
@@ -73,8 +75,8 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
                 type="button"
                 onClick={() => handleToggleDay(item.key)}
                 className={cn(
-                  'flex h-10 w-10 sm:h-10 sm:w-10 items-center justify-center rounded-md text-sm font-medium transition-colors',
-                  'border border-input hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                  'flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors sm:h-10 sm:w-10',
+                  'border-input hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring border focus-visible:ring-2 focus-visible:outline-none',
                   isSelected
                     ? 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground'
                     : 'bg-background hover:bg-background',
@@ -83,7 +85,7 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
                 aria-label={item.fullName}
                 aria-pressed={isSelected}>
                 <span className="hidden sm:inline">{item.label}</span>
-                <span className="sm:hidden text-xs">{item.fullName.substring(0, 3)}</span>
+                <span className="text-xs sm:hidden">{item.fullName.substring(0, 3)}</span>
               </button>
             )
           })}
@@ -94,21 +96,21 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
       {selectedDays.length > 0 && (
         <div className="space-y-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <Label className="text-sm font-medium text-center sm:text-left">Sessões por dia</Label>
+            <Label className="text-center text-sm font-medium sm:text-left">Sessões por dia</Label>
             <Badge variant="secondary" className="self-center sm:self-auto">
               Total: {totalSessions} sessões
             </Badge>
           </div>
 
-          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {selectedDays.map(({ day, sessions }) => {
               const dayItem = weekdayItems.find(item => item.key === day)
               return (
                 <div
                   key={day}
-                  className="flex items-center justify-between space-x-2 p-3 border rounded-lg bg-muted/30">
-                  <div className="flex-1 min-w-0">
-                    <Label className="text-sm font-medium truncate">{dayItem?.fullName}</Label>
+                  className="bg-muted/30 flex items-center justify-between space-x-2 rounded-lg border p-3">
+                  <div className="min-w-0 flex-1">
+                    <Label className="truncate text-sm font-medium">{dayItem?.fullName}</Label>
                   </div>
                   <div className="w-16 sm:w-20">
                     <Input
@@ -121,7 +123,7 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
                         const clampedValue = Math.max(1, Math.min(10, value))
                         handleSessionsChange(day, clampedValue)
                       }}
-                      className="text-center h-8 text-sm"
+                      className="h-8 text-center text-sm"
                     />
                   </div>
                 </div>
@@ -133,7 +135,7 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
 
       {/* Summary */}
       {selectedDays.length > 0 && (
-        <div className="text-xs sm:text-sm text-muted-foreground text-center">
+        <div className="text-muted-foreground text-center text-xs sm:text-sm">
           {selectedDays.length} dia{selectedDays.length > 1 ? 's' : ''} selecionado{selectedDays.length > 1 ? 's' : ''}{' '}
           • {totalSessions} sessões no total
         </div>

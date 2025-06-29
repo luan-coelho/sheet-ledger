@@ -1,4 +1,4 @@
-import { WeekDays, meses, WeekdaySession } from './spreadsheet-schema'
+import { meses, WeekDays, WeekdaySession } from './spreadsheet-schema'
 
 export type SessionDate = {
   date: Date

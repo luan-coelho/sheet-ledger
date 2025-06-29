@@ -1,8 +1,9 @@
 'use client'
 
-import { useProfessionals, useCreateProfessional } from '@/hooks/use-professionals'
 import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
+
+import { useCreateProfessional, useProfessionals } from '@/hooks/use-professionals'
 
 interface ProfessionalSelectorProps {
   value?: string
@@ -27,7 +28,7 @@ export function ProfessionalSelector({
   }
 
   if (error) {
-    return <div className="text-sm text-destructive">Erro ao carregar profissionais</div>
+    return <div className="text-destructive text-sm">Erro ao carregar profissionais</div>
   }
 
   const options: CreatableComboboxOption[] =

@@ -1,5 +1,6 @@
-import { google } from 'googleapis'
 import { Readable } from 'stream'
+
+import { google } from 'googleapis'
 
 // Interface para arquivo retornado pela API do Google Drive
 interface GoogleDriveApiFile {

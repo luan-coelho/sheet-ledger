@@ -1,7 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/app/db'
-import { usersTable, updateUserSchema } from '@/app/db/schemas/user-schema'
 import { eq } from 'drizzle-orm'
+import { NextRequest, NextResponse } from 'next/server'
+
+import { db } from '@/app/db'
+import { updateUserSchema, usersTable } from '@/app/db/schemas/user-schema'
+
 import { auth } from '@/lib/auth'
 
 // GET /api/users/[id] - Get user by ID

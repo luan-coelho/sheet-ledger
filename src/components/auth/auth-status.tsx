@@ -1,7 +1,9 @@
 'use client'
 
 import { useSession } from 'next-auth/react'
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
 import { SignInButton } from './sign-in-button'
 import { SignOutButton } from './sign-out-button'
 import { UserAvatar } from './user-avatar'
@@ -17,7 +19,7 @@ export function AuthStatus() {
         </CardHeader>
         <CardContent>
           <div className="flex items-center space-x-2">
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+            <div className="border-primary h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
             <span>Carregando...</span>
           </div>
         </CardContent>
@@ -38,7 +40,7 @@ export function AuthStatus() {
               <UserAvatar />
               <div>
                 <p className="font-medium">{session.user?.name}</p>
-                <p className="text-sm text-muted-foreground">{session.user?.email}</p>
+                <p className="text-muted-foreground text-sm">{session.user?.email}</p>
               </div>
             </div>
             <SignOutButton />

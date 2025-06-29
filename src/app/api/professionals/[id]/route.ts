@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/app/db'
-import { professionalsTable, insertProfessionalSchema } from '@/app/db/schemas/professional-schema'
 import { eq } from 'drizzle-orm'
+import { NextRequest, NextResponse } from 'next/server'
+
+import { db } from '@/app/db'
+import { insertProfessionalSchema, professionalsTable } from '@/app/db/schemas/professional-schema'
 
 // GET /api/professionals/[id] - Get professional by ID
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

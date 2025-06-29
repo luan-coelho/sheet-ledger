@@ -1,7 +1,9 @@
-import ExcelJS from 'exceljs'
 import path from 'path'
-import { WeekDays, meses, WeekdaySession } from './spreadsheet-schema'
+
+import ExcelJS from 'exceljs'
+
 import { createBrazilianDate, formatDateBrazilian, getMonthNameInPortuguese } from './date-utils'
+import { meses, WeekDays, WeekdaySession } from './spreadsheet-schema'
 
 type SessionRecord = {
   date: Date

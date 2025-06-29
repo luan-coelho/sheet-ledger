@@ -1,15 +1,16 @@
 'use client'
 
-import { cn } from '@/lib/utils'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react'
 import { signIn } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
-import { useRouter } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
 import { routes } from '@/lib/routes'
+import { cn } from '@/lib/utils'
 
 export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) {
   const router = useRouter()
@@ -63,7 +64,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
   return (
     <div className={cn('flex flex-col gap-6', className)} {...props}>
-      <Card className="bg-white border border-gray-200 shadow-sm">
+      <Card className="border border-gray-200 bg-white shadow-sm">
         <CardHeader className="text-center">
           <CardTitle className="text-xl text-gray-900">Bem-vindo de volta</CardTitle>
           <CardDescription className="text-gray-600">
@@ -75,7 +76,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             <Button
               onClick={handleGoogleSignIn}
               disabled={isLoading}
-              className="w-full h-12 text-sm font-semibold bg-gray-900 text-white hover:bg-gray-800 border-0 disabled:bg-gray-700 disabled:text-gray-300"
+              className="h-12 w-full border-0 bg-gray-900 text-sm font-semibold text-white hover:bg-gray-800 disabled:bg-gray-700 disabled:text-gray-300"
               size="lg">
               {isLoading ? (
                 <>
@@ -97,8 +98,8 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
             {/* Aviso de redirecionamento */}
             {callbackUrl !== routes.frontend.admin.sheets && (
-              <div className="px-4 py-3 rounded-lg bg-blue-50 border border-blue-200">
-                <p className="text-sm text-blue-700 text-center">
+              <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+                <p className="text-center text-sm text-blue-700">
                   <span className="font-medium">💡 Redirecionamento:</span> Você será direcionado para a página
                   solicitada após o login
                 </p>
@@ -107,9 +108,9 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
 
             {/* Aviso de segurança */}
             <div className="text-center">
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-50 border border-green-200">
-                <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-                <span className="text-sm text-green-700 font-medium">Autenticação segura via Google</span>
+              <div className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-4 py-2">
+                <div className="h-2 w-2 rounded-full bg-green-500"></div>
+                <span className="text-sm font-medium text-green-700">Autenticação segura via Google</span>
               </div>
             </div>
           </div>

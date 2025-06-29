@@ -5,10 +5,10 @@
  *
  * Execute com: npx tsx scripts/create-test-users.ts
  */
+import { eq } from 'drizzle-orm'
 
 import { db } from '../src/app/db'
 import { usersTable } from '../src/app/db/schemas/user-schema'
-import { eq } from 'drizzle-orm'
 
 // Usuários de teste
 const testUsers = [

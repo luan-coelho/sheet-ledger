@@ -1,7 +1,8 @@
+import { desc } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
+
 import { db } from '@/app/db'
 import { guardiansTable, insertGuardianSchema } from '@/app/db/schemas/guardian-schema'
-import { desc } from 'drizzle-orm'
 
 // GET /api/guardians - List all guardians
 export async function GET() {

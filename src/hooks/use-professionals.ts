@@ -1,4 +1,8 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+
 import { ProfessionalFormValues } from '@/app/db/schemas/professional-schema'
+
 import {
   createProfessional,
   deleteProfessional,
@@ -7,8 +11,6 @@ import {
   professionalQueryKeys,
   updateProfessional,
 } from '@/services/professional-service'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 
 // Hook para listar todos os profissionais
 export function useProfessionals() {

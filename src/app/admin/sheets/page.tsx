@@ -1,5 +1,6 @@
-import { requireAuth } from '@/lib/auth-utils'
 import { SpreadsheetForm } from '@/components/spreadsheet-form'
+
+import { requireAuth } from '@/lib/auth-utils'
 
 export default async function PlanilhasPage() {
   // Server-side authentication check

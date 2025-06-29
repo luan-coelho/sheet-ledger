@@ -1,11 +1,12 @@
 'use client'
 
-import { useSearchParams } from 'next/navigation'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
 import { AlertCircle } from 'lucide-react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { Suspense } from 'react'
+
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
 const errorMessages = {
   Configuration: 'Erro de configuração do servidor.',
@@ -21,10 +22,10 @@ function ErrorCard() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader className="space-y-1">
-        <div className="flex items-center justify-center mb-4">
-          <AlertCircle className="h-12 w-12 text-destructive" />
+        <div className="mb-4 flex items-center justify-center">
+          <AlertCircle className="text-destructive h-12 w-12" />
         </div>
-        <CardTitle className="text-2xl text-center">Erro de Autenticação</CardTitle>
+        <CardTitle className="text-center text-2xl">Erro de Autenticação</CardTitle>
         <CardDescription className="text-center">{errorMessages[error] || errorMessages.Default}</CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4">
@@ -41,12 +42,12 @@ function ErrorCard() {
 
 export default function AuthErrorPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
+    <div className="bg-background flex min-h-screen items-center justify-center">
       <Suspense
         fallback={
           <Card className="w-full max-w-md">
             <CardHeader className="space-y-1">
-              <CardTitle className="text-2xl text-center">Carregando...</CardTitle>
+              <CardTitle className="text-center text-2xl">Carregando...</CardTitle>
             </CardHeader>
           </Card>
         }>

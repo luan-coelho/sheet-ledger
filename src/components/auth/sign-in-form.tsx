@@ -1,13 +1,14 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
-import { routes } from '@/lib/routes'
 import { Loader2 } from 'lucide-react'
 import { signIn } from 'next-auth/react'
-import { useSearchParams } from 'next/navigation'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useState } from 'react'
 import { toast } from 'sonner'
+
+import { Button } from '@/components/ui/button'
+
+import { routes } from '@/lib/routes'
 
 export function SignInForm() {
   const router = useRouter()
@@ -58,7 +59,7 @@ export function SignInForm() {
       <Button
         onClick={handleSignIn}
         disabled={isLoading}
-        className="w-full h-12 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 rounded-lg border-0"
+        className="h-12 w-full rounded-lg border-0 bg-gradient-to-r from-indigo-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 hover:shadow-xl"
         size="lg">
         {isLoading ? (
           <>
@@ -94,8 +95,8 @@ export function SignInForm() {
       <div className="space-y-4">
         {/* Callback URL Notice */}
         {callbackUrl !== routes.frontend.admin.sheets && (
-          <div className="px-4 py-3 rounded-lg bg-blue-50 border border-blue-200">
-            <p className="text-sm text-blue-700 text-center">
+          <div className="rounded-lg border border-blue-200 bg-blue-50 px-4 py-3">
+            <p className="text-center text-sm text-blue-700">
               <span className="font-medium">💡 Redirecionamento:</span> Você será direcionado para a página solicitada
               após o login
             </p>

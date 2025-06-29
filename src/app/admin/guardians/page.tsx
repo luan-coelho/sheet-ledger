@@ -1,10 +1,11 @@
 'use client'
 
+import { Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { Plus, MoreHorizontal, Pencil, Trash2, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+
+import { Guardian } from '@/app/db/schemas/guardian-schema'
+
+import { GuardianForm } from '@/components/guardian-form'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,11 +16,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { GuardianForm } from '@/components/guardian-form'
-import { useGuardians, useDeleteGuardian } from '@/hooks/use-guardians'
-import { Guardian } from '@/app/db/schemas/guardian-schema'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
+import { useDeleteGuardian, useGuardians } from '@/hooks/use-guardians'
 
 export default function ResponsaveisPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -75,7 +78,7 @@ export default function ResponsaveisPage() {
 
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center text-destructive">Erro ao carregar responsáveis: {error.message}</div>
+            <div className="text-destructive text-center">Erro ao carregar responsáveis: {error.message}</div>
           </CardContent>
         </Card>
       </div>
@@ -148,7 +151,7 @@ export default function ResponsaveisPage() {
               </TableBody>
             </Table>
           ) : (
-            <div className="text-center py-8">
+            <div className="py-8 text-center">
               <p className="text-muted-foreground mb-4">Nenhum responsável cadastrado ainda.</p>
               <Button onClick={handleNewGuardian}>
                 <Plus className="mr-2 h-4 w-4" />

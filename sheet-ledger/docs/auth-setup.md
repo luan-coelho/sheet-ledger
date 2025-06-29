@@ -16,12 +16,12 @@ pnpm add next-auth@beta
 A configuração principal do NextAuth fica dentro da pasta `src/app/api/auth/[...nextauth]/route.ts`:
 
 ```typescript
-import NextAuth from 'next-auth'
-import CredentialsProvider from 'next-auth/providers/credentials'
-import { eq } from 'drizzle-orm'
 import { db } from '@/db'
 import { users } from '@/db/schemas/user-schema'
 import bcrypt from 'bcrypt'
+import { eq } from 'drizzle-orm'
+import NextAuth from 'next-auth'
+import CredentialsProvider from 'next-auth/providers/credentials'
 
 // Configuração do NextAuth
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -152,9 +152,8 @@ export async function isAdmin() {
 Crie um arquivo `middleware.ts` na raiz do projeto para proteger rotas:
 
 ```typescript
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 import { getToken } from 'next-auth/jwt'
+import { NextResponse, type NextRequest } from 'next/server'
 
 // Rotas públicas que não requerem autenticação
 const publicRoutes = ['/auth/signin', '/auth/error']
@@ -225,13 +224,14 @@ export function AuthSessionProvider({ children }: { children: React.ReactNode })
 // src/components/auth/sign-in-form.tsx
 'use client'
 
-import { useState } from 'react'
 import { signIn } from 'next-auth/react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { useState } from 'react'
+
 import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function SignInForm() {
   const router = useRouter()
@@ -268,13 +268,13 @@ export function SignInForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="mx-auto w-full max-w-md">
       <CardHeader>
         <CardTitle className="text-center">Login</CardTitle>
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="space-y-4">
-          {error && <div className="text-red-500 text-sm">{error}</div>}
+          {error && <div className="text-sm text-red-500">{error}</div>}
 
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
@@ -311,6 +311,9 @@ export function SignInForm() {
 'use client'
 
 import { signOut, useSession } from 'next-auth/react'
+
+import { UserAvatar } from '@/components/auth/user-avatar'
+import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -318,8 +321,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import { Button } from '@/components/ui/button'
-import { UserAvatar } from '@/components/auth/user-avatar'
 
 export function UserMenu() {
   const { data: session } = useSession()
@@ -339,7 +340,7 @@ export function UserMenu() {
         <div className="flex items-center justify-start gap-2 p-2">
           <div className="flex flex-col space-y-1 leading-none">
             {session.user.name && <p className="font-medium">{session.user.name}</p>}
-            {session.user.email && <p className="text-sm text-muted-foreground">{session.user.email}</p>}
+            {session.user.email && <p className="text-muted-foreground text-sm">{session.user.email}</p>}
           </div>
         </div>
         <DropdownMenuSeparator />
@@ -362,6 +363,7 @@ export function UserMenu() {
 ```tsx
 // src/components/protected-page.tsx
 import { redirect } from 'next/navigation'
+
 import { getCurrentUser } from '@/lib/auth'
 
 interface ProtectedPageProps {
@@ -398,7 +400,7 @@ export default function SignInPage() {
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Bem-vindo de volta</h1>
-          <p className="text-sm text-muted-foreground">Entre com suas credenciais para acessar o sistema</p>
+          <p className="text-muted-foreground text-sm">Entre com suas credenciais para acessar o sistema</p>
         </div>
         <SignInForm />
       </div>
@@ -411,8 +413,9 @@ export default function SignInPage() {
 
 ```tsx
 // src/app/auth/error/page.tsx
-import { Button } from '@/components/ui/button'
 import Link from 'next/link'
+
+import { Button } from '@/components/ui/button'
 
 export default function AuthErrorPage() {
   return (
@@ -420,7 +423,7 @@ export default function AuthErrorPage() {
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
         <div className="flex flex-col space-y-2 text-center">
           <h1 className="text-2xl font-semibold tracking-tight">Erro de Autenticação</h1>
-          <p className="text-sm text-muted-foreground">Ocorreu um erro durante a autenticação</p>
+          <p className="text-muted-foreground text-sm">Ocorreu um erro durante a autenticação</p>
         </div>
         <Button asChild>
           <Link href="/auth/signin">Tentar Novamente</Link>
@@ -450,6 +453,7 @@ ADMIN_PASSWORD=senha_admin_segura
 ```typescript
 // scripts/create-admin-user.ts
 import bcrypt from 'bcrypt'
+
 import { db } from '../src/db'
 import { users } from '../src/db/schemas/user-schema'
 
@@ -510,6 +514,7 @@ Para melhorar a tipagem do NextAuth, crie um arquivo `types/next-auth.d.ts`:
 
 ```typescript
 import 'next-auth'
+
 import { DefaultSession } from 'next-auth'
 
 declare module 'next-auth' {

@@ -1,5 +1,9 @@
 'use client'
 
+import { Palette, Settings } from 'lucide-react'
+import { useTheme } from 'next-themes'
+import { useEffect, useState } from 'react'
+
 import { GoogleDriveConfig } from '@/components/google-drive-config'
 import { Label } from '@/components/ui/label'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
@@ -7,10 +11,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator'
 import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+
 import { useThemeConfig } from '@/lib/theme-config'
-import { Palette, Settings } from 'lucide-react'
-import { useTheme } from 'next-themes'
-import { useEffect, useState } from 'react'
 
 export default function SettingsPage() {
   const { config: themeConfig, updateConfig: updateThemeConfig } = useThemeConfig()
@@ -58,7 +60,7 @@ export default function SettingsPage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-medium">Tema</h3>
-                  <p className="text-sm text-muted-foreground">Escolha o tema de cores para o sistema.</p>
+                  <p className="text-muted-foreground text-sm">Escolha o tema de cores para o sistema.</p>
                 </div>
                 <div className="grid gap-4">
                   <div className="flex items-center justify-between">
@@ -78,7 +80,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label htmlFor="high-contrast">Alto contraste</Label>
-                      <p className="text-[0.8rem] text-muted-foreground">
+                      <p className="text-muted-foreground text-[0.8rem]">
                         Aumentar o contraste para melhor legibilidade.
                       </p>
                     </div>
@@ -94,7 +96,7 @@ export default function SettingsPage() {
 
                 <div>
                   <h3 className="text-lg font-medium">Acessibilidade</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Ajuste as configurações para melhorar a acessibilidade.
                   </p>
                 </div>
@@ -102,7 +104,7 @@ export default function SettingsPage() {
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
                       <Label htmlFor="reduced-motion">Reduzir movimento</Label>
-                      <p className="text-[0.8rem] text-muted-foreground">Reduzir ou eliminar animações na interface.</p>
+                      <p className="text-muted-foreground text-[0.8rem]">Reduzir ou eliminar animações na interface.</p>
                     </div>
                     <Switch
                       id="reduced-motion"
@@ -148,7 +150,7 @@ export default function SettingsPage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-medium">Integrações</h3>
-                  <p className="text-sm text-muted-foreground">Configure integrações com serviços externos.</p>
+                  <p className="text-muted-foreground text-sm">Configure integrações com serviços externos.</p>
                 </div>
                 <GoogleDriveConfig />
               </div>

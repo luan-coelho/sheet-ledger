@@ -1,8 +1,10 @@
-import { auth as getAuth } from '@/lib/auth'
-import { googleDriveConfigService } from '@/services/google-drive-config-service'
-import { APP_ROOT_FOLDER_NAME } from '@/services/google-drive-service'
 import { google } from 'googleapis'
 import { NextRequest, NextResponse } from 'next/server'
+
+import { auth as getAuth } from '@/lib/auth'
+
+import { googleDriveConfigService } from '@/services/google-drive-config-service'
+import { APP_ROOT_FOLDER_NAME } from '@/services/google-drive-service'
 
 // Função para obter os meses entre duas datas
 function getMonthsBetweenDates(startDate: Date, endDate: Date) {

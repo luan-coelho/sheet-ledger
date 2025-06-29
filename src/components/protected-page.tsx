@@ -1,7 +1,8 @@
 'use client'
 
-import { useRequireAuth } from '@/hooks/use-auth-guard'
 import { Loader2 } from 'lucide-react'
+
+import { useRequireAuth } from '@/hooks/use-auth-guard'
 
 interface ProtectedPageProps {
   children: React.ReactNode

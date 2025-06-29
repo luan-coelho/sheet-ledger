@@ -1,15 +1,16 @@
+import { eq, sql } from 'drizzle-orm'
+
 import { db } from '../app/db'
 import {
-  professionalsTable,
-  patientsTable,
   guardiansTable,
   healthPlansTable,
-  type NewProfessional,
-  type NewPatient,
+  patientsTable,
+  professionalsTable,
   type NewGuardian,
   type NewHealthPlan,
+  type NewPatient,
+  type NewProfessional,
 } from '../app/db/schemas'
-import { eq, sql } from 'drizzle-orm'
 
 // Sample data for seeding
 const samplePatients: NewPatient[] = [

@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/app/db'
-import { patientsTable, insertPatientSchema } from '@/app/db/schemas/patient-schema'
 import { eq } from 'drizzle-orm'
+import { NextRequest, NextResponse } from 'next/server'
+
+import { db } from '@/app/db'
+import { insertPatientSchema, patientsTable } from '@/app/db/schemas/patient-schema'
 
 // GET /api/patients/[id] - Get patient by ID
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

@@ -1,12 +1,11 @@
 'use client'
 
-import { useState } from 'react'
-import { Plus, MoreHorizontal, Pencil, UserCheck, UserX, Loader2, Search, X } from 'lucide-react'
+import { Loader2, MoreHorizontal, Pencil, Plus, Search, UserCheck, UserX, X } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { useState } from 'react'
+
+import { User } from '@/app/db/schemas/user-schema'
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,9 +16,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import {
   Pagination,
   PaginationContent,
@@ -29,9 +31,10 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { UserForm } from '@/components/user-form'
-import { useUsers, useDeleteUser, useToggleUserStatus } from '@/hooks/use-users'
-import { User } from '@/app/db/schemas/user-schema'
+
+import { useDeleteUser, useToggleUserStatus, useUsers } from '@/hooks/use-users'
 
 export default function UsuariosPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -185,7 +188,7 @@ export default function UsuariosPage() {
 
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center text-destructive">Erro ao carregar usuários: {error.message}</div>
+            <div className="text-destructive text-center">Erro ao carregar usuários: {error.message}</div>
           </CardContent>
         </Card>
       </div>
@@ -234,21 +237,21 @@ export default function UsuariosPage() {
           </CardDescription>
 
           {/* Campo de filtro */}
-          <div className="flex items-center space-x-2 mb-6">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <div className="mb-6 flex items-center space-x-2">
+            <div className="relative max-w-sm flex-1">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
               <Input
                 placeholder="Buscar por nome..."
                 value={searchFilter}
                 onChange={e => handleSearchChange(e.target.value)}
-                className="pl-10 pr-10"
+                className="pr-10 pl-10"
               />
               {searchFilter && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={clearSearch}
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted">
+                  className="hover:bg-muted absolute top-1/2 right-1 h-6 w-6 -translate-y-1/2 transform p-0">
                   <X className="h-3 w-3" />
                   <span className="sr-only">Limpar busca</span>
                 </Button>
@@ -264,7 +267,7 @@ export default function UsuariosPage() {
               <span className="ml-2">Carregando usuários...</span>
             </div>
           ) : paginatedUsers.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
+            <div className="text-muted-foreground py-8 text-center">
               {searchFilter ? 'Nenhum usuário encontrado com os critérios de busca.' : 'Nenhum usuário cadastrado.'}
             </div>
           ) : (

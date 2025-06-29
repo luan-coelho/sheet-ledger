@@ -1,14 +1,17 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Loader2 } from 'lucide-react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+
+import { insertProfessionalSchema, Professional, ProfessionalFormValues } from '@/app/db/schemas/professional-schema'
+
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { insertProfessionalSchema, ProfessionalFormValues, Professional } from '@/app/db/schemas/professional-schema'
+
 import { useCreateProfessional, useUpdateProfessional } from '@/hooks/use-professionals'
-import { useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
 
 interface ProfessionalFormProps {
   professional?: Professional
@@ -75,7 +78,7 @@ export function ProfessionalForm({ professional, onSuccess, onCancel }: Professi
           )}
         />
 
-        <div className="flex gap-3 justify-end">
+        <div className="flex justify-end gap-3">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
               Cancelar
@@ -89,7 +92,7 @@ export function ProfessionalForm({ professional, onSuccess, onCancel }: Professi
         </div>
 
         {(createMutation.error || updateMutation.error) && (
-          <div className="text-sm text-destructive">
+          <div className="text-destructive text-sm">
             {createMutation.error?.message || updateMutation.error?.message}
           </div>
         )}

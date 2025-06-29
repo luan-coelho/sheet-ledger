@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
+
 import { auth } from '@/lib/auth'
-import { createGoogleDriveService } from '@/services/google-drive-service'
+
 import { googleDriveConfigService } from '@/services/google-drive-config-service'
+import { createGoogleDriveService } from '@/services/google-drive-service'
 
 // GET - Listar arquivos e pastas
 export async function GET(request: NextRequest) {

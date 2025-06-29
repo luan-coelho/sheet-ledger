@@ -1,8 +1,9 @@
 'use client'
 
-import { useGuardians, useCreateGuardian } from '@/hooks/use-guardians'
 import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
+
+import { useCreateGuardian, useGuardians } from '@/hooks/use-guardians'
 
 interface GuardianSelectorProps {
   value?: string
@@ -27,7 +28,7 @@ export function GuardianSelector({
   }
 
   if (error) {
-    return <div className="text-sm text-destructive">Erro ao carregar responsáveis</div>
+    return <div className="text-destructive text-sm">Erro ao carregar responsáveis</div>
   }
 
   const options: CreatableComboboxOption[] =

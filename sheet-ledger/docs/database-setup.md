@@ -50,8 +50,9 @@ Os schemas do banco de dados são organizados em arquivos separados na pasta `sr
 
 ```typescript
 // src/db/schemas/patient-schema.ts
-import { pgTable, serial, varchar, integer, timestamp } from 'drizzle-orm/pg-core'
 import { relations } from 'drizzle-orm'
+import { integer, pgTable, serial, timestamp, varchar } from 'drizzle-orm/pg-core'
+
 import { guardians } from './guardian-schema'
 import { healthPlans } from './health-plan-schema'
 
@@ -85,6 +86,7 @@ O arquivo `src/db/index.ts` configura a conexão com o banco de dados:
 ```typescript
 import { drizzle } from 'drizzle-orm/node-postgres'
 import { Pool } from 'pg'
+
 import * as schema from './schemas'
 
 // Verificar se a URL do banco de dados está definida

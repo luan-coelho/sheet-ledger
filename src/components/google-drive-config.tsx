@@ -1,5 +1,8 @@
 'use client'
 
+import { AlertCircle, CheckCircle, ExternalLink, Trash2, XCircle } from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,15 +20,16 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
+
 import {
   useConfigureGoogleDrive,
   useGoogleDriveConfigStatus,
   useRemoveGoogleDriveConfig,
   useStartGoogleDriveAuth,
 } from '@/hooks/use-google-drive-config'
-import { AlertCircle, CheckCircle, ExternalLink, Trash2, XCircle } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+
 import { Alert, AlertDescription, AlertTitle } from './ui/alert'
+
 // Função utilitária para formatar data
 function formatDate(date: Date): string {
   return new Intl.DateTimeFormat('pt-BR', {
@@ -121,10 +125,10 @@ export function GoogleDriveConfig() {
           <div>
             <p className="font-medium">{status?.isConfigured ? 'Configurado' : 'Não Configurado'}</p>
             {status?.isConfigured && status.accountEmail && (
-              <p className="text-sm text-muted-foreground">Conta: {status.accountEmail}</p>
+              <p className="text-muted-foreground text-sm">Conta: {status.accountEmail}</p>
             )}
             {status?.isConfigured && status.configuredAt && (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground text-xs">
                 Configurado em: {formatDate(new Date(status.configuredAt))}
               </p>
             )}
@@ -142,7 +146,7 @@ export function GoogleDriveConfig() {
         <div className="space-y-4">
           <div className="space-y-2">
             <h4 className="font-medium">Configurar Google Drive</h4>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               Conecte uma conta Google Drive para permitir que a aplicação gerencie arquivos e pastas.
             </p>
           </div>
@@ -170,7 +174,7 @@ export function GoogleDriveConfig() {
                   onChange={e => setAuthCode(e.target.value)}
                   disabled={configureGoogleDrive.isPending}
                 />
-                <p className="text-xs text-muted-foreground">
+                <p className="text-muted-foreground text-xs">
                   Acesse a URL de autorização do Google, autorize a aplicação e cole o código aqui.
                 </p>
               </div>
@@ -197,7 +201,7 @@ export function GoogleDriveConfig() {
         <div className="space-y-4">
           <div className="space-y-2">
             <h4 className="font-medium">Google Drive Conectado</h4>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-muted-foreground text-sm">
               A aplicação está conectada ao Google Drive e pode gerenciar arquivos e pastas.
             </p>
           </div>

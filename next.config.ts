@@ -1,5 +1,6 @@
-import { routes } from '@/lib/routes'
 import type { NextConfig } from 'next'
+
+import { routes } from '@/lib/routes'
 
 const nextConfig: NextConfig = {
   async redirects() {

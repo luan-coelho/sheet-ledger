@@ -1,14 +1,15 @@
 'use client'
 
+import { Bell } from 'lucide-react'
+
 import { UserMenu } from '@/components/auth/user-menu'
+import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import { SidebarTrigger } from '@/components/ui/sidebar'
-import { ThemeToggle } from '@/components/theme-toggle'
-import { Bell } from 'lucide-react'
 
 export function AppHeader() {
   return (
-    <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4">
+    <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 border-b px-4 backdrop-blur">
       <SidebarTrigger className="-ml-1" />
 
       <div className="flex flex-1 items-center justify-end gap-2">

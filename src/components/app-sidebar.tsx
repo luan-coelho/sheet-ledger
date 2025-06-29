@@ -1,9 +1,9 @@
 'use client'
 
-import { UserAvatar } from '@/components/auth/user-avatar'
-import { BarChart3, CreditCard, FileText, Settings, Shield, Users, Cloud } from 'lucide-react'
+import { BarChart3, Cloud, CreditCard, FileText, Settings, Shield, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
+import { UserAvatar } from '@/components/auth/user-avatar'
 import {
   Sidebar,
   SidebarContent,
@@ -17,6 +17,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
+
 import { routes } from '@/lib/routes'
 
 // Menu items principais
@@ -85,12 +86,12 @@ export function AppSidebar() {
       <Sidebar className="bg-sidebar" variant="inset">
         <SidebarHeader>
           <div className="flex items-center gap-2 px-4 py-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
               <FileText className="h-4 w-4" />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">Sistema</span>
-              <span className="truncate text-xs text-muted-foreground">Gestão de Planilhas</span>
+              <span className="text-muted-foreground truncate text-xs">Gestão de Planilhas</span>
             </div>
           </div>
         </SidebarHeader>
@@ -159,7 +160,7 @@ export function AppSidebar() {
                   <UserAvatar size="sm" />
                   <div className="grid flex-1 text-left text-sm leading-tight">
                     <span className="truncate font-semibold">{session?.user?.name || 'Usuário'}</span>
-                    <span className="truncate text-xs text-muted-foreground">
+                    <span className="text-muted-foreground truncate text-xs">
                       {session?.user?.email || 'Faça login'}
                     </span>
                   </div>

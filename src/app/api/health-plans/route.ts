@@ -1,7 +1,8 @@
+import { desc } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
+
 import { db } from '@/app/db'
 import { healthPlansTable, insertHealthPlanSchema } from '@/app/db/schemas/health-plan-schema'
-import { desc } from 'drizzle-orm'
 
 // GET /api/health-plans - List all health plans
 export async function GET() {

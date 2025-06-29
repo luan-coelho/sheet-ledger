@@ -1,5 +1,6 @@
-import { requireAuth } from '@/lib/auth-utils'
 import { DashboardContent } from '@/components/dashboard-content'
+
+import { requireAuth } from '@/lib/auth-utils'
 
 export default async function Home() {
   // Require authentication for this page

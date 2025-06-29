@@ -1,7 +1,7 @@
 export function AppFooter() {
   return (
-    <footer className="border-t bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 px-4 py-3">
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
+    <footer className="bg-background/95 supports-[backdrop-filter]:bg-background/60 border-t px-4 py-3 backdrop-blur">
+      <div className="text-muted-foreground flex items-center justify-between text-sm">
         <div className="flex items-center gap-4">
           <span>© 2025 - Desenvolvido por Luan Coelho</span>
           <span>•</span>

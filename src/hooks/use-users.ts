@@ -1,15 +1,17 @@
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
+
 import { UserFormValues } from '@/app/db/schemas/user-schema'
+
 import {
   createUser,
   deleteUser,
   getAllUsers,
   getUserById,
-  userQueryKeys,
-  updateUser,
   toggleUserStatus,
+  updateUser,
+  userQueryKeys,
 } from '@/services/user-service'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { toast } from 'sonner'
 
 // Hook para listar todos os usuários
 export function useUsers() {

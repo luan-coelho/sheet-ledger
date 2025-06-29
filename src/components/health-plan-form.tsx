@@ -1,14 +1,17 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Loader2 } from 'lucide-react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+
+import { HealthPlan, HealthPlanFormValues, insertHealthPlanSchema } from '@/app/db/schemas/health-plan-schema'
+
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { insertHealthPlanSchema, HealthPlanFormValues, HealthPlan } from '@/app/db/schemas/health-plan-schema'
+
 import { useCreateHealthPlan, useUpdateHealthPlan } from '@/hooks/use-health-plans'
-import { useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
 
 interface HealthPlanFormProps {
   healthPlan?: HealthPlan
@@ -74,7 +77,7 @@ export function HealthPlanForm({ healthPlan, onSuccess, onCancel }: HealthPlanFo
           )}
         />
 
-        <div className="flex gap-3 justify-end">
+        <div className="flex justify-end gap-3">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
               Cancelar

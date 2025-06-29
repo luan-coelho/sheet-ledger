@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { cn } from '@/lib/utils'
+
 import { WeekDays } from '@/lib/spreadsheet-schema'
+import { cn } from '@/lib/utils'
 
 export type WeekdaySelectorProps = {
   className?: string
@@ -48,7 +49,7 @@ export function WeekdaySelector({ className, value = [], onChange }: WeekdaySele
             onClick={() => handleToggleDay(item.key)}
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-md text-sm font-medium transition-colors',
-              'border border-input hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+              'border-input hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring border focus-visible:ring-2 focus-visible:outline-none',
               isSelected ? 'bg-primary text-primary-foreground hover:bg-primary' : 'bg-background hover:bg-background',
             )}
             title={item.fullName}

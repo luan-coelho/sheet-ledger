@@ -1,5 +1,9 @@
 'use client'
 
+import { ChevronLeft, Download, File, Folder, FolderPlus, Search, Trash2 } from 'lucide-react'
+import { useState } from 'react'
+import { toast } from 'sonner'
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,6 +21,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Skeleton } from '@/components/ui/skeleton'
+
 import {
   useCreateGoogleDriveFile,
   useCreateGoogleDriveFolder,
@@ -26,10 +31,8 @@ import {
   useGoogleDriveSearch,
   useGoogleDriveStorage,
 } from '@/hooks/use-google-drive'
+
 import { DriveFile } from '@/services/google-drive-api'
-import { ChevronLeft, Download, File, Folder, FolderPlus, Search, Trash2 } from 'lucide-react'
-import { useState } from 'react'
-import { toast } from 'sonner'
 
 interface GoogleDriveManagerProps {
   className?: string
@@ -163,7 +166,7 @@ export default function GoogleDriveManager({ className }: GoogleDriveManagerProp
           <h2 className="text-2xl font-bold">Google Drive</h2>
           {folderHistory.length > 0 && (
             <Button variant="outline" size="sm" onClick={goBack}>
-              <ChevronLeft className="h-4 w-4 mr-2" />
+              <ChevronLeft className="mr-2 h-4 w-4" />
               Voltar
             </Button>
           )}
@@ -172,7 +175,7 @@ export default function GoogleDriveManager({ className }: GoogleDriveManagerProp
         <div className="flex items-center gap-2">
           {/* Barra de busca */}
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
             <Input
               placeholder="Buscar arquivos..."
               value={searchQuery}
@@ -180,7 +183,7 @@ export default function GoogleDriveManager({ className }: GoogleDriveManagerProp
                 setSearchQuery(e.target.value)
                 setShowSearch(e.target.value.length > 0)
               }}
-              className="pl-10 w-64"
+              className="w-64 pl-10"
             />
           </div>
 
@@ -188,7 +191,7 @@ export default function GoogleDriveManager({ className }: GoogleDriveManagerProp
           <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
             <DialogTrigger asChild>
               <Button variant="outline" onClick={() => setCreateType('folder')}>
-                <FolderPlus className="h-4 w-4 mr-2" />
+                <FolderPlus className="mr-2 h-4 w-4" />
                 Nova Pasta
               </Button>
             </DialogTrigger>
@@ -234,11 +237,11 @@ export default function GoogleDriveManager({ className }: GoogleDriveManagerProp
             <CardTitle className="text-lg">Armazenamento</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between text-sm text-muted-foreground">
+            <div className="text-muted-foreground flex justify-between text-sm">
               <span>Usado: {formatFileSize(storageInfo.used)}</span>
               <span>Total: {formatFileSize(storageInfo.total)}</span>
             </div>
-            <div className="w-full bg-muted rounded-full h-2 mt-2">
+            <div className="bg-muted mt-2 h-2 w-full rounded-full">
               <div
                 className="bg-primary h-2 rounded-full transition-all"
                 style={{
@@ -267,14 +270,14 @@ export default function GoogleDriveManager({ className }: GoogleDriveManagerProp
           ) : (
             <div className="space-y-2">
               {displayFiles?.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-muted-foreground py-8 text-center">
                   {showSearch ? 'Nenhum arquivo encontrado' : 'Pasta vazia'}
                 </div>
               ) : (
                 displayFiles?.map(file => (
                   <div
                     key={file.id}
-                    className="flex items-center justify-between p-3 border rounded-lg hover:bg-muted/50 transition-colors">
+                    className="hover:bg-muted/50 flex items-center justify-between rounded-lg border p-3 transition-colors">
                     <div className="flex items-center gap-3">
                       {file.mimeType === 'application/vnd.google-apps.folder' ? (
                         <Folder className="h-5 w-5 text-blue-500" />
@@ -282,9 +285,9 @@ export default function GoogleDriveManager({ className }: GoogleDriveManagerProp
                         <File className="h-5 w-5 text-gray-500" />
                       )}
 
-                      <div className="cursor-pointer flex-1" onClick={() => navigateToFolder(file)}>
+                      <div className="flex-1 cursor-pointer" onClick={() => navigateToFolder(file)}>
                         <p className="font-medium">{file.name}</p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-muted-foreground text-sm">
                           {formatDate(file.modifiedTime)} • {formatFileSize(file.size)}
                         </p>
                       </div>

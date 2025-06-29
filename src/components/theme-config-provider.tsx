@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect } from 'react'
+
 import { useThemeConfig } from '@/lib/theme-config'
 
 interface ThemeConfigProviderProps {

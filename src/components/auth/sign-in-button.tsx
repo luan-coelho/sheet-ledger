@@ -1,9 +1,10 @@
 'use client'
 
+import { LogIn } from 'lucide-react'
 import { signIn } from 'next-auth/react'
 import { useSearchParams } from 'next/navigation'
+
 import { Button } from '@/components/ui/button'
-import { LogIn } from 'lucide-react'
 
 interface SignInButtonProps {
   variant?: 'default' | 'outline' | 'ghost'

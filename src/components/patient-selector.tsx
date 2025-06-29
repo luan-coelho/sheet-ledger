@@ -1,8 +1,9 @@
 'use client'
 
-import { usePatients, useCreatePatient } from '@/hooks/use-patients'
 import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
+
+import { useCreatePatient, usePatients } from '@/hooks/use-patients'
 
 interface PatientSelectorProps {
   value?: string
@@ -27,7 +28,7 @@ export function PatientSelector({
   }
 
   if (error) {
-    return <div className="text-sm text-destructive">Erro ao carregar pacientes</div>
+    return <div className="text-destructive text-sm">Erro ao carregar pacientes</div>
   }
 
   const options: CreatableComboboxOption[] =

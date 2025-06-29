@@ -1,16 +1,19 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Loader2 } from 'lucide-react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+import { toast } from 'sonner'
+
+import { insertUserSchema, User, UserFormValues } from '@/app/db/schemas/user-schema'
+
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
-import { insertUserSchema, UserFormValues, User } from '@/app/db/schemas/user-schema'
+
 import { useCreateUser, useUpdateUser } from '@/hooks/use-users'
-import { useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
-import { toast } from 'sonner'
 
 interface UserFormProps {
   user?: User
@@ -102,7 +105,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
             <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
               <div className="space-y-0.5">
                 <FormLabel className="text-base">Usuário Ativo</FormLabel>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-muted-foreground text-sm">
                   Usuários inativos não conseguem fazer login no sistema
                 </div>
               </div>
@@ -113,7 +116,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
           )}
         />
 
-        <div className="flex gap-3 justify-end">
+        <div className="flex justify-end gap-3">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
               Cancelar
@@ -127,7 +130,7 @@ export function UserForm({ user, onSuccess, onCancel }: UserFormProps) {
         </div>
 
         {(createMutation.error || updateMutation.error) && (
-          <div className="text-sm text-destructive">
+          <div className="text-destructive text-sm">
             {createMutation.error?.message || updateMutation.error?.message}
           </div>
         )}

@@ -1,13 +1,14 @@
 import 'dotenv/config'
+
+import { neon } from '@neondatabase/serverless'
+import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http'
+// Imports condicionais baseados no ambiente
+import { drizzle as drizzlePostgres } from 'drizzle-orm/node-postgres'
+
 import * as schema from './schemas'
 
 // Detecta se está em ambiente de desenvolvimento
 const isDevelopment = process.env.NODE_ENV === 'development' || process.env.NODE_ENV === undefined
-
-// Imports condicionais baseados no ambiente
-import { drizzle as drizzlePostgres } from 'drizzle-orm/node-postgres'
-import { drizzle as drizzleNeon } from 'drizzle-orm/neon-http'
-import { neon } from '@neondatabase/serverless'
 
 function createDatabase() {
   if (isDevelopment) {

@@ -1,8 +1,9 @@
 'use client'
 
-import { useHealthPlans, useCreateHealthPlan } from '@/hooks/use-health-plans'
 import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
+
+import { useCreateHealthPlan, useHealthPlans } from '@/hooks/use-health-plans'
 
 interface HealthPlanSelectorProps {
   value?: string
@@ -27,7 +28,7 @@ export function HealthPlanSelector({
   }
 
   if (error) {
-    return <div className="text-sm text-destructive">Erro ao carregar planos de saúde</div>
+    return <div className="text-destructive text-sm">Erro ao carregar planos de saúde</div>
   }
 
   const options: CreatableComboboxOption[] =

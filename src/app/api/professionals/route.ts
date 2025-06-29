@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { db } from '@/app/db'
-import { professionalsTable, insertProfessionalSchema } from '@/app/db/schemas/professional-schema'
 import { desc } from 'drizzle-orm'
+import { NextRequest, NextResponse } from 'next/server'
+
+import { db } from '@/app/db'
+import { insertProfessionalSchema, professionalsTable } from '@/app/db/schemas/professional-schema'
 
 // GET /api/professionals - List all professionals
 export async function GET() {

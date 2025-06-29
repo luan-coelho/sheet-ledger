@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { googleDriveConfigService } from '@/services/google-drive-config-service'
+
 import { auth } from '@/lib/auth'
+
+import { googleDriveConfigService } from '@/services/google-drive-config-service'
 
 // GET - Obter status da configuração
 export async function GET() {

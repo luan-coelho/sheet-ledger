@@ -1,12 +1,14 @@
 'use client'
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { useRestrictedGoogleDrive, type RestrictedDriveFile } from '@/hooks/use-restricted-google-drive'
 import { Calendar, Download, ExternalLink, FileText, Folder, HardDrive, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { toast } from 'sonner'
+
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+
+import { useRestrictedGoogleDrive, type RestrictedDriveFile } from '@/hooks/use-restricted-google-drive'
 
 const APP_ROOT_FOLDER_NAME = process.env.NODE_ENV === 'development' ? 'planilhas-app-dev' : 'planilhas-app'
 
@@ -80,12 +82,12 @@ export function RestrictedGoogleDriveManager() {
       <CardContent className="space-y-6">
         {/* Informações da pasta raiz */}
         {data?.appRootFolder && (
-          <div className="flex items-center justify-between p-3 rounded-lg">
+          <div className="flex items-center justify-between rounded-lg p-3">
             <div className="flex items-center gap-2">
               <Folder className="h-5 w-5 text-blue-600" />
               <div>
                 <p className="font-medium dark:text-white">{data.appRootFolder.name}</p>
-                <p className="text-sm text-muted-foreground">Pasta raiz da aplicação</p>
+                <p className="text-muted-foreground text-sm">Pasta raiz da aplicação</p>
               </div>
             </div>
             <Badge variant="secondary">ID: {data.appRootFolder.id}</Badge>
@@ -111,23 +113,23 @@ export function RestrictedGoogleDriveManager() {
 
         {/* Lista de arquivos */}
         {loading ? (
-          <div className="text-center py-8">
-            <RefreshCw className="h-8 w-8 animate-spin mx-auto mb-2" />
+          <div className="py-8 text-center">
+            <RefreshCw className="mx-auto mb-2 h-8 w-8 animate-spin" />
             <p>Carregando arquivos...</p>
           </div>
         ) : error ? (
-          <div className="text-center py-8 text-red-600">
-            <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
+          <div className="py-8 text-center text-red-600">
+            <FileText className="mx-auto mb-2 h-12 w-12 opacity-50" />
             <p>Erro ao carregar arquivos</p>
-            <p className="text-sm text-muted-foreground mt-1">{error.message}</p>
+            <p className="text-muted-foreground mt-1 text-sm">{error.message}</p>
             <Button onClick={handleRefresh} variant="outline" size="sm" className="mt-4">
               <RefreshCw className="h-4 w-4" />
               Tentar novamente
             </Button>
           </div>
         ) : !data?.files || data.files.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Folder className="h-12 w-12 mx-auto mb-2 opacity-50" />
+          <div className="text-muted-foreground py-8 text-center">
+            <Folder className="mx-auto mb-2 h-12 w-12 opacity-50" />
             <p>Nenhum arquivo encontrado</p>
           </div>
         ) : (
@@ -137,12 +139,12 @@ export function RestrictedGoogleDriveManager() {
             {data.files.map((file: RestrictedDriveFile) => (
               <div
                 key={file.id}
-                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
+                className="flex items-center justify-between rounded-lg border p-3 hover:bg-gray-50 dark:hover:bg-gray-800">
                 <div className="flex items-center gap-3">
                   {getFileIcon(file.mimeType)}
                   <div className="flex-1">
                     <p className="font-medium">{file.name}</p>
-                    <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <div className="text-muted-foreground flex items-center gap-4 text-sm">
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
                         {formatDate(file.modifiedTime)}

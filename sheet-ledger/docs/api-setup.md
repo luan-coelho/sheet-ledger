@@ -106,10 +106,10 @@ Exemplo de uma rota de API para recursos:
 
 ```typescript
 // src/app/api/patients/route.ts
-import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/db'
 import { patients } from '@/db/schemas/patient-schema'
 import { eq } from 'drizzle-orm'
+import { NextRequest, NextResponse } from 'next/server'
 
 // Listar todos os pacientes
 export async function GET() {
@@ -155,10 +155,10 @@ Exemplo de uma rota de API para um recurso específico:
 
 ```typescript
 // src/app/api/patients/[id]/route.ts
-import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/db'
 import { patients } from '@/db/schemas/patient-schema'
 import { eq } from 'drizzle-orm'
+import { NextRequest, NextResponse } from 'next/server'
 
 // Obter um paciente específico
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
@@ -237,7 +237,7 @@ Crie serviços para encapsular a lógica de comunicação com a API:
 
 ```typescript
 // src/services/patient-service.ts
-import { Patient, NewPatient, PatientUpdate } from '@/types'
+import { NewPatient, Patient, PatientUpdate } from '@/types'
 
 // Buscar todos os pacientes
 export async function fetchPatients(): Promise<Patient[]> {
@@ -313,15 +313,16 @@ Crie hooks personalizados para usar os serviços com React Query:
 
 ```typescript
 // src/hooks/use-patients.ts
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { NewPatient, Patient, PatientUpdate } from '@/types'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
 import {
-  fetchPatients,
-  fetchPatientById,
   createPatient,
-  updatePatient,
   deletePatient,
+  fetchPatientById,
+  fetchPatients,
+  updatePatient,
 } from '@/services/patient-service'
-import { Patient, NewPatient, PatientUpdate } from '@/types'
 
 // Hook para buscar todos os pacientes
 export function usePatients() {
@@ -397,13 +398,15 @@ Exemplo de uso dos hooks em um componente:
 // src/components/patient-form.tsx
 'use client'
 
-import { useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+
 import { useCreatePatient, useUpdatePatient } from '@/hooks/use-patients'
 
 // Schema de validação
@@ -548,10 +551,10 @@ Exemplo de implementação de paginação, filtros e ordenação:
 
 ```typescript
 // src/app/api/patients/route.ts (com paginação e filtros)
-import { NextRequest, NextResponse } from 'next/server'
 import { db } from '@/db'
 import { patients } from '@/db/schemas/patient-schema'
-import { eq, like, desc, asc } from 'drizzle-orm'
+import { asc, desc, eq, like } from 'drizzle-orm'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function GET(request: NextRequest) {
   try {

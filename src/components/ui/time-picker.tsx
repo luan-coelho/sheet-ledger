@@ -1,7 +1,9 @@
 'use client'
 
 import * as React from 'react'
+
 import { cn } from '@/lib/utils'
+
 import { TimePickerInput } from './time-picker-input'
 
 interface TimePickerProps {
@@ -81,7 +83,7 @@ export function TimePickerDemo({ value, onChange, placeholder, className }: Time
   }, [value])
 
   return (
-    <div className={cn('flex items-center border rounded-md px-3 py-2 bg-background', className)}>
+    <div className={cn('bg-background flex items-center rounded-md border px-3 py-2', className)}>
       {date ? (
         <TimePicker date={date} setDate={setDate} />
       ) : (

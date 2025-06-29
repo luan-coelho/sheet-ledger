@@ -1,7 +1,8 @@
+import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
+
 import { db } from '@/app/db'
 import { guardiansTable, insertGuardianSchema } from '@/app/db/schemas/guardian-schema'
-import { eq } from 'drizzle-orm'
 
 // GET /api/guardians/[id] - Get guardian by ID
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

@@ -1,11 +1,11 @@
 'use client'
 
+import { Loader2, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
-import { Plus, MoreHorizontal, Pencil, Trash2, Loader2, Search, X } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+
+import { HealthPlan } from '@/app/db/schemas/health-plan-schema'
+
+import { HealthPlanForm } from '@/components/health-plan-form'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,8 +16,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Input } from '@/components/ui/input'
 import {
   Pagination,
   PaginationContent,
@@ -27,9 +30,9 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '@/components/ui/pagination'
-import { HealthPlanForm } from '@/components/health-plan-form'
-import { useHealthPlans, useDeleteHealthPlan } from '@/hooks/use-health-plans'
-import { HealthPlan } from '@/app/db/schemas/health-plan-schema'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
+import { useDeleteHealthPlan, useHealthPlans } from '@/hooks/use-health-plans'
 
 export default function PlanosSaudePage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -155,7 +158,7 @@ export default function PlanosSaudePage() {
 
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center text-destructive">Erro ao carregar planos de saúde: {error.message}</div>
+            <div className="text-destructive text-center">Erro ao carregar planos de saúde: {error.message}</div>
           </CardContent>
         </Card>
       </div>
@@ -205,21 +208,21 @@ export default function PlanosSaudePage() {
         </CardHeader>
         <CardContent>
           {/* Campo de filtro */}
-          <div className="flex items-center space-x-2 mb-6">
-            <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <div className="mb-6 flex items-center space-x-2">
+            <div className="relative max-w-sm flex-1">
+              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
               <Input
                 placeholder="Buscar por nome..."
                 value={searchFilter}
                 onChange={e => handleSearchChange(e.target.value)}
-                className="pl-10 pr-10"
+                className="pr-10 pl-10"
               />
               {searchFilter && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={clearSearch}
-                  className="absolute right-1 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-muted">
+                  className="hover:bg-muted absolute top-1/2 right-1 h-6 w-6 -translate-y-1/2 transform p-0">
                   <X className="h-3 w-3" />
                   <span className="sr-only">Limpar busca</span>
                 </Button>
@@ -314,7 +317,7 @@ export default function PlanosSaudePage() {
               )}
             </>
           ) : (
-            <div className="text-center py-8">
+            <div className="py-8 text-center">
               {searchFilter ? (
                 <div>
                   <p className="text-muted-foreground mb-4">

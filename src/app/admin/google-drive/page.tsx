@@ -1,11 +1,13 @@
 'use client'
 
+import { AlertCircle } from 'lucide-react'
+
 import { RestrictedGoogleDriveManager } from '@/components/restricted-google-drive-manager'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
+
 import { useGoogleDriveConfigStatus } from '@/hooks/use-google-drive-config'
-import { AlertCircle } from 'lucide-react'
 
 export default function GoogleDrivePage() {
   const { data: config, isLoading, error } = useGoogleDriveConfigStatus()

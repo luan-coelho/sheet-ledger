@@ -1,8 +1,10 @@
 'use client'
 
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { ProfessionalForm } from './professional-form'
 import { Professional } from '@/app/db/schemas/professional-schema'
+
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+
+import { ProfessionalForm } from './professional-form'
 
 interface ProfessionalModalProps {
   open: boolean

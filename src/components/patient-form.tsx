@@ -1,14 +1,17 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Loader2 } from 'lucide-react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+
+import { insertPatientSchema, Patient, PatientFormValues } from '@/app/db/schemas/patient-schema'
+
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { insertPatientSchema, PatientFormValues, Patient } from '@/app/db/schemas/patient-schema'
+
 import { useCreatePatient, useUpdatePatient } from '@/hooks/use-patients'
-import { useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
 
 interface PatientFormProps {
   patient?: Patient
@@ -75,7 +78,7 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
           )}
         />
 
-        <div className="flex gap-3 justify-end">
+        <div className="flex justify-end gap-3">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
               Cancelar
@@ -89,7 +92,7 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
         </div>
 
         {(createMutation.error || updateMutation.error) && (
-          <div className="text-sm text-destructive">
+          <div className="text-destructive text-sm">
             {createMutation.error?.message || updateMutation.error?.message}
           </div>
         )}

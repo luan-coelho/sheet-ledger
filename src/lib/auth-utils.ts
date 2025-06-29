@@ -1,6 +1,7 @@
-import { auth } from '@/lib/auth'
 import { Session } from 'next-auth'
 import { redirect } from 'next/navigation'
+
+import { auth } from '@/lib/auth'
 
 /**
  * Server-side authentication guard for pages

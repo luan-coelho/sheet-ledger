@@ -1,10 +1,11 @@
 'use client'
 
+import { Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
-import { Plus, MoreHorizontal, Pencil, Trash2, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+
+import { Professional } from '@/app/db/schemas/professional-schema'
+
+import { ProfessionalModal } from '@/components/professional-modal'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -15,10 +16,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ProfessionalModal } from '@/components/professional-modal'
-import { useProfessionals, useDeleteProfessional } from '@/hooks/use-professionals'
-import { Professional } from '@/app/db/schemas/professional-schema'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
+import { useDeleteProfessional, useProfessionals } from '@/hooks/use-professionals'
 
 export default function ProfissionaisPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
@@ -74,7 +77,7 @@ export default function ProfissionaisPage() {
 
         <Card>
           <CardContent className="pt-6">
-            <div className="text-center text-destructive">Erro ao carregar profissionais: {error.message}</div>
+            <div className="text-destructive text-center">Erro ao carregar profissionais: {error.message}</div>
           </CardContent>
         </Card>
       </div>
@@ -149,7 +152,7 @@ export default function ProfissionaisPage() {
               </TableBody>
             </Table>
           ) : (
-            <div className="text-center py-8">
+            <div className="py-8 text-center">
               <p className="text-muted-foreground mb-4">Nenhum profissional cadastrado ainda.</p>
               <Button onClick={handleNewProfessional}>
                 <Plus className="mr-2 h-4 w-4" />

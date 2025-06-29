@@ -1,10 +1,12 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Cloud, Eye, FileText, Loader2 } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Cloud, Eye, FileText, Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,36 +19,34 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { DatePicker } from '@/components/ui/date-picker'
 
 import { useGoogleDriveConfigStatus } from '@/hooks/use-google-drive-config'
-import { getNowInBrazil, getFirstDayOfMonth, getLastDayOfMonth, formatDateISO } from '@/lib/date-utils'
 import { useGuardians } from '@/hooks/use-guardians'
 import { useHealthPlans } from '@/hooks/use-health-plans'
 import { usePatients } from '@/hooks/use-patients'
 import { useProfessionals } from '@/hooks/use-professionals'
-import { WeekDays, spreadsheetFormSchema, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
-
 import {
-  useGenerateSpreadsheet,
-  useGenerateDriveSpreadsheet,
   useCheckExistingFiles,
-  type TransformedFormData,
+  useGenerateDriveSpreadsheet,
+  useGenerateSpreadsheet,
   type CheckExistingFilesResponse,
+  type TransformedFormData,
 } from '@/hooks/use-spreadsheet-mutations'
+
+import { formatDateISO, getFirstDayOfMonth, getLastDayOfMonth, getNowInBrazil } from '@/lib/date-utils'
+import { spreadsheetFormSchema, WeekDays, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 
 import { GuardianSelector } from './guardian-selector'
 import { HealthPlanSelector } from './health-plan-selector'
 import { PatientSelector } from './patient-selector'
 import { ProfessionalSelector } from './professional-selector'
 import { SpreadsheetPreview } from './spreadsheet-preview'
-import { WeekdaySessionSelector } from './weekday-session-selector'
 import { Separator } from './ui/separator'
 import { TimePickerDemo } from './ui/time-picker'
-import { toast } from 'sonner'
+import { WeekdaySessionSelector } from './weekday-session-selector'
 
 interface ExistingFilesInfo {
   existingFiles: CheckExistingFilesResponse['existingFiles']
@@ -223,7 +223,7 @@ export function SpreadsheetForm() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {/* Todos os campos em um grid único para preenchimento 100% das linhas */}
-            <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
               <FormField
                 control={form.control}
                 name="professionalId"
@@ -382,14 +382,14 @@ export function SpreadsheetForm() {
               name="weekDaySessions"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-center block sm:flex sm:justify-center">
+                  <FormLabel className="block text-center sm:flex sm:justify-center">
                     Dias da semana e sessões
                   </FormLabel>
                   <FormDescription className="text-center text-xs sm:text-sm">
                     Selecione os dias de atendimento e configure a quantidade de sessões por dia
                   </FormDescription>
                   <FormControl>
-                    <div className="w-full max-w-4xl mx-auto">
+                    <div className="mx-auto w-full max-w-4xl">
                       <WeekdaySessionSelector value={field.value} onChange={field.onChange} />
                     </div>
                   </FormControl>
@@ -543,8 +543,8 @@ export function SpreadsheetForm() {
                 Foram encontrados arquivos existentes no Google Drive para este paciente no período selecionado:
                 <div className="mt-3 space-y-2">
                   {existingFilesInfo?.existingFiles.map((file, index) => (
-                    <div key={index} className="border border-primary/80 rounded p-2">
-                      <span className="font-medium text-sm">{file.name}</span>
+                    <div key={index} className="border-primary/80 rounded border p-2">
+                      <span className="text-sm font-medium">{file.name}</span>
                       <div className="text-xs text-gray-600">
                         Última modificação:{' '}
                         {new Date(file.modifiedTime).toLocaleString('pt-BR', {

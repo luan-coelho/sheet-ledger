@@ -1,9 +1,11 @@
+import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
+import { z } from 'zod'
+
 import { db } from '@/app/db'
 import { usersTable } from '@/app/db/schemas/user-schema'
-import { eq } from 'drizzle-orm'
+
 import { auth } from '@/lib/auth'
-import { z } from 'zod'
 
 const toggleStatusSchema = z.object({
   active: z.boolean(),

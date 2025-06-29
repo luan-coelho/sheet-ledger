@@ -1,16 +1,19 @@
 'use client'
 
+import { Calendar, FileText, User, X } from 'lucide-react'
+
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
+
 import { useGuardians } from '@/hooks/use-guardians'
 import { useHealthPlans } from '@/hooks/use-health-plans'
 import { usePatients } from '@/hooks/use-patients'
 import { useProfessionals } from '@/hooks/use-professionals'
+
 import { PreviewUtils } from '@/lib/preview-utils'
 import { SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
-import { Calendar, FileText, User, X } from 'lucide-react'
 
 interface SpreadsheetPreviewProps {
   formData: SpreadsheetFormValues
@@ -61,11 +64,11 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
   const sessionsPerWeek = formData.weekDaySessions.reduce((total, item) => total + item.sessions, 0)
 
   return (
-    <Card className="w-full border-2 border-primary/20">
+    <Card className="border-primary/20 w-full border-2">
       <CardHeader className="pb-4">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-xl flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-xl">
               <FileText className="h-5 w-5" />
               Preview da Planilha de Atendimento
             </CardTitle>
@@ -79,8 +82,8 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
 
       <CardContent className="space-y-6">
         {/* Header Information */}
-        <div className="bg-muted/50 p-4 rounded-lg">
-          <h3 className="font-semibold text-lg mb-4 flex items-center gap-2">
+        <div className="bg-muted/50 rounded-lg p-4">
+          <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold">
             <User className="h-4 w-4" />
             REGISTRO DE ATENDIMENTO
           </h3>
@@ -123,7 +126,7 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
         {/* Session Information */}
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-lg flex items-center gap-2">
+            <h3 className="flex items-center gap-2 text-lg font-semibold">
               <Calendar className="h-4 w-4" />
               Informações das Sessões
             </h3>
@@ -133,8 +136,8 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
             </div>
           </div>
 
-          <div className="bg-muted/30 p-4 rounded-lg">
-            <div className="grid gap-2 text-sm mb-4">
+          <div className="bg-muted/30 rounded-lg p-4">
+            <div className="mb-4 grid gap-2 text-sm">
               <div className="flex justify-between">
                 <span className="font-medium">Dias da semana selecionados:</span>
                 <span>{weekDaysString}</span>
@@ -149,7 +152,7 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Total de sessões no mês:</span>
-                <span className="font-semibold text-primary">{totalSessionsInMonth}</span>
+                <span className="text-primary font-semibold">{totalSessionsInMonth}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Sessões por semana (configurado):</span>
@@ -163,10 +166,10 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
 
         {/* Sessions Table Preview */}
         <div className="space-y-4">
-          <h3 className="font-semibold text-lg">Sessões que serão geradas:</h3>
+          <h3 className="text-lg font-semibold">Sessões que serão geradas:</h3>
 
-          <div className="border rounded-lg overflow-hidden">
-            <div className="bg-muted/50 px-4 py-2 border-b">
+          <div className="overflow-hidden rounded-lg border">
+            <div className="bg-muted/50 border-b px-4 py-2">
               <div className="grid grid-cols-3 gap-4 text-sm font-medium">
                 <span>Nº</span>
                 <span>Data</span>
@@ -176,7 +179,7 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
 
             <div className="max-h-64 overflow-y-auto">
               {sessionDates.map((session, index) => (
-                <div key={index} className="px-4 py-2 border-b last:border-b-0 hover:bg-muted/30">
+                <div key={index} className="hover:bg-muted/30 border-b px-4 py-2 last:border-b-0">
                   <div className="grid grid-cols-3 gap-4 text-sm">
                     <span className="font-medium">{index + 1}</span>
                     <span>{PreviewUtils.formatDate(session.date)}</span>
@@ -189,16 +192,16 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
 
           {/* Totals Summary - Always visible below the table */}
           {sessionDates.length > 0 && (
-            <div className="mt-4 p-4 bg-primary/5 border-2 border-primary/20 rounded-lg">
+            <div className="bg-primary/5 border-primary/20 mt-4 rounded-lg border-2 p-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-semibold text-primary">Resumo Total</h4>
+                <h4 className="text-primary font-semibold">Resumo Total</h4>
                 <div className="flex gap-6 text-sm">
                   <div className="text-center">
-                    <div className="font-semibold text-primary text-lg">{totalDaysInMonth}</div>
+                    <div className="text-primary text-lg font-semibold">{totalDaysInMonth}</div>
                     <div className="text-muted-foreground">Dias</div>
                   </div>
                   <div className="text-center">
-                    <div className="font-semibold text-primary text-lg">{totalSessionsInMonth}</div>
+                    <div className="text-primary text-lg font-semibold">{totalSessionsInMonth}</div>
                     <div className="text-muted-foreground">Sessões</div>
                   </div>
                 </div>
@@ -207,15 +210,15 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
           )}
 
           {sessionDates.length === 0 && (
-            <div className="text-center py-8 text-muted-foreground">
-              <Calendar className="h-12 w-12 mx-auto mb-2 opacity-50" />
+            <div className="text-muted-foreground py-8 text-center">
+              <Calendar className="mx-auto mb-2 h-12 w-12 opacity-50" />
               <p>Nenhuma sessão encontrada para os critérios selecionados</p>
             </div>
           )}
         </div>
 
         {/* Action Buttons */}
-        <div className="flex justify-end gap-3 pt-4 border-t">
+        <div className="flex justify-end gap-3 border-t pt-4">
           <Button variant="outline" onClick={onClose}>
             Fechar Preview
           </Button>

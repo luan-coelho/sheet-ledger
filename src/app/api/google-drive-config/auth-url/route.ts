@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server'
-import { googleDriveConfigService } from '@/services/google-drive-config-service'
+
 import { auth } from '@/lib/auth'
+
+import { googleDriveConfigService } from '@/services/google-drive-config-service'
 
 // GET - Obter URL de autorização do Google Drive
 export async function GET() {

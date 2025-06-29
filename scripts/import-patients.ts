@@ -7,13 +7,15 @@
  *   tsx scripts/import-patients.ts --input="dados"    - Usar dados inline
  *   tsx scripts/import-patients.ts --file=arquivo.txt - Usar arquivo específico
  */
-
 import 'dotenv/config'
-import { db } from '../src/app/db'
-import { patientsTable, healthPlansTable, type NewPatient, type NewHealthPlan } from '../src/app/db/schemas'
-import { eq } from 'drizzle-orm'
-import { readFileSync, existsSync } from 'fs'
+
+import { existsSync, readFileSync } from 'fs'
 import { join } from 'path'
+
+import { eq } from 'drizzle-orm'
+
+import { db } from '../src/app/db'
+import { healthPlansTable, patientsTable, type NewHealthPlan, type NewPatient } from '../src/app/db/schemas'
 
 interface PatientData {
   name: string

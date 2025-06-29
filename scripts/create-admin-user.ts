@@ -1,8 +1,9 @@
 #!/usr/bin/env tsx
-
 import { db } from '@/app/db'
 import { usersTable } from '@/app/db/schemas'
+
 import 'dotenv/config'
+
 import { eq } from 'drizzle-orm'
 
 /**

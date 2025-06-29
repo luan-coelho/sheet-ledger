@@ -1,14 +1,17 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
+import { Loader2 } from 'lucide-react'
+import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
+
+import { Guardian, GuardianFormValues, insertGuardianSchema } from '@/app/db/schemas/guardian-schema'
+
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { insertGuardianSchema, GuardianFormValues, Guardian } from '@/app/db/schemas/guardian-schema'
+
 import { useCreateGuardian, useUpdateGuardian } from '@/hooks/use-guardians'
-import { useEffect } from 'react'
-import { Loader2 } from 'lucide-react'
 
 interface GuardianFormProps {
   guardian?: Guardian
@@ -74,7 +77,7 @@ export function GuardianForm({ guardian, onSuccess, onCancel }: GuardianFormProp
           )}
         />
 
-        <div className="flex gap-3 justify-end">
+        <div className="flex justify-end gap-3">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
               Cancelar
