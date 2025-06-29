@@ -21,12 +21,12 @@ export class ActivityLogger {
     this.currentUserId = userId
   }
 
-  // Registrar login
+  // Registrar login (client-side)
   async logSignIn(userId: string, userEmail: string) {
     await logActivity(userId, ActivityActions.SIGN_IN, `Usuário ${userEmail} fez login no sistema`, { userEmail })
   }
 
-  // Registrar logout
+  // Registrar logout (client-side)
   async logSignOut(userId: string, userEmail: string) {
     await logActivity(userId, ActivityActions.SIGN_OUT, `Usuário ${userEmail} fez logout do sistema`, { userEmail })
   }

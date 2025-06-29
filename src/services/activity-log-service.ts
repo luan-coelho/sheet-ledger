@@ -108,7 +108,7 @@ export async function createActivityLog(data: ActivityLogFormValues): Promise<Ac
   return response.data
 }
 
-// Função utilitária para criar log com informações do navegador
+// Função utilitária para criar log com informações do navegador (apenas client-side)
 export async function logActivity(
   userId: string,
   action: ActivityAction,
@@ -127,34 +127,6 @@ export async function logActivity(
   } catch (error) {
     // Não mostrar erro para o usuário, apenas logar no console
     console.error('Erro ao registrar log de atividade:', error)
-  }
-}
-
-// Função para registrar logs do servidor com IP e User-Agent
-export async function logServerActivity(
-  userId: string,
-  action: ActivityAction,
-  description: string,
-  request?: {
-    ip?: string
-    userAgent?: string
-  },
-  metadata?: Record<string, unknown>,
-): Promise<void> {
-  try {
-    const logData: ActivityLogFormValues = {
-      userId,
-      action,
-      description,
-      ipAddress: request?.ip,
-      userAgent: request?.userAgent,
-      metadata: metadata ? JSON.stringify(metadata) : undefined,
-    }
-
-    await createActivityLog(logData)
-  } catch (error) {
-    // Não mostrar erro para o usuário, apenas logar no console
-    console.error('Erro ao registrar log de atividade no servidor:', error)
   }
 }
 

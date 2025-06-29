@@ -1,9 +1,9 @@
 'use client'
 
+import { handleGoogleSignIn } from '@/actions/auth-actions'
 import { Loader2 } from 'lucide-react'
-import { signIn } from 'next-auth/react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useActionState } from 'react'
 import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
@@ -11,13 +11,24 @@ import { Button } from '@/components/ui/button'
 import { routes } from '@/lib/routes'
 
 export function SignInForm() {
-  const router = useRouter()
-  const [isLoading, setIsLoading] = useState(false)
   const searchParams = useSearchParams()
   const callbackUrl = searchParams.get('callbackUrl') || routes.frontend.admin.sheets
   const error = searchParams.get('error')
 
-  // Show error message if there's an authentication error
+  // Server action wrapper para passar callbackUrl
+  const signInAction = async () => {
+    const result = await handleGoogleSignIn(callbackUrl)
+
+    if (!result.success && result.error) {
+      toast.error(result.error)
+    }
+
+    return result
+  }
+
+  const [, formAction, isPending] = useActionState(signInAction, null)
+
+  // Show error message if there's an authentication error from URL
   if (error) {
     const errorMessages = {
       Configuration: 'Erro de configuração do servidor.',
@@ -30,38 +41,15 @@ export function SignInForm() {
     toast.error(errorMessage)
   }
 
-  const handleSignIn = async () => {
-    try {
-      setIsLoading(true)
-
-      const result = await signIn('google', {
-        callbackUrl,
-        redirect: false,
-      })
-
-      if (result?.error) {
-        toast.error('Erro ao fazer login. Tente novamente.')
-      } else if (result?.url) {
-        // Redirect to the callback URL or dashboard
-        router.push(result.url)
-      }
-    } catch (error) {
-      console.error('Sign in error:', error)
-      toast.error('Erro inesperado. Tente novamente.')
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
   return (
-    <div className="space-y-6">
+    <form action={formAction} className="space-y-6">
       {/* Primary Login Button */}
       <Button
-        onClick={handleSignIn}
-        disabled={isLoading}
+        type="submit"
+        disabled={isPending}
         className="h-12 w-full rounded-lg border-0 bg-gradient-to-r from-indigo-600 to-purple-600 font-semibold text-white shadow-lg transition-all duration-200 hover:from-indigo-700 hover:to-purple-700 hover:shadow-xl"
         size="lg">
-        {isLoading ? (
+        {isPending ? (
           <>
             <Loader2 className="mr-3 h-5 w-5 animate-spin" />
             <span>Entrando...</span>
@@ -103,6 +91,6 @@ export function SignInForm() {
           </div>
         )}
       </div>
-    </div>
+    </form>
   )
 }

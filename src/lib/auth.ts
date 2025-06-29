@@ -7,7 +7,6 @@ import { User, usersTable } from '@/app/db/schemas'
 import { routes } from '@/lib/routes'
 
 import { db } from '../app/db'
-import { logServerSignIn } from './auth-logger'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   debug: false,
@@ -61,13 +60,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Atribui os dados do banco de dados ao usuário
         user.id = existingUser.id
 
-        // Registrar log de login
-        try {
-          await logServerSignIn(existingUser.id, existingUser.email)
-        } catch (error) {
-          console.error('Erro ao registrar log de login:', error)
-        }
-
         return true
       }
       return false
@@ -80,6 +72,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Passa as informações do usuário para o token durante o login
       if (user) {
         token.id = user.id
+        // Marcar que é um novo login para registrar log posteriormente
+        token.isNewLogin = true
       }
 
       return token
@@ -88,6 +82,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Passa os dados do token para a sessão
       if (token) {
         if (token.id) session.user.id = token.id as string
+
+        // Marcar se é um novo login para o cliente registrar o log
+        if (token.isNewLogin) {
+          session.isNewLogin = true
+          // Remover a marca para não repetir o log
+          token.isNewLogin = false
+        }
       }
       return session
     },

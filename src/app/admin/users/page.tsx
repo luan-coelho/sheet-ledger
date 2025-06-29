@@ -52,14 +52,9 @@ export default function UsuariosPage() {
   const deleteMutation = useDeleteUser()
   const toggleStatusMutation = useToggleUserStatus()
 
-  // Filtrar usuários por nome ou email, excluindo o usuário logado
+  // Filtrar usuários por nome ou email
   const filteredUsers =
     users?.filter(user => {
-      // Excluir o usuário logado
-      if (session?.user?.email && user.email === session.user.email) {
-        return false
-      }
-
       // Aplicar filtro de pesquisa
       return (
         user.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
@@ -290,57 +285,78 @@ export default function UsuariosPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {paginatedUsers.map(user => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">{user.name}</TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={user.active ? 'default' : 'secondary'}>
-                          {user.active ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(user.createdAt)}</TableCell>
-                      <TableCell>{formatDate(user.updatedAt)}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEdit(user)}>
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleViewLogs(user)}>
-                              <Activity className="mr-2 h-4 w-4" />
-                              Ver Logs
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setTogglingUser(user)}>
-                              {user.active ? (
-                                <>
-                                  <UserX className="mr-2 h-4 w-4" />
-                                  Desativar
-                                </>
+                  {paginatedUsers.map(user => {
+                    const isCurrentUser = session?.user?.email === user.email
+                    return (
+                      <TableRow key={user.id} className={isCurrentUser ? 'bg-muted/30' : ''}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {user.name}
+                            {isCurrentUser && (
+                              <Badge variant="outline" className="text-xs">
+                                Você
+                              </Badge>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          <Badge variant={user.active ? 'default' : 'secondary'}>
+                            {user.active ? 'Ativo' : 'Inativo'}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{formatDate(user.createdAt)}</TableCell>
+                        <TableCell>{formatDate(user.updatedAt)}</TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0">
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              {isCurrentUser ? (
+                                <DropdownMenuItem onClick={() => handleViewLogs(user)}>
+                                  <Activity className="mr-2 h-4 w-4" />
+                                  Ver Logs
+                                </DropdownMenuItem>
                               ) : (
                                 <>
-                                  <UserCheck className="mr-2 h-4 w-4" />
-                                  Ativar
+                                  <DropdownMenuItem onClick={() => handleEdit(user)}>
+                                    <Pencil className="mr-2 h-4 w-4" />
+                                    Editar
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => handleViewLogs(user)}>
+                                    <Activity className="mr-2 h-4 w-4" />
+                                    Ver Logs
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => setTogglingUser(user)}>
+                                    {user.active ? (
+                                      <>
+                                        <UserX className="mr-2 h-4 w-4" />
+                                        Desativar
+                                      </>
+                                    ) : (
+                                      <>
+                                        <UserCheck className="mr-2 h-4 w-4" />
+                                        Ativar
+                                      </>
+                                    )}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => setDeletingUser(user)}
+                                    className="text-destructive focus:text-destructive">
+                                    <UserX className="mr-2 h-4 w-4" />
+                                    Desativar permanentemente
+                                  </DropdownMenuItem>
                                 </>
                               )}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => setDeletingUser(user)}
-                              className="text-destructive focus:text-destructive">
-                              <UserX className="mr-2 h-4 w-4" />
-                              Desativar permanentemente
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
                 </TableBody>
               </Table>
 

@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
+import { LoginLogger } from '@/components/auth/login-logger'
 import { QueryProvider } from '@/components/query-provider'
 import { SessionProvider } from '@/components/session-provider'
 import { ThemeConfigProvider } from '@/components/theme-config-provider'
@@ -41,6 +42,7 @@ export default function RootLayout({
           storageKey="sheet-ledger-theme">
           <ThemeConfigProvider>
             <SessionProvider>
+              <LoginLogger />
               <QueryProvider>
                 {children}
                 <Analytics />

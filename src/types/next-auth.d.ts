@@ -5,9 +5,11 @@ declare module 'next-auth' {
     user: {
       id: string
     } & DefaultSession['user']
+    isNewLogin?: boolean
   }
 
   interface JWT extends DefaultJWT {
     id?: string
+    isNewLogin?: boolean
   }
 }

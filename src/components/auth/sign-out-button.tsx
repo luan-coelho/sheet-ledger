@@ -1,7 +1,9 @@
 'use client'
 
+import { handleSignOut } from '@/actions/auth-actions'
 import { LogOut } from 'lucide-react'
-import { signOut } from 'next-auth/react'
+import { useActionState } from 'react'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 
@@ -11,21 +13,29 @@ interface SignOutButtonProps {
   variant?: 'default' | 'outline' | 'ghost'
   size?: 'default' | 'sm' | 'lg'
   className?: string
+  redirectTo?: string
 }
 
-export function SignOutButton({ variant = 'ghost', size = 'default', className }: SignOutButtonProps) {
+export function SignOutButton({ variant = 'ghost', size = 'default', className, redirectTo }: SignOutButtonProps) {
+  // Server action wrapper para logout
+  const signOutAction = async () => {
+    const result = await handleSignOut(redirectTo || routes.frontend.auth.login)
+
+    if (!result.success && result.error) {
+      toast.error(result.error)
+    }
+
+    return result
+  }
+
+  const [, formAction, isPending] = useActionState(signOutAction, null)
+
   return (
-    <Button
-      onClick={() =>
-        signOut({
-          redirectTo: routes.frontend.admin.home,
-        })
-      }
-      variant={variant}
-      size={size}
-      className={className}>
-      <LogOut className="mr-2 h-4 w-4" />
-      Sair
-    </Button>
+    <form action={formAction} className="inline">
+      <Button type="submit" variant={variant} size={size} className={className} disabled={isPending}>
+        <LogOut className="mr-2 h-4 w-4" />
+        {isPending ? 'Saindo...' : 'Sair'}
+      </Button>
+    </form>
   )
 }
