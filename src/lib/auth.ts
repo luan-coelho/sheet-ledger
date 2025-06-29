@@ -7,6 +7,7 @@ import { User, usersTable } from '@/app/db/schemas'
 import { routes } from '@/lib/routes'
 
 import { db } from '../app/db'
+import { logServerSignIn } from './auth-logger'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   debug: false,
@@ -59,6 +60,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
         // Atribui os dados do banco de dados ao usuário
         user.id = existingUser.id
+
+        // Registrar log de login
+        try {
+          await logServerSignIn(existingUser.id, existingUser.email)
+        } catch (error) {
+          console.error('Erro ao registrar log de login:', error)
+        }
+
         return true
       }
       return false

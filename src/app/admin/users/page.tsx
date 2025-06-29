@@ -1,11 +1,12 @@
 'use client'
 
-import { Loader2, MoreHorizontal, Pencil, Plus, Search, UserCheck, UserX, X } from 'lucide-react'
+import { Activity, Loader2, MoreHorizontal, Pencil, Plus, Search, UserCheck, UserX, X } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import { useState } from 'react'
 
 import { User } from '@/app/db/schemas/user-schema'
 
+import { ActivityLogsViewer } from '@/components/activity-logs-viewer'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -41,6 +42,7 @@ export default function UsuariosPage() {
   const [editingUser, setEditingUser] = useState<User | undefined>()
   const [deletingUser, setDeletingUser] = useState<User | null>(null)
   const [togglingUser, setTogglingUser] = useState<User | null>(null)
+  const [viewingLogsUser, setViewingLogsUser] = useState<User | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchFilter, setSearchFilter] = useState('')
   const itemsPerPage = 10
@@ -110,6 +112,10 @@ export default function UsuariosPage() {
   const handleEdit = (user: User) => {
     setEditingUser(user)
     setIsModalOpen(true)
+  }
+
+  const handleViewLogs = (user: User) => {
+    setViewingLogsUser(user)
   }
 
   const handleDelete = async () => {
@@ -307,6 +313,10 @@ export default function UsuariosPage() {
                               <Pencil className="mr-2 h-4 w-4" />
                               Editar
                             </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleViewLogs(user)}>
+                              <Activity className="mr-2 h-4 w-4" />
+                              Ver Logs
+                            </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setTogglingUser(user)}>
                               {user.active ? (
                                 <>
@@ -432,6 +442,14 @@ export default function UsuariosPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Modal de Logs de Atividades */}
+      <Dialog open={!!viewingLogsUser} onOpenChange={() => setViewingLogsUser(null)}>
+        <DialogContent className="max-h-[80vh] max-w-4xl overflow-y-auto">
+          <DialogTitle className="sr-only">Logs de Atividades - {viewingLogsUser?.name}</DialogTitle>
+          {viewingLogsUser && <ActivityLogsViewer userId={viewingLogsUser.id} userName={viewingLogsUser.name} />}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
