@@ -1,10 +1,12 @@
 import { SpreadsheetForm } from '@/components/spreadsheet-form'
 
-import { requireAuth } from '@/lib/auth-utils'
+import { auth } from '@/lib/auth'
 
-export default async function PlanilhasPage() {
+export default async function SheetsPage() {
   // Server-side authentication check
-  const session = await requireAuth()
+  const session = await auth()
+
+  if (!session?.user) return null
 
   return (
     <div className="space-y-6">

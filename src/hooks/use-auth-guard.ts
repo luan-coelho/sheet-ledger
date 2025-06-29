@@ -4,6 +4,8 @@ import { useSession } from 'next-auth/react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useEffect } from 'react'
 
+import { routes } from '@/lib/routes'
+
 interface UseAuthGuardOptions {
   redirectTo?: string
   redirectIfAuthenticated?: boolean
@@ -18,7 +20,7 @@ export function useAuthGuard(options: UseAuthGuardOptions = {}) {
   const router = useRouter()
   const pathname = usePathname()
 
-  const { redirectTo = '/auth/signin', redirectIfAuthenticated = false } = options
+  const { redirectTo = routes.frontend.auth.signIn, redirectIfAuthenticated = false } = options
 
   useEffect(() => {
     if (status === 'loading') return // Still loading
@@ -27,7 +29,7 @@ export function useAuthGuard(options: UseAuthGuardOptions = {}) {
 
     if (redirectIfAuthenticated && isAuthenticated) {
       // Redirect authenticated users away from auth pages
-      router.push('/')
+      router.push(routes.frontend.admin.home)
       return
     }
 
