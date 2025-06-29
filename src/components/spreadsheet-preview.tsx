@@ -34,24 +34,24 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
 
   // Generate session dates with sessions per day
   let sessionDates: Array<{ date: Date; sessions: number }> = []
-  let competenciaString = ''
+  let competencyString = ''
 
-  if (formData.dataInicio && formData.dataFim) {
+  if (formData.startDate && formData.endDate) {
     // Use new date range format
-    const dataInicio = new Date(formData.dataInicio)
-    const dataFim = new Date(formData.dataFim)
-    sessionDates = PreviewUtils.generateSessionDatesWithSessionsForPeriod(dataInicio, dataFim, formData.weekDaySessions)
+    const startDate = new Date(formData.startDate)
+    const endDate = new Date(formData.endDate)
+    sessionDates = PreviewUtils.generateSessionDatesWithSessionsForPeriod(startDate, endDate, formData.weekDaySessions)
 
     // Format period string
-    const mesInicio = dataInicio.toLocaleDateString('pt-BR', { month: 'long' })
-    const anoInicio = dataInicio.getFullYear()
-    const mesFim = dataFim.toLocaleDateString('pt-BR', { month: 'long' })
-    const anoFim = dataFim.getFullYear()
+    const startMonth = startDate.toLocaleDateString('pt-BR', { month: 'long' })
+    const startYear = startDate.getFullYear()
+    const endMonth = endDate.toLocaleDateString('pt-BR', { month: 'long' })
+    const endYear = endDate.getFullYear()
 
-    if (anoInicio === anoFim && mesInicio === mesFim) {
-      competenciaString = `${mesInicio.toUpperCase()}/${anoInicio}`
+    if (startYear === endYear && startMonth === endMonth) {
+      competencyString = `${startMonth.toUpperCase()}/${startYear}`
     } else {
-      competenciaString = `${mesInicio.toUpperCase()}/${anoInicio} - ${mesFim.toUpperCase()}/${anoFim}`
+      competencyString = `${startMonth.toUpperCase()}/${startYear} - ${endMonth.toUpperCase()}/${endYear}`
     }
   }
 
@@ -132,7 +132,7 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
             </h3>
             <div className="flex gap-2">
               <Badge variant="secondary">{weekDaysString}</Badge>
-              <Badge variant="outline">{competenciaString}</Badge>
+              <Badge variant="outline">{competencyString}</Badge>
             </div>
           </div>
 
@@ -144,7 +144,7 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Competência:</span>
-                <span>{competenciaString}</span>
+                <span>{competencyString}</span>
               </div>
               <div className="flex justify-between">
                 <span className="font-medium">Total de dias no mês:</span>
