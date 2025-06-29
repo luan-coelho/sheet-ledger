@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { Analytics } from '@vercel/analytics/next'
 
 import { QueryProvider } from '@/components/query-provider'
 import { SessionProvider } from '@/components/session-provider'
@@ -42,6 +43,7 @@ export default function RootLayout({
             <SessionProvider>
               <QueryProvider>
                 {children}
+                <Analytics />
                 <Toaster
                   expand
                   richColors
