@@ -22,6 +22,18 @@ export interface GenerateSpreadsheetResponse {
   isMultiMonth: boolean
 }
 
+export interface GenerateDriveSpreadsheetResponse {
+  success: boolean
+  message: string
+  patientFolder: string
+  files: Array<{
+    id: string
+    name: string
+    month: string
+    year: number
+  }>
+}
+
 export interface CheckExistingFilesResponse {
   hasExistingFiles: boolean
   existingFiles: Array<{
@@ -82,7 +94,7 @@ export function useGenerateSpreadsheet() {
 export function useGenerateDriveSpreadsheet() {
   const queryClient = useQueryClient()
 
-  return useMutation<void, Error, TransformedFormData>({
+  return useMutation<GenerateDriveSpreadsheetResponse, Error, TransformedFormData>({
     mutationFn: async data => {
       const response = await fetch('/api/generate-spreadsheet-drive', {
         method: 'POST',
@@ -96,6 +108,8 @@ export function useGenerateDriveSpreadsheet() {
         const errorData = await response.json()
         throw new Error(errorData.error || 'Erro ao gerar planilha no Google Drive')
       }
+
+      return response.json()
     },
     onSuccess: () => {
       // Invalidar queries relacionadas ao Google Drive se necessário

@@ -6,28 +6,28 @@ export type SessionDate = {
 }
 
 /**
- * Utility functions for generating preview data
+ * Funções utilitárias para gerar dados de preview
  */
 export class PreviewUtils {
   /**
-   * Generates session dates for a specific month and year, filtered by selected days of week
-   * @param year Year
-   * @param month Month (0-11)
-   * @param weekDays Array of selected weekdays
-   * @returns Array of dates representing selected days
+   * Gera datas de sessões para um mês específico e ano, considerando os dias da semana selecionados
+   * @param year Ano
+   * @param month Mês (0-11)
+   * @param weekDays Array de dias da semana selecionados
+   * @returns Array de datas representando os dias selecionados
    */
   static generateSessionDates(year: number, month: number, weekDays: WeekDays[]): Date[] {
     const selectedDays: Date[] = []
     const startDate = new Date(year, month, 1)
     const endDate = new Date(year, month + 1, 0)
 
-    // Convert WeekDays enum to day indices (0 = Monday, 6 = Sunday)
+    // Converte o enum WeekDays para o índice do dia da semana
     const daysOfWeekIndices = weekDays.map(day => this.getDayIndex(day))
 
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      // Convert JS day (0 = Sunday) to our day (0 = Monday)
-      const jsDay = d.getDay() // 0 = Sunday, 1 = Monday, etc.
-      const ourDay = jsDay === 0 ? 6 : jsDay - 1 // Convert to 0 = Monday, 6 = Sunday
+      // Converte o dia da semana JS para o enum WeekDays
+      const jsDay = d.getDay() // 0 = Domingo, 1 = Segunda, etc.
+      const ourDay = jsDay === 0 ? 6 : jsDay - 1 // Converte para 0 = Segunda, 6 = Domingo
 
       if (daysOfWeekIndices.includes(ourDay)) {
         selectedDays.push(new Date(d))
@@ -38,9 +38,9 @@ export class PreviewUtils {
   }
 
   /**
-   * Converts WeekDays enum to day index
-   * @param day WeekDays enum value
-   * @returns Day index (0 = Monday, 6 = Sunday)
+   * Converte o enum WeekDays para o índice do dia da semana
+   * @param day Valor do enum WeekDays
+   * @returns Índice do dia da semana (0 = Segunda, 6 = Domingo)
    */
   private static getDayIndex(day: WeekDays): number {
     switch (day) {
@@ -64,9 +64,9 @@ export class PreviewUtils {
   }
 
   /**
-   * Formats a date to DD/MM/YYYY format
-   * @param date Date to format
-   * @returns Formatted date string
+   * Formata uma data para o formato DD/MM/YYYY, exemplo: "01/01/2025"
+   * @param date Data a ser formatada
+   * @returns String formatada como "01/01/2025"
    */
   static formatDate(date: Date): string {
     const day = date.getDate().toString().padStart(2, '0')
@@ -76,9 +76,9 @@ export class PreviewUtils {
   }
 
   /**
-   * Formats weekdays range for display
-   * @param weekDays Array of selected weekdays
-   * @returns Formatted string like "SEG À SEX" or "SEG, QUA, SEX"
+   * Formata o range de dias da semana para exibição, exemplo: "SEG À SEX" ou "SEG, QUA, SEX"
+   * @param weekDays Array de dias da semana selecionados
+   * @returns String formatada como "SEG À SEX" ou "SEG, QUA, SEX"
    */
   static formatWeekDaysRange(weekDays: WeekDays[]): string {
     if (weekDays.length === 0) return ''
@@ -94,10 +94,10 @@ export class PreviewUtils {
       [WeekDays.SUNDAY]: 'DOM',
     }
 
-    // Sort weekdays by their index
+    // Ordena os dias da semana pelo índice
     const sortedDays = [...weekDays].sort((a, b) => this.getDayIndex(a) - this.getDayIndex(b))
 
-    // Check if it's a consecutive range from Monday to Friday
+    // Verifica se é um range consecutivo de segunda a sexta-feira
     const isWeekdayRange =
       sortedDays.length === 5 &&
       sortedDays.includes(WeekDays.MONDAY) &&
@@ -110,14 +110,14 @@ export class PreviewUtils {
       return 'SEG À SEX'
     }
 
-    // Otherwise, list all selected days
+    // Caso contrário, lista todos os dias selecionados
     return sortedDays.map(day => dayAbbreviations[day]).join(', ')
   }
 
   /**
-   * Gets month name from month index
-   * @param monthIndex Month index (0-11)
-   * @returns Month name in Portuguese
+   * Obtém o nome do mês a partir do índice do mês
+   * @param monthIndex Índice do mês (0-11)
+   * @returns Nome do mês em português
    */
   static getMonthName(monthIndex: number): string {
     const month = meses.find(m => parseInt(m.value) === monthIndex)
@@ -125,10 +125,10 @@ export class PreviewUtils {
   }
 
   /**
-   * Formats competência (month/year) for display
-   * @param monthIndex Month index (0-11)
-   * @param year Year
-   * @returns Formatted string like "MARÇO/2025"
+   * Formata a competência (mês/ano) para exibição, exemplo: "MARÇO/2025"
+   * @param monthIndex Índice do mês (0-11)
+   * @param year Ano
+   * @returns String formatada como "MARÇO/2025"
    */
   static formatCompetencia(monthIndex: number, year: string): string {
     const monthName = this.getMonthName(monthIndex)
@@ -136,11 +136,13 @@ export class PreviewUtils {
   }
 
   /**
-   * Generates session dates with sessions per day for a specific month and year
-   * @param year Year
-   * @param month Month (0-11)
-   * @param weekDaySessions Array of weekday sessions configuration
-   * @returns Array of session dates with sessions count
+   * Gera datas de sessões para um mês específico, considerando as sessões por dia da semana, exemplo:
+   * year: 2025, month: 0, weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }, { day: WeekDays.WEDNESDAY, sessions: 4 }]
+   * retorna: [{ date: 2025-01-01, sessions: 4 }, { date: 2025-01-03, sessions: 4 }, { date: 2025-01-06, sessions: 4 }, ...]
+   * @param year Ano
+   * @param month Mês (0-11)
+   * @param weekDaySessions Array de configuração de sessões por dia da semana
+   * @returns Array de datas de sessões com o número de sessões por dia
    */
   static generateSessionDatesWithSessions(
     year: number,
@@ -151,15 +153,15 @@ export class PreviewUtils {
     const startDate = new Date(year, month, 1)
     const endDate = new Date(year, month + 1, 0)
 
-    // Create a map for quick lookup of sessions by day
+    // Cria um mapa para busca rápida de sessões por dia
     const sessionsMap = new Map<WeekDays, number>()
     weekDaySessions.forEach(({ day, sessions }) => {
       sessionsMap.set(day, sessions)
     })
 
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      // Convert JS day (0 = Sunday) to our day enum
-      const jsDay = d.getDay() // 0 = Sunday, 1 = Monday, etc.
+      // Converte o dia da semana JS para o enum WeekDays
+      const jsDay = d.getDay() // 0 = Domingo, 1 = Segunda, etc.
       const ourDay = this.getWeekDayFromJSDay(jsDay)
 
       if (sessionsMap.has(ourDay)) {
@@ -174,9 +176,9 @@ export class PreviewUtils {
   }
 
   /**
-   * Converts JS day index to WeekDays enum
-   * @param jsDay JS day index (0 = Sunday, 1 = Monday, etc.)
-   * @returns WeekDays enum value
+   * Converte o índice do dia da semana JS para o enum WeekDays
+   * @param jsDay Índice do dia da semana JS (0 = Domingo, 1 = Segunda, etc.)
+   * @returns Valor do enum WeekDays
    */
   private static getWeekDayFromJSDay(jsDay: number): WeekDays {
     switch (jsDay) {
@@ -200,32 +202,34 @@ export class PreviewUtils {
   }
 
   /**
-   * Generates session dates with sessions per day for a specific period
-   * @param dataInicio Start date
-   * @param dataFim End date
-   * @param weekDaySessions Array of weekday sessions configuration
-   * @returns Array of session dates with sessions count
+   * Gera datas de sessões para um período específico, considerando os dias da semana selecionados, exemplo:
+   * startDate: 2025-01-01, endDate: 2025-01-31, weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }, { day: WeekDays.WEDNESDAY, sessions: 4 }]
+   * retorna: [{ date: 2025-01-01, sessions: 4 }, { date: 2025-01-02, sessions: 0 }, { date: 2025-01-03, sessions: 4 }, ...]
+   * @param startDate Data de início do período
+   * @param endDate Data de fim do período
+   * @param weekDaySessions Array de configuração de sessões por dia da semana
+   * @returns Array de datas de sessões com o número de sessões por dia
    */
   static generateSessionDatesWithSessionsForPeriod(
-    dataInicio: Date,
-    dataFim: Date,
+    startDate: Date,
+    endDate: Date,
     weekDaySessions: WeekdaySession[],
   ): SessionDate[] {
     const sessionDates: SessionDate[] = []
 
-    // Create a map for quick lookup of sessions by day
+    // Cria um mapa para busca rápida de sessões por dia
     const sessionsMap = new Map<WeekDays, number>()
     weekDaySessions.forEach(({ day, sessions }) => {
       sessionsMap.set(day, sessions)
     })
 
-    // Iterate through each day in the period
-    const currentDate = new Date(dataInicio)
-    while (currentDate <= dataFim) {
+    // Itera através de cada dia no período
+    const currentDate = new Date(startDate)
+    while (currentDate <= endDate) {
       const jsDay = currentDate.getDay()
       const weekDay = this.getWeekDayFromJSDay(jsDay)
 
-      // Check if this weekday is selected
+      // Verifica se este dia da semana está selecionado
       if (sessionsMap.has(weekDay)) {
         const sessions = sessionsMap.get(weekDay)!
         sessionDates.push({
@@ -234,7 +238,7 @@ export class PreviewUtils {
         })
       }
 
-      // Move to next day
+      // Move para o próximo dia
       currentDate.setDate(currentDate.getDate() + 1)
     }
 
@@ -242,14 +246,14 @@ export class PreviewUtils {
   }
 
   /**
-   * Formats weekdays range with sessions for display
-   * @param weekDaySessions Array of weekday sessions configuration
-   * @returns Formatted string like "SEG(4), TER(4), QUA(4)"
+   * Formata o range de dias da semana com as sessões para exibição, exemplo: "SEG(4), TER(4), QUA(4)"
+   * @param weekDaySessions Array de configuração de sessões por dia da semana
+   * @returns String formatada como "SEG(4), TER(4), QUA(4)"
    */
   static formatWeekDaysRangeWithSessions(weekDaySessions: WeekdaySession[]): string {
     if (weekDaySessions.length === 0) return ''
 
-    // Map weekdays to abbreviations
+    // Mapeia os dias da semana para abreviações
     const dayAbbreviations: Record<WeekDays, string> = {
       [WeekDays.MONDAY]: 'SEG',
       [WeekDays.TUESDAY]: 'TER',
@@ -260,7 +264,7 @@ export class PreviewUtils {
       [WeekDays.SUNDAY]: 'DOM',
     }
 
-    // Sort weekdays by their index
+    // Ordena os dias da semana pelo índice
     const sortedSessions = [...weekDaySessions].sort((a, b) => this.getDayIndex(a.day) - this.getDayIndex(b.day))
 
     return sortedSessions.map(({ day, sessions }) => `${dayAbbreviations[day]}(${sessions})`).join(', ')

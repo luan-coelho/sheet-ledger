@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Cloud, Eye, FileText, Loader2 } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -33,6 +33,7 @@ import {
   useGenerateDriveSpreadsheet,
   useGenerateSpreadsheet,
   type CheckExistingFilesResponse,
+  type GenerateDriveSpreadsheetResponse,
   type TransformedFormData,
 } from '@/hooks/use-spreadsheet-mutations'
 
@@ -57,6 +58,10 @@ export function SpreadsheetForm() {
   const [showPreview, setShowPreview] = useState(false)
   const [showOverwriteDialog, setShowOverwriteDialog] = useState(false)
   const [existingFilesInfo, setExistingFilesInfo] = useState<ExistingFilesInfo | null>(null)
+  const [driveGenerationResult, setDriveGenerationResult] = useState<GenerateDriveSpreadsheetResponse | null>(null)
+
+  // Ref para o card de resultado do Google Drive
+  const driveResultRef = useRef<HTMLDivElement>(null)
 
   // Hooks para buscar dados das entidades
   const { data: professionals } = useProfessionals()
@@ -158,6 +163,9 @@ export function SpreadsheetForm() {
   }
 
   async function handleGenerateDriveWithCheck(values: SpreadsheetFormValues) {
+    // Limpar resultado anterior
+    setDriveGenerationResult(null)
+
     const patient = patients?.find(p => p.id === values.patientId)
 
     if (!patient) {
@@ -183,12 +191,20 @@ export function SpreadsheetForm() {
       } else {
         // Gerar diretamente se não há arquivos existentes
         const transformedData = transformFormDataToApi(values)
-        generateDriveSpreadsheet.mutate(transformedData)
+        generateDriveSpreadsheet.mutate(transformedData, {
+          onSuccess: result => {
+            setDriveGenerationResult(result)
+          },
+        })
       }
     } catch (error) {
       // Se houver erro na verificação, continuar com geração normal
       const transformedData = transformFormDataToApi(values)
-      generateDriveSpreadsheet.mutate(transformedData)
+      generateDriveSpreadsheet.mutate(transformedData, {
+        onSuccess: result => {
+          setDriveGenerationResult(result)
+        },
+      })
       toast.error(error instanceof Error ? error.message : 'Erro ao verificar arquivos existentes')
     }
   }
@@ -197,7 +213,11 @@ export function SpreadsheetForm() {
     if (!existingFilesInfo) return
 
     const transformedData = transformFormDataToApi(existingFilesInfo.formData)
-    generateDriveSpreadsheet.mutate(transformedData)
+    generateDriveSpreadsheet.mutate(transformedData, {
+      onSuccess: result => {
+        setDriveGenerationResult(result)
+      },
+    })
 
     setShowOverwriteDialog(false)
     setExistingFilesInfo(null)
@@ -212,6 +232,22 @@ export function SpreadsheetForm() {
   const isLoading = generateSpreadsheet.isPending || generateDriveSpreadsheet.isPending
   const isCheckingFiles = checkExistingFiles.isPending
   const error = generateSpreadsheet.error || generateDriveSpreadsheet.error || checkExistingFiles.error
+
+  // Scroll automático para o card de resultado quando ele aparecer
+  useEffect(() => {
+    if (driveGenerationResult && driveResultRef.current) {
+      // Delay pequeno para garantir que o DOM foi atualizado
+      setTimeout(() => {
+        if (driveResultRef.current) {
+          driveResultRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest',
+          })
+        }
+      }, 100)
+    }
+  }, [driveGenerationResult])
 
   return (
     <Card className="w-full">
@@ -526,6 +562,69 @@ export function SpreadsheetForm() {
             </div>
           </form>
         </Form>
+
+        {/* Resultado da geração no Google Drive */}
+        {driveGenerationResult && (
+          <div ref={driveResultRef} className="mt-6">
+            <Alert className="border-green-200 bg-green-50">
+              <Cloud className="h-4 w-4 text-green-600" />
+              <AlertDescription>
+                <div className="space-y-3">
+                  <p className="font-medium text-green-800">{driveGenerationResult.message}</p>
+
+                  {driveGenerationResult.files.length === 1 ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-green-700">Arquivo gerado:</p>
+                      <a
+                        href={`https://drive.google.com/file/d/${driveGenerationResult.files[0].id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 underline hover:text-blue-800">
+                        <FileText className="h-4 w-4" />
+                        {driveGenerationResult.files[0].name}
+                      </a>
+                    </div>
+                  ) : (
+                    <div className="space-y-2">
+                      <p className="text-sm text-green-700">
+                        {driveGenerationResult.files.length} arquivos gerados na pasta do paciente:
+                      </p>
+                      <div className="space-y-1">
+                        {driveGenerationResult.files.map((file, index) => (
+                          <a
+                            key={index}
+                            href={`https://drive.google.com/file/d/${file.id}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="mr-4 inline-flex items-center gap-2 text-sm text-blue-600 underline hover:text-blue-800">
+                            <FileText className="h-4 w-4" />
+                            {file.name}
+                          </a>
+                        ))}
+                      </div>
+                      <div className="pt-2">
+                        <a
+                          href={`https://drive.google.com/drive/search?q=${encodeURIComponent(driveGenerationResult.patientFolder)}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-sm font-medium text-green-600 hover:text-green-800">
+                          <Cloud className="h-4 w-4" />
+                          Ver pasta do paciente no Google Drive
+                        </a>
+                      </div>
+                    </div>
+                  )}
+
+                  <button
+                    onClick={() => setDriveGenerationResult(null)}
+                    className="text-xs text-gray-500 underline hover:text-gray-700">
+                    Fechar
+                  </button>
+                </div>
+              </AlertDescription>
+            </Alert>
+          </div>
+        )}
 
         {/* Preview */}
         {showPreview && (

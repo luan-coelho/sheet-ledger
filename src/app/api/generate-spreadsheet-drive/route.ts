@@ -44,7 +44,7 @@ export async function POST(request: NextRequest) {
     try {
       accessToken = await googleDriveConfigService.getValidAccessToken()
     } catch (error) {
-      console.error('❌ Erro ao obter token do Google Drive:', error)
+      console.error('Erro ao obter token do Google Drive:', error)
       return NextResponse.json(
         { error: 'Google Drive não configurado ou token expirado. Configure primeiro nas configurações.' },
         { status: 400 },
@@ -61,20 +61,26 @@ export async function POST(request: NextRequest) {
       responsible,
       healthPlan,
       weekDaySessions,
-      dataInicio,
-      dataFim,
-      horarioInicio,
-      horarioFim,
+      startDate,
+      endDate,
+      startTime,
+      endTime,
     } = body
 
-    if (!dataInicio || !dataFim) {
+    if (!startDate || !endDate) {
       return NextResponse.json({ error: 'Data de início e fim são obrigatórias' }, { status: 400 })
     }
 
-    const startDate = new Date(dataInicio)
-    const endDate = new Date(dataFim)
+    // Criar objetos Date e validar se são válidos
+    const startDateObj = new Date(startDate + 'T00:00:00')
+    const endDateObj = new Date(endDate + 'T00:00:00')
 
-    if (startDate >= endDate) {
+    // Verificar se as datas são válidas
+    if (isNaN(startDateObj.getTime()) || isNaN(endDateObj.getTime())) {
+      return NextResponse.json({ error: 'Datas inválidas fornecidas' }, { status: 400 })
+    }
+
+    if (startDateObj >= endDateObj) {
       return NextResponse.json({ error: 'Data de início deve ser anterior à data de fim' }, { status: 400 })
     }
 
@@ -134,7 +140,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Obter meses do período
-    const months = getMonthsBetweenDates(startDate, endDate)
+    const months = getMonthsBetweenDates(startDateObj, endDateObj)
     const createdFiles = []
 
     // Gerar planilha para cada mês
@@ -150,8 +156,8 @@ export async function POST(request: NextRequest) {
         weekDaySessions,
         startDate: monthInfo.startDate.toISOString().split('T')[0],
         endDate: monthInfo.endDate.toISOString().split('T')[0],
-        startTime: horarioInicio,
-        endTime: horarioFim,
+        startTime: startTime,
+        endTime: endTime,
       })
 
       // Nome do arquivo: "Janeiro 2024.xlsx"
