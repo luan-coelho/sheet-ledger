@@ -461,7 +461,7 @@ export default function UsuariosPage() {
 
       {/* Modal de Logs de Atividades */}
       <Dialog open={!!viewingLogsUser} onOpenChange={() => setViewingLogsUser(null)}>
-        <DialogContent className="max-h-[80vh] max-w-4xl overflow-y-auto">
+        <DialogContent className="max-h-[80vh] min-w-[60vw] overflow-y-auto">
           <DialogTitle className="sr-only">Logs de Atividades - {viewingLogsUser?.name}</DialogTitle>
           {viewingLogsUser && <ActivityLogsViewer userId={viewingLogsUser.id} userName={viewingLogsUser.name} />}
         </DialogContent>

@@ -1,39 +1,13 @@
 import { eq } from 'drizzle-orm'
 import NextAuth from 'next-auth'
-import Google from 'next-auth/providers/google'
 
 import { User, usersTable } from '@/app/db/schemas'
 
-import { routes } from '@/lib/routes'
-
 import { db } from '../app/db'
+import authConfig from './auth.config'
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
-  debug: false,
-  trustHost: true,
-  providers: [
-    Google({
-      profile(profile) {
-        return { ...profile }
-      },
-      authorization: {
-        params: {
-          prompt: 'select_account',
-        },
-      },
-    }),
-  ],
-  secret: process.env.AUTH_SECRET,
-  session: {
-    strategy: 'jwt',
-    maxAge: 1 * 24 * 60 * 60, // 1 dia
-  },
-  pages: {
-    signIn: routes.frontend.auth.signIn,
-    signOut: routes.frontend.auth.signIn,
-    newUser: routes.frontend.auth.signIn,
-    error: routes.frontend.auth.signIn,
-  },
+  ...authConfig,
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === 'google') {
