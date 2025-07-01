@@ -1,12 +1,12 @@
+import { QueryProvider } from '@/providers/query-provider'
+import { SessionProvider } from '@/providers/session-provider'
+import { ThemeConfigProvider } from '@/providers/theme-config-provider'
+import { ThemeProvider } from '@/providers/theme-provider'
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
 import { LoginLogger } from '@/components/auth/login-logger'
-import { QueryProvider } from '@/components/query-provider'
-import { SessionProvider } from '@/components/session-provider'
-import { ThemeConfigProvider } from '@/components/theme-config-provider'
-import { ThemeProvider } from '@/components/theme-provider'
 import { Toaster } from '@/components/ui/sonner'
 
 import './globals.css'
