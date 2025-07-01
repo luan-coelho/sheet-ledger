@@ -46,8 +46,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Passa as informações do usuário para o token durante o login
       if (user) {
         token.id = user.id
-        // Marcar que é um novo login para registrar log posteriormente
-        token.isNewLogin = true
       }
 
       return token
@@ -56,13 +54,6 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       // Passa os dados do token para a sessão
       if (token) {
         if (token.id) session.user.id = token.id as string
-
-        // Marcar se é um novo login para o cliente registrar o log
-        if (token.isNewLogin) {
-          session.isNewLogin = true
-          // Remover a marca para não repetir o log
-          token.isNewLogin = false
-        }
       }
       return session
     },

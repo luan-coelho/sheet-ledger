@@ -14,7 +14,7 @@ export function LoginLogger() {
 
   useEffect(() => {
     // Verificar se é um novo login e ainda não foi registrado
-    if (status === 'authenticated' && session?.isNewLogin && !hasLoggedRef.current) {
+    if (status === 'authenticated' && session && !hasLoggedRef.current) {
       hasLoggedRef.current = true
 
       // Registrar log de login bem-sucedido

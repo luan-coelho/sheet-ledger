@@ -213,32 +213,9 @@ export default function UsuariosPage() {
       <Card>
         <CardHeader>
           <CardTitle>Lista de Usuários</CardTitle>
-          <CardDescription>
-            {searchFilter ? (
-              <>
-                {filteredUsers.length} usuário(s) encontrado(s) de {users?.length || 0} total
-                {filteredUsers.length > itemsPerPage && (
-                  <span>
-                    {' '}
-                    - Página {currentPage} de {totalPages}
-                  </span>
-                )}
-              </>
-            ) : (
-              <>
-                {users?.length || 0} usuário(s) cadastrado(s)
-                {users && users.length > itemsPerPage && (
-                  <span>
-                    {' '}
-                    - Página {currentPage} de {totalPages}
-                  </span>
-                )}
-              </>
-            )}
-          </CardDescription>
-
-          {/* Campo de filtro */}
-          <div className="mb-6 flex items-center space-x-2">
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4 flex items-center space-x-2">
             <div className="relative max-w-sm flex-1">
               <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
               <Input
@@ -259,9 +236,7 @@ export default function UsuariosPage() {
               )}
             </div>
           </div>
-        </CardHeader>
 
-        <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin" />
