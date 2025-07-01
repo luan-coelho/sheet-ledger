@@ -1,7 +1,8 @@
 'use client'
 
-import { Check, ChevronsUpDown, Plus } from 'lucide-react'
+import { AlertCircle, Check, ChevronsUpDown, Plus } from 'lucide-react'
 import * as React from 'react'
+import { FieldError } from 'react-hook-form'
 
 import { Button } from '@/components/ui/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '@/components/ui/command'
@@ -27,6 +28,8 @@ interface CreatableComboboxProps {
   className?: string
   disabled?: boolean
   isCreating?: boolean
+  showValidationIcon?: boolean
+  error?: FieldError
 }
 
 export function CreatableCombobox({
@@ -42,11 +45,15 @@ export function CreatableCombobox({
   className,
   disabled = false,
   isCreating = false,
+  showValidationIcon = false,
+  error,
 }: CreatableComboboxProps) {
   const [open, setOpen] = React.useState(false)
   const [searchValue, setSearchValue] = React.useState('')
 
   const selectedOption = options.find(option => option.value === value)
+  const hasError = error !== undefined && error !== null
+  const showErrorIcon = showValidationIcon && hasError
 
   // Verificar se o valor de busca corresponde a alguma opção existente
   const exactMatch = options.find(option => option.label.toLowerCase() === searchValue.toLowerCase())
@@ -73,50 +80,63 @@ export function CreatableCombobox({
   }
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className={cn('w-full justify-between', !selectedOption && 'text-muted-foreground', className)}
-          disabled={disabled}>
-          {selectedOption ? selectedOption.label : placeholder}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-full p-0" align="start">
-        <Command shouldFilter={false}>
-          <CommandInput placeholder={searchPlaceholder} value={searchValue} onValueChange={setSearchValue} />
-          <CommandList>
-            {/* Opções existentes filtradas */}
-            <CommandGroup>
-              {options
-                .filter(option => option.label.toLowerCase().includes(searchValue.toLowerCase()))
-                .map(option => (
-                  <CommandItem key={option.value} value={option.value} onSelect={handleSelect}>
-                    <Check className={cn('mr-2 h-4 w-4', value === option.value ? 'opacity-100' : 'opacity-0')} />
-                    {option.label}
-                  </CommandItem>
-                ))}
-            </CommandGroup>
-
-            {/* Opção para criar novo item - só aparece se for válido */}
-            {onCreate && searchValue.trim() && !exactMatch && isValidForCreation && (
-              <CommandGroup>
-                <CommandItem onSelect={handleCreate} disabled={isCreating} className="text-primary">
-                  <Plus className="mr-2 h-4 w-4" />
-                  {isCreating ? 'Criando...' : `${createText} "${searchValue.trim()}"`}
-                </CommandItem>
-              </CommandGroup>
+    <div className="relative">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className={cn(
+              'h-10 w-full justify-between rounded-sm',
+              !selectedOption && 'text-muted-foreground',
+              hasError ? 'border-destructive' : 'border-zinc-300',
+              showErrorIcon ? 'pr-10' : '',
+              className,
             )}
+            disabled={disabled}>
+            {selectedOption ? selectedOption.label : placeholder}
+            {!showErrorIcon && <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-full p-0" align="start">
+          <Command shouldFilter={false}>
+            <CommandInput placeholder={searchPlaceholder} value={searchValue} onValueChange={setSearchValue} />
+            <CommandList>
+              {/* Opções existentes filtradas */}
+              <CommandGroup>
+                {options
+                  .filter(option => option.label.toLowerCase().includes(searchValue.toLowerCase()))
+                  .map(option => (
+                    <CommandItem key={option.value} value={option.value} onSelect={handleSelect}>
+                      <Check className={cn('mr-2 h-4 w-4', value === option.value ? 'opacity-100' : 'opacity-0')} />
+                      {option.label}
+                    </CommandItem>
+                  ))}
+              </CommandGroup>
 
-            {/* Mensagem quando não há opções */}
-            {options.filter(option => option.label.toLowerCase().includes(searchValue.toLowerCase())).length === 0 &&
-              !searchValue.trim() && <CommandEmpty>{emptyText}</CommandEmpty>}
-          </CommandList>
-        </Command>
-      </PopoverContent>
-    </Popover>
+              {/* Opção para criar novo item - só aparece se for válido */}
+              {onCreate && searchValue.trim() && !exactMatch && isValidForCreation && (
+                <CommandGroup>
+                  <CommandItem onSelect={handleCreate} disabled={isCreating} className="text-primary">
+                    <Plus className="mr-2 h-4 w-4" />
+                    {isCreating ? 'Criando...' : `${createText} "${searchValue.trim()}"`}
+                  </CommandItem>
+                </CommandGroup>
+              )}
+
+              {/* Mensagem quando não há opções */}
+              {options.filter(option => option.label.toLowerCase().includes(searchValue.toLowerCase())).length === 0 &&
+                !searchValue.trim() && <CommandEmpty>{emptyText}</CommandEmpty>}
+            </CommandList>
+          </Command>
+        </PopoverContent>
+      </Popover>
+      {showErrorIcon && (
+        <div className="absolute inset-y-0 right-3 flex items-center">
+          <AlertCircle className="text-destructive size-4" />
+        </div>
+      )}
+    </div>
   )
 }

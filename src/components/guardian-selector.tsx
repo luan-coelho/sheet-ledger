@@ -1,5 +1,7 @@
 'use client'
 
+import { FieldError } from 'react-hook-form'
+
 import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -11,6 +13,8 @@ interface GuardianSelectorProps {
   placeholder?: string
   className?: string
   disabled?: boolean
+  showValidationIcon?: boolean
+  error?: FieldError
 }
 
 export function GuardianSelector({
@@ -19,15 +23,17 @@ export function GuardianSelector({
   placeholder = 'Selecione um responsável...',
   className,
   disabled = false,
+  showValidationIcon = false,
+  error,
 }: GuardianSelectorProps) {
-  const { data: guardians, isLoading, error } = useGuardians()
+  const { data: guardians, isLoading, error: fetchError } = useGuardians()
   const createGuardian = useCreateGuardian()
 
   if (isLoading) {
     return <Skeleton className="h-9 w-full" />
   }
 
-  if (error) {
+  if (fetchError) {
     return <div className="text-destructive text-sm">Erro ao carregar responsáveis</div>
   }
 
@@ -61,6 +67,8 @@ export function GuardianSelector({
       className={className}
       disabled={disabled}
       isCreating={createGuardian.isPending}
+      showValidationIcon={showValidationIcon}
+      error={error}
     />
   )
 }

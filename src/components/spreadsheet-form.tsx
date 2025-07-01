@@ -271,6 +271,8 @@ export function SpreadsheetForm() {
                         value={field.value}
                         onValueChange={field.onChange}
                         placeholder="Selecione um profissional..."
+                        showValidationIcon
+                        error={form.formState.errors.professionalId}
                       />
                     </FormControl>
                     <FormMessage />
@@ -285,7 +287,12 @@ export function SpreadsheetForm() {
                   <FormItem>
                     <FormLabel>Nº conselho</FormLabel>
                     <FormControl>
-                      <Input placeholder="Nº conselho do profissional" {...field} />
+                      <Input
+                        placeholder="Nº conselho do profissional"
+                        {...field}
+                        showValidationIcon
+                        error={form.formState.errors.licenseNumber}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -299,7 +306,12 @@ export function SpreadsheetForm() {
                   <FormItem>
                     <FormLabel>Sessão autorizada</FormLabel>
                     <FormControl>
-                      <Input placeholder="Tipo de sessão autorizada" {...field} />
+                      <Input
+                        placeholder="Tipo de sessão autorizada"
+                        {...field}
+                        showValidationIcon
+                        error={form.formState.errors.authorizedSession}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -317,6 +329,8 @@ export function SpreadsheetForm() {
                         value={field.value}
                         onValueChange={field.onChange}
                         placeholder="Selecione um paciente..."
+                        showValidationIcon
+                        error={form.formState.errors.patientId}
                       />
                     </FormControl>
                     <FormMessage />
@@ -335,6 +349,8 @@ export function SpreadsheetForm() {
                         value={field.value}
                         onValueChange={field.onChange}
                         placeholder="Selecione um responsável..."
+                        showValidationIcon
+                        error={form.formState.errors.guardianId}
                       />
                     </FormControl>
                     <FormMessage />
@@ -353,6 +369,8 @@ export function SpreadsheetForm() {
                         value={field.value}
                         onValueChange={field.onChange}
                         placeholder="Selecione um plano de saúde..."
+                        showValidationIcon
+                        error={form.formState.errors.healthPlanId}
                       />
                     </FormControl>
                     <FormMessage />
@@ -382,6 +400,8 @@ export function SpreadsheetForm() {
                           }
                         }}
                         placeholder="Selecione a data de início"
+                        showValidationIcon
+                        error={form.formState.errors.startDate}
                       />
                     </FormControl>
                     <FormMessage />
@@ -402,6 +422,8 @@ export function SpreadsheetForm() {
                         onSelect={date => field.onChange(date ? formatDateToLocal(date) : '')}
                         placeholder="Selecione a data fim"
                         fromDate={getMinEndDate(startDate)}
+                        showValidationIcon
+                        error={form.formState.errors.endDate}
                       />
                     </FormControl>
                     <FormMessage />

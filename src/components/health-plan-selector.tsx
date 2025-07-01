@@ -1,5 +1,7 @@
 'use client'
 
+import { FieldError } from 'react-hook-form'
+
 import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -11,6 +13,8 @@ interface HealthPlanSelectorProps {
   placeholder?: string
   className?: string
   disabled?: boolean
+  showValidationIcon?: boolean
+  error?: FieldError
 }
 
 export function HealthPlanSelector({
@@ -19,15 +23,17 @@ export function HealthPlanSelector({
   placeholder = 'Selecione um plano de saúde...',
   className,
   disabled = false,
+  showValidationIcon = false,
+  error,
 }: HealthPlanSelectorProps) {
-  const { data: healthPlans, isLoading, error } = useHealthPlans()
+  const { data: healthPlans, isLoading, error: fetchError } = useHealthPlans()
   const createHealthPlan = useCreateHealthPlan()
 
   if (isLoading) {
     return <Skeleton className="h-9 w-full" />
   }
 
-  if (error) {
+  if (fetchError) {
     return <div className="text-destructive text-sm">Erro ao carregar planos de saúde</div>
   }
 
@@ -61,6 +67,8 @@ export function HealthPlanSelector({
       className={className}
       disabled={disabled}
       isCreating={createHealthPlan.isPending}
+      showValidationIcon={showValidationIcon}
+      error={error}
     />
   )
 }

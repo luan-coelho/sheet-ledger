@@ -1,5 +1,7 @@
 'use client'
 
+import { FieldError } from 'react-hook-form'
+
 import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -11,6 +13,8 @@ interface PatientSelectorProps {
   placeholder?: string
   className?: string
   disabled?: boolean
+  showValidationIcon?: boolean
+  error?: FieldError
 }
 
 export function PatientSelector({
@@ -19,15 +23,17 @@ export function PatientSelector({
   placeholder = 'Selecione um paciente...',
   className,
   disabled = false,
+  showValidationIcon = false,
+  error,
 }: PatientSelectorProps) {
-  const { data: patients, isLoading, error } = usePatients()
+  const { data: patients, isLoading, error: fetchError } = usePatients()
   const createPatient = useCreatePatient()
 
   if (isLoading) {
     return <Skeleton className="h-9 w-full" />
   }
 
-  if (error) {
+  if (fetchError) {
     return <div className="text-destructive text-sm">Erro ao carregar pacientes</div>
   }
 
@@ -61,6 +67,8 @@ export function PatientSelector({
       className={className}
       disabled={disabled}
       isCreating={createPatient.isPending}
+      showValidationIcon={showValidationIcon}
+      error={error}
     />
   )
 }

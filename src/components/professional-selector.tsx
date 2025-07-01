@@ -1,5 +1,7 @@
 'use client'
 
+import { FieldError } from 'react-hook-form'
+
 import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
 import { Skeleton } from '@/components/ui/skeleton'
 
@@ -11,6 +13,8 @@ interface ProfessionalSelectorProps {
   placeholder?: string
   className?: string
   disabled?: boolean
+  showValidationIcon?: boolean
+  error?: FieldError
 }
 
 export function ProfessionalSelector({
@@ -19,15 +23,17 @@ export function ProfessionalSelector({
   placeholder = 'Selecione um profissional...',
   className,
   disabled = false,
+  showValidationIcon = false,
+  error,
 }: ProfessionalSelectorProps) {
-  const { data: professionals, isLoading, error } = useProfessionals()
+  const { data: professionals, isLoading, error: fetchError } = useProfessionals()
   const createProfessional = useCreateProfessional()
 
   if (isLoading) {
     return <Skeleton className="h-9 w-full" />
   }
 
-  if (error) {
+  if (fetchError) {
     return <div className="text-destructive text-sm">Erro ao carregar profissionais</div>
   }
 
@@ -61,6 +67,8 @@ export function ProfessionalSelector({
       className={className}
       disabled={disabled}
       isCreating={createProfessional.isPending}
+      showValidationIcon={showValidationIcon}
+      error={error}
     />
   )
 }
