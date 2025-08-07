@@ -91,6 +91,7 @@ export function SpreadsheetForm() {
   const lastDayOfMonth = getLastDayOfMonth(today.getFullYear(), today.getMonth())
 
   const form = useForm<SpreadsheetFormValues>({
+    mode: 'onChange',
     resolver: zodResolver(spreadsheetFormSchema),
     defaultValues: {
       professionalId: '',
@@ -99,6 +100,8 @@ export function SpreadsheetForm() {
       patientId: '',
       guardianId: '',
       healthPlanId: '',
+      cardNumber: '',
+      guideNumber: '',
       weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }],
       startDate: formatDateISO(firstDayOfMonth),
       endDate: formatDateISO(lastDayOfMonth),
@@ -142,6 +145,8 @@ export function SpreadsheetForm() {
       patientName: patient?.name || '',
       responsible: guardian?.name || '',
       healthPlan: healthPlan?.name || '',
+      cardNumber: values.cardNumber,
+      guideNumber: values.guideNumber,
       weekDaySessions: values.weekDaySessions,
       startDate: values.startDate,
       endDate: values.endDate,
@@ -259,12 +264,12 @@ export function SpreadsheetForm() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
             {/* Todos os campos em um grid único para preenchimento 100% das linhas */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 xl:grid-cols-6">
               <FormField
                 control={form.control}
                 name="professionalId"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="sm:col-span-2 xl:col-span-2">
                     <FormLabel>Profissional</FormLabel>
                     <FormControl>
                       <ProfessionalSelector
@@ -284,7 +289,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="licenseNumber"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="sm:col-span-2 xl:col-span-2">
                     <FormLabel>Nº conselho</FormLabel>
                     <FormControl>
                       <Input
@@ -303,7 +308,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="authorizedSession"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="sm:col-span-2 xl:col-span-2">
                     <FormLabel>Sessão autorizada</FormLabel>
                     <FormControl>
                       <Input
@@ -322,7 +327,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="patientId"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="sm:col-span-2 xl:col-span-2">
                     <FormLabel>Paciente</FormLabel>
                     <FormControl>
                       <PatientSelector
@@ -342,7 +347,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="guardianId"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="sm:col-span-2 xl:col-span-2">
                     <FormLabel>Responsável</FormLabel>
                     <FormControl>
                       <GuardianSelector
@@ -362,7 +367,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="healthPlanId"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="sm:col-span-2 xl:col-span-2">
                     <FormLabel>Plano de saúde</FormLabel>
                     <FormControl>
                       <HealthPlanSelector
@@ -380,9 +385,47 @@ export function SpreadsheetForm() {
 
               <FormField
                 control={form.control}
+                name="cardNumber"
+                render={({ field }) => (
+                  <FormItem className="col-span-1">
+                    <FormLabel>Nº carteirinha</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Nº da carteirinha"
+                        {...field}
+                        showValidationIcon
+                        error={form.formState.errors.cardNumber}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="guideNumber"
+                render={({ field }) => (
+                  <FormItem className="col-span-1">
+                    <FormLabel>Guia Nº</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Nº da guia"
+                        {...field}
+                        showValidationIcon
+                        error={form.formState.errors.guideNumber}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="startDate"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="col-span-1">
                     <FormLabel>Data de início</FormLabel>
                     <FormControl>
                       <DatePicker
@@ -400,6 +443,7 @@ export function SpreadsheetForm() {
                           }
                         }}
                         placeholder="Selecione a data de início"
+                        format="dd/MM/yyyy"
                         showValidationIcon
                         error={form.formState.errors.startDate}
                       />
@@ -413,7 +457,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="endDate"
                 render={({ field }) => (
-                  <FormItem>
+                  <FormItem className="col-span-1">
                     <FormLabel>Data fim</FormLabel>
                     <FormControl>
                       <DatePicker
@@ -422,6 +466,7 @@ export function SpreadsheetForm() {
                         onSelect={date => field.onChange(date ? formatDateToLocal(date) : '')}
                         placeholder="Selecione a data fim"
                         fromDate={getMinEndDate(startDate)}
+                        format="dd/MM/yyyy"
                         showValidationIcon
                         error={form.formState.errors.endDate}
                       />

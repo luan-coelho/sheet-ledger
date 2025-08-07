@@ -15,6 +15,8 @@ export async function POST(request: NextRequest) {
       'patientName',
       'responsible',
       'healthPlan',
+      'cardNumber',
+      'guideNumber',
       'weekDaySessions',
       'startDate',
       'endDate',

@@ -1,5 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 
+import { fetchGoogleDriveApi } from '@/lib/google-drive-api-utils'
+
 interface RestrictedDriveFile {
   id: string
   name: string
@@ -29,14 +31,7 @@ interface DriveData {
 async function fetchRestrictedDriveFiles(folderId?: string): Promise<DriveData> {
   const url = folderId ? `/api/google-drive/restricted?folderId=${folderId}` : '/api/google-drive/restricted'
 
-  const response = await fetch(url)
-  const result = await response.json()
-
-  if (!result.success) {
-    throw new Error(result.message || 'Erro ao carregar arquivos')
-  }
-
-  return result.data
+  return fetchGoogleDriveApi<DriveData>(url, undefined, 'Erro ao carregar arquivos')
 }
 
 export function useRestrictedGoogleDrive(folderId?: string) {

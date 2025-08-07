@@ -10,6 +10,8 @@ export interface TransformedFormData {
   patientName: string
   responsible: string
   healthPlan: string
+  cardNumber: string
+  guideNumber: string
   weekDaySessions: Array<{ day: WeekDays; sessions: number }>
   startDate: string
   endDate: string

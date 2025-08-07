@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { auth } from '@/lib/auth'
+import { handleGoogleDriveError } from '@/lib/google-drive-error-handler'
 
 import { googleDriveConfigService } from '@/services/google-drive-config-service'
 import { createGoogleDriveService } from '@/services/google-drive-service'
@@ -29,15 +30,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       message: 'Arquivo obtido com sucesso',
     })
   } catch (error) {
-    console.error('Erro na API Google Drive - GET file:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Erro ao obter arquivo',
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
-      },
-      { status: 500 },
-    )
+    return handleGoogleDriveError(error, 'Erro ao obter arquivo')
   }
 }
 
@@ -81,15 +74,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       message: 'Arquivo atualizado com sucesso',
     })
   } catch (error) {
-    console.error('Erro na API Google Drive - PUT file:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Erro ao atualizar arquivo',
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
-      },
-      { status: 500 },
-    )
+    return handleGoogleDriveError(error, 'Erro ao atualizar arquivo')
   }
 }
 
@@ -112,14 +97,6 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
       message: 'Arquivo deletado com sucesso',
     })
   } catch (error) {
-    console.error('Erro na API Google Drive - DELETE file:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Erro ao deletar arquivo',
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
-      },
-      { status: 500 },
-    )
+    return handleGoogleDriveError(error, 'Erro ao deletar arquivo')
   }
 }

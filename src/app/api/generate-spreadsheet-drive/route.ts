@@ -60,12 +60,35 @@ export async function POST(request: NextRequest) {
       patientName,
       responsible,
       healthPlan,
+      cardNumber,
+      guideNumber,
       weekDaySessions,
       startDate,
       endDate,
       startTime,
       endTime,
     } = body
+
+    // Validar campos obrigatórios
+    const requiredFields = [
+      'professional',
+      'licenseNumber',
+      'authorizedSession',
+      'patientName',
+      'responsible',
+      'healthPlan',
+      'cardNumber',
+      'guideNumber',
+      'weekDaySessions',
+      'startTime',
+      'endTime',
+    ]
+
+    const missingFields = requiredFields.filter(field => !body[field])
+
+    if (missingFields.length > 0) {
+      return NextResponse.json({ error: `Campos obrigatórios faltando: ${missingFields.join(', ')}` }, { status: 400 })
+    }
 
     if (!startDate || !endDate) {
       return NextResponse.json({ error: 'Data de início e fim são obrigatórias' }, { status: 400 })
@@ -153,6 +176,8 @@ export async function POST(request: NextRequest) {
         patientName,
         responsible,
         healthPlan,
+        cardNumber,
+        guideNumber,
         weekDaySessions,
         startDate: monthInfo.startDate.toISOString().split('T')[0],
         endDate: monthInfo.endDate.toISOString().split('T')[0],

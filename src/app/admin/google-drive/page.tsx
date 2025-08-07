@@ -68,11 +68,13 @@ export default function GoogleDrivePage() {
           <Alert>
             <AlertCircle className="h-4 w-4" />
             <AlertDescription>
-              Google Drive não está configurado. Configure nas{' '}
-              <a href="/admin/settings" className="underline hover:no-underline">
-                configurações
-              </a>{' '}
-              primeiro.
+              <p>
+                Google Drive não está configurado. Configure nas{' '}
+                <a href="/admin/settings" className="underline hover:no-underline">
+                  configurações
+                </a>{' '}
+                primeiro.
+              </p>
             </AlertDescription>
           </Alert>
         </div>

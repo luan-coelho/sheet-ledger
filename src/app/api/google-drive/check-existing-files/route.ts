@@ -2,6 +2,7 @@ import { google } from 'googleapis'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { auth as getAuth } from '@/lib/auth'
+import { handleGoogleDriveError } from '@/lib/google-drive-error-handler'
 
 import { googleDriveConfigService } from '@/services/google-drive-config-service'
 import { APP_ROOT_FOLDER_NAME } from '@/services/google-drive-service'
@@ -33,16 +34,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Obter token válido do Google Drive
-    let accessToken: string
-    try {
-      accessToken = await googleDriveConfigService.getValidAccessToken()
-    } catch (error) {
-      console.error('❌ Erro ao obter token do Google Drive:', error)
-      return NextResponse.json(
-        { error: 'Google Drive não configurado ou token expirado. Configure primeiro nas configurações.' },
-        { status: 400 },
-      )
-    }
+    const accessToken = await googleDriveConfigService.getValidAccessToken()
 
     // Parse do body da requisição
     const body = await request.json()
@@ -127,18 +119,6 @@ export async function POST(request: NextRequest) {
       totalFiles: months.length,
     })
   } catch (error) {
-    console.error('Erro ao verificar arquivos existentes:', error)
-
-    if (error instanceof Error) {
-      if (error.message.includes('Invalid Credentials') || error.message.includes('unauthorized')) {
-        return NextResponse.json(
-          { error: 'Token do Google Drive expirado ou inválido. Reconfigure nas configurações.' },
-          { status: 401 },
-        )
-      }
-      return NextResponse.json({ error: error.message }, { status: 500 })
-    }
-
-    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 })
+    return handleGoogleDriveError(error, 'Erro ao verificar arquivos existentes')
   }
 }

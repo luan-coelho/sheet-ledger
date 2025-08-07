@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { auth } from '@/lib/auth'
+import { handleGoogleDriveError } from '@/lib/google-drive-error-handler'
 
 import { googleDriveConfigService } from '@/services/google-drive-config-service'
 import { createRestrictedGoogleDriveService } from '@/services/restricted-google-drive-service'
@@ -40,15 +41,7 @@ export async function GET(request: NextRequest) {
       message: 'Arquivos listados com sucesso',
     })
   } catch (error) {
-    console.error('Erro ao listar arquivos restritos:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Erro ao listar arquivos',
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
-      },
-      { status: 500 },
-    )
+    return handleGoogleDriveError(error, 'Erro ao listar arquivos')
   }
 }
 
@@ -100,14 +93,6 @@ export async function POST(request: NextRequest) {
       message: `${type === 'folder' ? 'Pasta' : 'Arquivo'} criado com sucesso`,
     })
   } catch (error) {
-    console.error('Erro ao criar item:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Erro ao criar item',
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
-      },
-      { status: 500 },
-    )
+    return handleGoogleDriveError(error, 'Erro ao criar item')
   }
 }

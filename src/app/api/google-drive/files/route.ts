@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 import { auth } from '@/lib/auth'
+import { handleGoogleDriveError } from '@/lib/google-drive-error-handler'
 
 import { googleDriveConfigService } from '@/services/google-drive-config-service'
 import { createGoogleDriveService } from '@/services/google-drive-service'
@@ -28,15 +29,7 @@ export async function GET(request: NextRequest) {
       message: 'Arquivos listados com sucesso',
     })
   } catch (error) {
-    console.error('Erro na API Google Drive - GET files:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Erro ao listar arquivos',
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
-      },
-      { status: 500 },
-    )
+    return handleGoogleDriveError(error, 'Erro ao listar arquivos')
   }
 }
 
@@ -68,14 +61,6 @@ export async function POST(request: NextRequest) {
       message: `${type === 'folder' ? 'Pasta' : 'Arquivo'} criado com sucesso`,
     })
   } catch (error) {
-    console.error('Erro na API Google Drive - POST files:', error)
-    return NextResponse.json(
-      {
-        success: false,
-        message: 'Erro ao criar item',
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
-      },
-      { status: 500 },
-    )
+    return handleGoogleDriveError(error, 'Erro ao criar item')
   }
 }

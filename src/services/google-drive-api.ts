@@ -1,3 +1,5 @@
+import { fetchGoogleDriveApi } from '@/lib/google-drive-api-utils'
+
 // Tipos para os arquivos e pastas do Google Drive
 export interface DriveFile {
   id: string
@@ -48,7 +50,7 @@ export interface ApiResponse<T = unknown> {
 // Função auxiliar para fazer requisições
 async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
   try {
-    const response = await fetch(url, {
+    const data = await fetchGoogleDriveApi<T>(url, {
       headers: {
         'Content-Type': 'application/json',
         ...options.headers,
@@ -56,16 +58,20 @@ async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<Ap
       ...options,
     })
 
-    const data = await response.json()
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Erro na requisição')
+    return {
+      success: true,
+      data,
+      message: 'Operação realizada com sucesso',
     }
-
-    return data
   } catch (error) {
     console.error('Erro na requisição:', error)
-    throw error
+
+    // Re-lançar erros de Google Drive API (que incluem authRequired)
+    if (error instanceof Error) {
+      throw error
+    }
+
+    throw new Error('Erro desconhecido na requisição')
   }
 }
 

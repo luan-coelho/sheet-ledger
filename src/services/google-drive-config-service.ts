@@ -27,7 +27,7 @@ export class GoogleDriveConfigService {
     this.oauthConfig = {
       clientId: process.env.AUTH_GOOGLE_ID || '',
       clientSecret: process.env.AUTH_GOOGLE_SECRET || '',
-      redirectUri: 'http://localhost:3000/admin/settings/google-drive/callback',
+      redirectUri: `${process.env.NEXT_PUBLIC_URL}/admin/settings/google-drive/callback`,
     }
   }
 
@@ -265,6 +265,30 @@ export class GoogleDriveConfigService {
       return updatedConfig
     } catch (error) {
       console.error('Erro ao renovar token:', error)
+
+      // Verificar se é erro invalid_grant
+      const errorObj = error as {
+        message?: string
+        response?: {
+          data?: {
+            error?: string
+          }
+        }
+      }
+
+      const isInvalidGrant =
+        errorObj.message?.includes('invalid_grant') || errorObj.response?.data?.error === 'invalid_grant'
+
+      if (isInvalidGrant) {
+        console.log('Token inválido detectado. Removendo configuração atual para forçar nova autorização.')
+
+        // Remover configuração atual silenciosamente
+        await this.removeConfig()
+
+        // Retornar erro específico para indicar que nova autorização é necessária
+        throw new Error('REAUTH_REQUIRED')
+      }
+
       throw new Error('Falha ao renovar token. Reconfiguração necessária.')
     }
   }
@@ -277,8 +301,18 @@ export class GoogleDriveConfigService {
       throw new Error('Google Drive não configurado')
     }
 
-    const updatedConfig = await this.refreshTokenIfNeeded(config)
-    return updatedConfig.accessToken
+    try {
+      const updatedConfig = await this.refreshTokenIfNeeded(config)
+      return updatedConfig.accessToken
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido'
+
+      if (errorMessage === 'REAUTH_REQUIRED') {
+        throw new Error('REAUTH_REQUIRED')
+      }
+
+      throw error
+    }
   }
 
   // Remover configuração

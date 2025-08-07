@@ -1,7 +1,8 @@
 'use client'
 
-import { Calendar, Download, ExternalLink, FileText, Folder, HardDrive, RefreshCw } from 'lucide-react'
-import { useState } from 'react'
+import { Calendar, Download, ExternalLink, FileText, Folder, HardDrive, RefreshCw, Settings } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { Badge } from '@/components/ui/badge'
@@ -14,8 +15,17 @@ const APP_ROOT_FOLDER_NAME = process.env.NODE_ENV === 'development' ? 'planilhas
 
 export function RestrictedGoogleDriveManager() {
   const [currentFolderId, setCurrentFolderId] = useState<string | undefined>(undefined)
+  const router = useRouter()
 
   const { data, isLoading, error, refetch, isRefetching } = useRestrictedGoogleDrive(currentFolderId)
+
+  // Verificar se é erro de reautorização e redirecionar
+  useEffect(() => {
+    if (error && (error as any).authRequired) {
+      toast.info('Configuração do Google Drive expirou. Redirecionando para configuração...')
+      router.push('/admin/settings/google-drive')
+    }
+  }, [error, router])
 
   // Navegar para uma pasta
   function navigateToFolder(folderId: string) {
@@ -122,10 +132,21 @@ export function RestrictedGoogleDriveManager() {
             <FileText className="mx-auto mb-2 h-12 w-12 opacity-50" />
             <p>Erro ao carregar arquivos</p>
             <p className="text-muted-foreground mt-1 text-sm">{error.message}</p>
-            <Button onClick={handleRefresh} variant="outline" size="sm" className="mt-4">
-              <RefreshCw className="h-4 w-4" />
-              Tentar novamente
-            </Button>
+            {(error as any).authRequired ? (
+              <Button
+                onClick={() => router.push('/admin/settings/google-drive')}
+                variant="default"
+                size="sm"
+                className="mt-4">
+                <Settings className="h-4 w-4" />
+                Configurar Google Drive
+              </Button>
+            ) : (
+              <Button onClick={handleRefresh} variant="outline" size="sm" className="mt-4">
+                <RefreshCw className="h-4 w-4" />
+                Tentar novamente
+              </Button>
+            )}
           </div>
         ) : !data?.files || data.files.length === 0 ? (
           <div className="text-muted-foreground py-8 text-center">

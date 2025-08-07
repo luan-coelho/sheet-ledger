@@ -39,6 +39,8 @@ export const spreadsheetFormSchema = z
     patientId: z.string().uuid('Selecione um paciente válido'),
     guardianId: z.string().uuid('Selecione um responsável válido'),
     healthPlanId: z.string().uuid('Selecione um plano de saúde válido'),
+    cardNumber: z.string().min(1, 'Nº carteirinha é obrigatório'),
+    guideNumber: z.string().min(1, 'Guia Nº é obrigatório'),
     weekDaySessions: z
       .array(
         z.object({

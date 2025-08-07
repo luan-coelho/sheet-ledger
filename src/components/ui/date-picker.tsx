@@ -22,6 +22,7 @@ interface DatePickerProps {
   toDate?: Date
   showValidationIcon?: boolean
   error?: FieldError
+  format?: string
 }
 
 export function DatePicker({
@@ -34,6 +35,7 @@ export function DatePicker({
   toDate,
   showValidationIcon = false,
   error,
+  format: dateFormat = 'PPP',
 }: DatePickerProps) {
   const hasError = error !== undefined && error !== null
   const showErrorIcon = showValidationIcon && hasError
@@ -53,7 +55,7 @@ export function DatePicker({
             )}
             disabled={disabled}>
             {!showErrorIcon && <CalendarIcon className="mr-2 h-4 w-4" />}
-            {date ? format(date, 'PPP', { locale: ptBR }) : <span>{placeholder}</span>}
+            {date ? format(date, dateFormat, { locale: ptBR }) : <span>{placeholder}</span>}
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0">
@@ -61,7 +63,7 @@ export function DatePicker({
             mode="single"
             selected={date}
             onSelect={onSelect}
-            initialFocus
+            autoFocus
             locale={ptBR}
             fromDate={fromDate}
             toDate={toDate}

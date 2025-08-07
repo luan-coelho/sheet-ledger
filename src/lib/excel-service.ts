@@ -26,6 +26,8 @@ export class ExcelService {
     patientName: string
     responsible: string
     healthPlan: string
+    cardNumber: string
+    guideNumber: string
     weekDaySessions: WeekdaySession[]
     startDate?: string
     endDate?: string
@@ -48,13 +50,15 @@ export class ExcelService {
       throw new Error('Planilha não encontrada no arquivo template')
     }
 
-    // Preenche as células mescladas das colunas C e D (linha 3 a 8)
+    // Preenche as células mescladas das colunas C e D (linha 3 a 10)
     worksheet.getCell('C3').value = data.professional
     worksheet.getCell('C4').value = data.licenseNumber
     worksheet.getCell('C5').value = data.authorizedSession
     worksheet.getCell('C6').value = data.patientName
     worksheet.getCell('C7').value = data.responsible
     worksheet.getCell('C8').value = data.healthPlan
+    worksheet.getCell('C9').value = data.cardNumber
+    worksheet.getCell('C10').value = data.guideNumber
 
     // Formata os dias da semana para o formato SEG Á SEX
     const weekDaysString = this.formatWeekDaysRangeWithSessions(data.weekDaySessions)
@@ -105,8 +109,9 @@ export class ExcelService {
     }
 
     // Linha inicial para os registros
-    const startRow = 12
-    const endRow = 42 // Expandido para comportar até 31 dias (linha 12 a 42)
+    const startRow = 13
+    // Linha final para os registros (expandido para comportar até 31 dias)
+    const endRow = 43
 
     // Limpa as linhas de dados (da linha 12 até a 42 inclusive)
     for (let row = startRow; row <= endRow; row++) {
@@ -141,15 +146,15 @@ export class ExcelService {
         worksheet.getCell(`E${row}`).value = record.sessions
         totalSessions += record.sessions
 
-        // Valor fixo "Presencial" (agora na coluna F)
-        worksheet.getCell(`F${row}`).value = 'Presencial'
+        // Valor fixo "Atendido" (agora na coluna F)
+        worksheet.getCell(`F${row}`).value = 'Atendido'
 
         // Coluna G fica em branco (assinatura)
       }
     })
 
-    // Preenche o total de sessões na célula C44
-    worksheet.getCell('C44').value = totalSessions
+    // Preenche o total de sessões na célula C45
+    worksheet.getCell('C45').value = totalSessions
 
     // Gera o buffer da planilha
     return await workbook.xlsx.writeBuffer()
