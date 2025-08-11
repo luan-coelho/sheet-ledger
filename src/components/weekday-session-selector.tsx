@@ -1,10 +1,9 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { TimePickerSelector } from '@/components/ui/time-picker'
 
 import { WeekDays, WeekdaySession } from '@/lib/spreadsheet-schema'
 import { cn } from '@/lib/utils'
@@ -16,8 +15,6 @@ export type WeekdaySessionSelectorProps = {
 }
 
 export function WeekdaySessionSelector({ className, value = [], onChange }: WeekdaySessionSelectorProps) {
-  const [selectedDays, setSelectedDays] = useState<WeekdaySession[]>(value)
-
   const weekdayItems = [
     { key: WeekDays.MONDAY, label: 'S', fullName: 'Segunda' },
     { key: WeekDays.TUESDAY, label: 'T', fullName: 'Terça' },
@@ -28,39 +25,44 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
     { key: WeekDays.SUNDAY, label: 'D', fullName: 'Domingo' },
   ]
 
-  // Sync with external value changes
-  useEffect(() => {
-    setSelectedDays(value)
-  }, [value])
-
   function handleToggleDay(day: WeekDays) {
-    const existingIndex = selectedDays.findIndex(item => item.day === day)
+    const existingIndex = value.findIndex(item => item.day === day)
     let newSelectedDays: WeekdaySession[]
 
     if (existingIndex >= 0) {
       // Remove the day
-      newSelectedDays = selectedDays.filter(item => item.day !== day)
+      newSelectedDays = value.filter(item => item.day !== day)
     } else {
-      // Add the day with default 4 sessions
-      newSelectedDays = [...selectedDays, { day, sessions: 4 }]
+      // Add the day with default 4 sessions and default times
+      newSelectedDays = [...value, { day, sessions: 4, startTime: '08:00', endTime: '17:00' }]
     }
 
-    setSelectedDays(newSelectedDays)
     onChange?.(newSelectedDays)
   }
 
   function handleSessionsChange(day: WeekDays, sessions: number) {
-    const newSelectedDays = selectedDays.map(item => (item.day === day ? { ...item, sessions } : item))
+    const newSelectedDays = value.map(item => (item.day === day ? { ...item, sessions } : item))
 
-    setSelectedDays(newSelectedDays)
+    onChange?.(newSelectedDays)
+  }
+
+  function handleStartTimeChange(day: WeekDays, startTime: string) {
+    const newSelectedDays = value.map(item => (item.day === day ? { ...item, startTime } : item))
+
+    onChange?.(newSelectedDays)
+  }
+
+  function handleEndTimeChange(day: WeekDays, endTime: string) {
+    const newSelectedDays = value.map(item => (item.day === day ? { ...item, endTime } : item))
+
     onChange?.(newSelectedDays)
   }
 
   function isDaySelected(day: WeekDays): boolean {
-    return selectedDays.some(item => item.day === day)
+    return value.some(item => item.day === day)
   }
 
-  const totalSessions = selectedDays.reduce((total, item) => total + item.sessions, 0)
+  const totalSessions = value.reduce((total, item) => total + item.sessions, 0)
 
   return (
     <div className={cn('space-y-4 p-3', className)}>
@@ -93,38 +95,62 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
       </div>
 
       {/* Sessions Configuration */}
-      {selectedDays.length > 0 && (
+      {value.length > 0 && (
         <div className="space-y-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <Label className="text-center text-sm font-medium sm:text-left">Sessões por dia</Label>
+            <Label className="text-center text-sm font-medium sm:text-left">Configuração por dia</Label>
             <Badge variant="secondary" className="self-center sm:self-auto">
               Total: {totalSessions} sessões
             </Badge>
           </div>
 
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {selectedDays.map(({ day, sessions }) => {
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+            {value.map(({ day, sessions, startTime, endTime }) => {
               const dayItem = weekdayItems.find(item => item.key === day)
               return (
                 <div
                   key={day}
-                  className="bg-muted/30 flex items-center justify-between space-x-2 rounded-lg border p-3">
-                  <div className="min-w-0 flex-1">
-                    <Label className="truncate text-sm font-medium">{dayItem?.fullName}</Label>
+                  className="bg-muted/30 space-y-3 rounded-lg border p-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">{dayItem?.fullName}</Label>
+                    <div className="flex items-center gap-2">
+                      <Label className="text-xs text-muted-foreground">Sessões:</Label>
+                      <div className="w-16">
+                        <Input
+                          type="number"
+                          min="1"
+                          max="10"
+                          value={sessions}
+                          onChange={e => {
+                            const value = parseInt(e.target.value) || 1
+                            const clampedValue = Math.max(1, Math.min(10, value))
+                            handleSessionsChange(day, clampedValue)
+                          }}
+                          className="h-8 text-center text-sm"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <div className="w-16 sm:w-20">
-                    <Input
-                      type="number"
-                      min="1"
-                      max="10"
-                      value={sessions}
-                      onChange={e => {
-                        const value = parseInt(e.target.value) || 1
-                        const clampedValue = Math.max(1, Math.min(10, value))
-                        handleSessionsChange(day, clampedValue)
-                      }}
-                      className="h-8 text-center text-sm"
-                    />
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Início</Label>
+                      <TimePickerSelector
+                        value={startTime}
+                        onChange={(time) => handleStartTimeChange(day, time)}
+                        placeholder="Horário início"
+                        className="w-full"
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Fim</Label>
+                      <TimePickerSelector
+                        value={endTime}
+                        onChange={(time) => handleEndTimeChange(day, time)}
+                        placeholder="Horário fim"
+                        className="w-full"
+                      />
+                    </div>
                   </div>
                 </div>
               )
@@ -134,9 +160,9 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
       )}
 
       {/* Summary */}
-      {selectedDays.length > 0 && (
+      {value.length > 0 && (
         <div className="text-muted-foreground text-center text-xs sm:text-sm">
-          {selectedDays.length} dia{selectedDays.length > 1 ? 's' : ''} selecionado{selectedDays.length > 1 ? 's' : ''}{' '}
+          {value.length} dia{value.length > 1 ? 's' : ''} selecionado{value.length > 1 ? 's' : ''}{' '}
           • {totalSessions} sessões no total
         </div>
       )}

@@ -18,10 +18,11 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { TimePickerSelector } from '@/components/ui/time-picker'
 
 import { useGoogleDriveConfigStatus } from '@/hooks/use-google-drive-config'
 import { useGuardians } from '@/hooks/use-guardians'
@@ -46,7 +47,6 @@ import { PatientSelector } from './patient-selector'
 import { ProfessionalSelector } from './professional-selector'
 import { SpreadsheetPreview } from './spreadsheet-preview'
 import { Separator } from './ui/separator'
-import { TimePickerDemo } from './ui/time-picker'
 import { WeekdaySessionSelector } from './weekday-session-selector'
 
 interface ExistingFilesInfo {
@@ -102,11 +102,11 @@ export function SpreadsheetForm() {
       healthPlanId: '',
       cardNumber: '',
       guideNumber: '',
-      weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }],
+      weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4, startTime: '08:00', endTime: '17:00' }],
       startDate: formatDateISO(firstDayOfMonth),
       endDate: formatDateISO(lastDayOfMonth),
-      startTime: '08:00',
-      endTime: '17:00',
+      globalStartTime: '',
+      globalEndTime: '',
     },
   })
 
@@ -138,6 +138,19 @@ export function SpreadsheetForm() {
     const guardian = guardians?.find(g => g.id === values.guardianId)
     const healthPlan = healthPlans?.find(h => h.id === values.healthPlanId)
 
+    // Calcular horário mais cedo e mais tarde dos dias selecionados
+    let earliestTime = '23:59'
+    let latestTime = '00:00'
+
+    values.weekDaySessions.forEach(session => {
+      if (session.startTime < earliestTime) {
+        earliestTime = session.startTime
+      }
+      if (session.endTime > latestTime) {
+        latestTime = session.endTime
+      }
+    })
+
     return {
       professional: professional?.name || '',
       licenseNumber: values.licenseNumber,
@@ -150,9 +163,47 @@ export function SpreadsheetForm() {
       weekDaySessions: values.weekDaySessions,
       startDate: values.startDate,
       endDate: values.endDate,
-      startTime: values.startTime,
-      endTime: values.endTime,
+      startTime: earliestTime,
+      endTime: latestTime,
     }
+  }
+
+  function applyGlobalTimes() {
+    const globalStartTime = form.getValues('globalStartTime')
+    const globalEndTime = form.getValues('globalEndTime')
+
+    if (!globalStartTime || !globalEndTime) {
+      toast.error('Preencha ambos os horários globais (início e fim) antes de aplicar')
+      return
+    }
+
+    // Validar se horário fim é posterior ao início
+    const [startHour, startMinute] = globalStartTime.split(':').map(Number)
+    const [endHour, endMinute] = globalEndTime.split(':').map(Number)
+    const startTimeInMinutes = startHour * 60 + startMinute
+    const endTimeInMinutes = endHour * 60 + endMinute
+
+    if (startTimeInMinutes >= endTimeInMinutes) {
+      toast.error('Horário fim deve ser posterior ao horário de início')
+      return
+    }
+
+    const currentWeekDaySessions = form.getValues('weekDaySessions')
+
+    if (currentWeekDaySessions.length === 0) {
+      toast.error('Selecione pelo menos um dia da semana antes de aplicar os horários')
+      return
+    }
+
+    // Aplicar os horários globais a todos os dias selecionados
+    const updatedWeekDaySessions = currentWeekDaySessions.map(session => ({
+      ...session,
+      startTime: globalStartTime,
+      endTime: globalEndTime,
+    }))
+
+    form.setValue('weekDaySessions', updatedWeekDaySessions)
+    toast.success(`Horários aplicados a ${currentWeekDaySessions.length} dia(s) selecionado(s)`)
   }
 
   async function handlePreview() {
@@ -257,8 +308,7 @@ export function SpreadsheetForm() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Gerador de Planilha de Atendimento</CardTitle>
-        <CardDescription>Preencha os dados para gerar a planilha de atendimento baseada no template.</CardDescription>
+        <CardTitle>Preencha os dados para gerar a planilha de atendimento baseada no template.</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -486,10 +536,10 @@ export function SpreadsheetForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="block text-center sm:flex sm:justify-center">
-                    Dias da semana e sessões
+                    Dias da semana, sessões e horários
                   </FormLabel>
                   <FormDescription className="text-center text-xs sm:text-sm">
-                    Selecione os dias de atendimento e configure a quantidade de sessões por dia
+                    Selecione os dias de atendimento, configure a quantidade de sessões e os horários por dia
                   </FormDescription>
                   <FormControl>
                     <div className="mx-auto w-full max-w-4xl">
@@ -501,20 +551,27 @@ export function SpreadsheetForm() {
               )}
             />
 
-            {/* Horários de atendimento */}
-            <div className="flex flex-col items-center gap-4">
-              <div className="flex items-center gap-4">
+            {/* Horários globais - aplicar a todos os dias */}
+            <div className="bg-muted/30 rounded-lg border p-4">
+              <div className="mb-4 text-center">
+                <h3 className="text-sm font-semibold">Aplicar horário a todos os dias</h3>
+                <p className="text-muted-foreground text-xs">
+                  Configure um horário que será aplicado automaticamente a todos os dias selecionados
+                </p>
+              </div>
+
+              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-center">
                 <FormField
                   control={form.control}
-                  name="startTime"
+                  name="globalStartTime"
                   render={({ field }) => (
                     <FormItem className="flex flex-col items-center">
-                      <FormLabel className="text-center">Horário início</FormLabel>
+                      <FormLabel className="text-center text-xs">Horário início global</FormLabel>
                       <FormControl>
-                        <TimePickerDemo
+                        <TimePickerSelector
                           value={field.value}
                           onChange={field.onChange}
-                          placeholder="Selecione horário início"
+                          placeholder="Selecione horário"
                           className="w-auto"
                         />
                       </FormControl>
@@ -525,15 +582,15 @@ export function SpreadsheetForm() {
 
                 <FormField
                   control={form.control}
-                  name="endTime"
+                  name="globalEndTime"
                   render={({ field }) => (
                     <FormItem className="flex flex-col items-center">
-                      <FormLabel className="text-center">Horário fim</FormLabel>
+                      <FormLabel className="text-center text-xs">Horário fim global</FormLabel>
                       <FormControl>
-                        <TimePickerDemo
+                        <TimePickerSelector
                           value={field.value}
                           onChange={field.onChange}
-                          placeholder="Selecione horário fim"
+                          placeholder="Selecione horário"
                           className="w-auto"
                         />
                       </FormControl>
@@ -541,6 +598,10 @@ export function SpreadsheetForm() {
                     </FormItem>
                   )}
                 />
+
+                <Button type="button" variant="secondary" onClick={applyGlobalTimes} className="shrink-0">
+                  Aplicar a todos
+                </Button>
               </div>
             </div>
 

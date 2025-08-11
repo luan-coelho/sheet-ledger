@@ -29,6 +29,8 @@ export const meses = [
 export type WeekdaySession = {
   day: WeekDays
   sessions: number
+  startTime: string
+  endTime: string
 }
 
 export const spreadsheetFormSchema = z
@@ -46,19 +48,46 @@ export const spreadsheetFormSchema = z
         z.object({
           day: z.nativeEnum(WeekDays),
           sessions: z.number().min(1, 'Mínimo 1 sessão').max(10, 'Máximo 10 sessões'),
+          startTime: z
+            .string()
+            .min(1, 'Horário de início é obrigatório')
+            .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de horário inválido (HH:MM)'),
+          endTime: z
+            .string()
+            .min(1, 'Horário fim é obrigatório')
+            .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de horário inválido (HH:MM)'),
         }),
       )
-      .min(1, 'Selecione pelo menos um dia da semana'),
+      .min(1, 'Selecione pelo menos um dia da semana')
+      .refine(
+        (weekDaySessions) => {
+          return weekDaySessions.every(session => {
+            if (!session.startTime || !session.endTime) return true
+            
+            const [startHour, startMinute] = session.startTime.split(':').map(Number)
+            const [endHour, endMinute] = session.endTime.split(':').map(Number)
+
+            const startTimeInMinutes = startHour * 60 + startMinute
+            const endTimeInMinutes = endHour * 60 + endMinute
+
+            return startTimeInMinutes < endTimeInMinutes
+          })
+        },
+        {
+          message: 'Horário fim deve ser posterior ao horário de início para todos os dias',
+        },
+      ),
     startDate: z.string().min(1, 'Data de início é obrigatória'),
     endDate: z.string().min(1, 'Data fim é obrigatória'),
-    startTime: z
+    // Horários globais opcionais para aplicar a todos os dias
+    globalStartTime: z
       .string()
-      .min(1, 'Horário de início é obrigatório')
-      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de horário inválido (HH:MM)'),
-    endTime: z
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de horário inválido (HH:MM)')
+      .optional(),
+    globalEndTime: z
       .string()
-      .min(1, 'Horário fim é obrigatório')
-      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de horário inválido (HH:MM)'),
+      .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de horário inválido (HH:MM)')
+      .optional(),
   })
   .refine(
     data => {
@@ -79,10 +108,11 @@ export const spreadsheetFormSchema = z
   )
   .refine(
     data => {
-      if (!data.startTime || !data.endTime) return true // Deixa a validação de campos obrigatórios para o schema principal
+      // Validação para horários globais (se ambos estiverem preenchidos)
+      if (!data.globalStartTime || !data.globalEndTime) return true
 
-      const [startHour, startMinute] = data.startTime.split(':').map(Number)
-      const [endHour, endMinute] = data.endTime.split(':').map(Number)
+      const [startHour, startMinute] = data.globalStartTime.split(':').map(Number)
+      const [endHour, endMinute] = data.globalEndTime.split(':').map(Number)
 
       const startTimeInMinutes = startHour * 60 + startMinute
       const endTimeInMinutes = endHour * 60 + endMinute
@@ -90,8 +120,8 @@ export const spreadsheetFormSchema = z
       return startTimeInMinutes < endTimeInMinutes
     },
     {
-      message: 'Horário fim deve ser posterior ao horário de início',
-      path: ['endTime'],
+      message: 'Horário fim global deve ser posterior ao horário de início global',
+      path: ['globalEndTime'],
     },
   )
 

@@ -12,7 +12,7 @@ export interface TransformedFormData {
   healthPlan: string
   cardNumber?: string
   guideNumber?: string
-  weekDaySessions: Array<{ day: WeekDays; sessions: number }>
+  weekDaySessions: Array<{ day: WeekDays; sessions: number; startTime: string; endTime: string }>
   startDate: string
   endDate: string
   startTime: string

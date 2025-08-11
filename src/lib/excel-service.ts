@@ -300,7 +300,11 @@ export class ExcelService {
     // Ordena os dias da semana pelo seu índice
     const sortedSessions = [...weekDaySessions].sort((a, b) => this.getDayIndex(a.day) - this.getDayIndex(b.day))
 
-    return sortedSessions.map(({ day, sessions }) => `${dayAbbreviations[day]}(${sessions})`).join(', ')
+    return sortedSessions.map(({ day, sessions, startTime, endTime }) => {
+      const hasTimeInfo = startTime && endTime
+      const timeRange = hasTimeInfo ? ` ${startTime}-${endTime}` : ''
+      return `${dayAbbreviations[day]}(${sessions})${timeRange}`
+    }).join(', ')
   }
 
   /**
