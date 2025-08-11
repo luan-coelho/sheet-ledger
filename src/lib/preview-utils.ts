@@ -3,6 +3,8 @@ import { meses, WeekDays, WeekdaySession } from './spreadsheet-schema'
 export type SessionDate = {
   date: Date
   sessions: number
+  startTime?: string
+  endTime?: string
 }
 
 /**
@@ -154,9 +156,9 @@ export class PreviewUtils {
     const endDate = new Date(year, month + 1, 0)
 
     // Cria um mapa para busca rápida de sessões por dia
-    const sessionsMap = new Map<WeekDays, number>()
-    weekDaySessions.forEach(({ day, sessions }) => {
-      sessionsMap.set(day, sessions)
+    const sessionsMap = new Map<WeekDays, { sessions: number; startTime: string; endTime: string }>()
+    weekDaySessions.forEach(({ day, sessions, startTime, endTime }) => {
+      sessionsMap.set(day, { sessions, startTime, endTime })
     })
 
     for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
@@ -165,9 +167,12 @@ export class PreviewUtils {
       const ourDay = this.getWeekDayFromJSDay(jsDay)
 
       if (sessionsMap.has(ourDay)) {
+        const sessionData = sessionsMap.get(ourDay)!
         sessionDates.push({
           date: new Date(d),
-          sessions: sessionsMap.get(ourDay)!,
+          sessions: sessionData.sessions,
+          startTime: sessionData.startTime,
+          endTime: sessionData.endTime,
         })
       }
     }
@@ -218,9 +223,9 @@ export class PreviewUtils {
     const sessionDates: SessionDate[] = []
 
     // Cria um mapa para busca rápida de sessões por dia
-    const sessionsMap = new Map<WeekDays, number>()
-    weekDaySessions.forEach(({ day, sessions }) => {
-      sessionsMap.set(day, sessions)
+    const sessionsMap = new Map<WeekDays, { sessions: number; startTime: string; endTime: string }>()
+    weekDaySessions.forEach(({ day, sessions, startTime, endTime }) => {
+      sessionsMap.set(day, { sessions, startTime, endTime })
     })
 
     // Itera através de cada dia no período
@@ -231,10 +236,12 @@ export class PreviewUtils {
 
       // Verifica se este dia da semana está selecionado
       if (sessionsMap.has(weekDay)) {
-        const sessions = sessionsMap.get(weekDay)!
+        const sessionData = sessionsMap.get(weekDay)!
         sessionDates.push({
           date: new Date(currentDate),
-          sessions: sessions,
+          sessions: sessionData.sessions,
+          startTime: sessionData.startTime,
+          endTime: sessionData.endTime,
         })
       }
 
@@ -267,10 +274,12 @@ export class PreviewUtils {
     // Ordena os dias da semana pelo índice
     const sortedSessions = [...weekDaySessions].sort((a, b) => this.getDayIndex(a.day) - this.getDayIndex(b.day))
 
-    return sortedSessions.map(({ day, sessions, startTime, endTime }) => {
-      const hasTimeInfo = startTime && endTime
-      const timeRange = hasTimeInfo ? ` ${startTime}-${endTime}` : ''
-      return `${dayAbbreviations[day]}(${sessions})${timeRange}`
-    }).join(', ')
+    return sortedSessions
+      .map(({ day, sessions, startTime, endTime }) => {
+        const hasTimeInfo = startTime && endTime
+        const timeRange = hasTimeInfo ? ` ${startTime}-${endTime}` : ''
+        return `${dayAbbreviations[day]}(${sessions})${timeRange}`
+      })
+      .join(', ')
   }
 }

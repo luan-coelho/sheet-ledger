@@ -72,9 +72,7 @@ export function TimePickerSelector({ value, onChange, placeholder, className }: 
         newDate.setHours(hours, minutes, 0, 0)
         // Only update if the date is actually different to avoid loops
         setDate(prevDate => {
-          if (!prevDate || 
-              prevDate.getHours() !== hours || 
-              prevDate.getMinutes() !== minutes) {
+          if (!prevDate || prevDate.getHours() !== hours || prevDate.getMinutes() !== minutes) {
             return newDate
           }
           return prevDate
@@ -97,7 +95,7 @@ export function TimePickerSelector({ value, onChange, placeholder, className }: 
     }
 
     setDate(newDate)
-    
+
     // Call onChange immediately when user interacts
     if (onChange) {
       const hours = String(newDate.getHours()).padStart(2, '0')
@@ -183,9 +181,7 @@ export function TimePickerDemo({ value, onChange, placeholder, className }: Time
         newDate.setHours(hours, minutes, 0, 0)
         // Only update if the date is actually different to avoid loops
         setDate(prevDate => {
-          if (!prevDate || 
-              prevDate.getHours() !== hours || 
-              prevDate.getMinutes() !== minutes) {
+          if (!prevDate || prevDate.getHours() !== hours || prevDate.getMinutes() !== minutes) {
             return newDate
           }
           return prevDate

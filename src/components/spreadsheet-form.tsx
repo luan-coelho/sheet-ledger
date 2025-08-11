@@ -60,6 +60,10 @@ export function SpreadsheetForm() {
   const [existingFilesInfo, setExistingFilesInfo] = useState<ExistingFilesInfo | null>(null)
   const [driveGenerationResult, setDriveGenerationResult] = useState<GenerateDriveSpreadsheetResponse | null>(null)
 
+  // Estado local para os horários globais (não fazem parte do formulário)
+  const [globalStartTime, setGlobalStartTime] = useState('')
+  const [globalEndTime, setGlobalEndTime] = useState('')
+
   // Ref para o card de resultado do Google Drive
   const driveResultRef = useRef<HTMLDivElement>(null)
 
@@ -105,8 +109,6 @@ export function SpreadsheetForm() {
       weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4, startTime: '08:00', endTime: '17:00' }],
       startDate: formatDateISO(firstDayOfMonth),
       endDate: formatDateISO(lastDayOfMonth),
-      globalStartTime: '',
-      globalEndTime: '',
     },
   })
 
@@ -169,9 +171,6 @@ export function SpreadsheetForm() {
   }
 
   function applyGlobalTimes() {
-    const globalStartTime = form.getValues('globalStartTime')
-    const globalEndTime = form.getValues('globalEndTime')
-
     if (!globalStartTime || !globalEndTime) {
       toast.error('Preencha ambos os horários globais (início e fim) antes de aplicar')
       return
@@ -542,7 +541,7 @@ export function SpreadsheetForm() {
                     Selecione os dias de atendimento, configure a quantidade de sessões e os horários por dia
                   </FormDescription>
                   <FormControl>
-                    <div className="mx-auto w-full max-w-4xl">
+                    <div className="mx-auto w-auto max-w-4xl">
                       <WeekdaySessionSelector value={field.value} onChange={field.onChange} />
                     </div>
                   </FormControl>
@@ -561,43 +560,29 @@ export function SpreadsheetForm() {
               </div>
 
               <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-center">
-                <FormField
-                  control={form.control}
-                  name="globalStartTime"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col items-center">
-                      <FormLabel className="text-center text-xs">Horário início global</FormLabel>
-                      <FormControl>
-                        <TimePickerSelector
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder="Selecione horário"
-                          className="w-auto"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="flex flex-col items-center">
+                  <label className="text-center text-xs leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Horário início global
+                  </label>
+                  <TimePickerSelector
+                    value={globalStartTime}
+                    onChange={setGlobalStartTime}
+                    placeholder="Selecione horário"
+                    className="w-auto"
+                  />
+                </div>
 
-                <FormField
-                  control={form.control}
-                  name="globalEndTime"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col items-center">
-                      <FormLabel className="text-center text-xs">Horário fim global</FormLabel>
-                      <FormControl>
-                        <TimePickerSelector
-                          value={field.value}
-                          onChange={field.onChange}
-                          placeholder="Selecione horário"
-                          className="w-auto"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="flex flex-col items-center">
+                  <label className="text-center text-xs leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                    Horário fim global
+                  </label>
+                  <TimePickerSelector
+                    value={globalEndTime}
+                    onChange={setGlobalEndTime}
+                    placeholder="Selecione horário"
+                    className="w-auto"
+                  />
+                </div>
 
                 <Button type="button" variant="secondary" onClick={applyGlobalTimes} className="shrink-0">
                   Aplicar a todos

@@ -25,7 +25,7 @@ import { useHealthPlans } from '@/hooks/use-health-plans'
 import { usePatients } from '@/hooks/use-patients'
 import { useProfessionals } from '@/hooks/use-professionals'
 
-import { PreviewUtils } from '@/lib/preview-utils'
+import { PreviewUtils, type SessionDate } from '@/lib/preview-utils'
 import { SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 
 interface SpreadsheetPreviewProps {
@@ -46,7 +46,7 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
   const healthPlan = healthPlans?.find(h => h.id === formData.healthPlanId)
 
   // Generate session dates with sessions per day
-  let sessionDates: Array<{ date: Date; sessions: number }> = []
+  let sessionDates: SessionDate[] = []
   let competencyString = ''
 
   if (formData.startDate && formData.endDate) {
@@ -238,7 +238,7 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
 
           <div className="overflow-hidden rounded-lg border">
             <div className="bg-muted/50 border-b px-4 py-2">
-              <div className="grid grid-cols-3 gap-4 text-sm font-medium">
+              <div className="grid grid-cols-5 gap-4 text-sm font-medium">
                 <span className="flex items-center gap-2">
                   <Hash className="h-3 w-3 text-slate-600" />
                   Nº
@@ -248,8 +248,16 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
                   Data
                 </span>
                 <span className="flex items-center gap-2">
+                  <Clock className="h-3 w-3 text-indigo-600" />
+                  Horário
+                </span>
+                <span className="flex items-center gap-2">
                   <Target className="h-3 w-3 text-green-600" />
                   Sessão/dia
+                </span>
+                <span className="flex items-center gap-2">
+                  <CheckCircle className="h-3 w-3 text-emerald-600" />
+                  Status
                 </span>
               </div>
             </div>
@@ -257,10 +265,14 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
             <div className="max-h-64 overflow-y-auto">
               {sessionDates.map((session, index) => (
                 <div key={index} className="hover:bg-muted/30 border-b px-4 py-2 last:border-b-0">
-                  <div className="grid grid-cols-3 gap-4 text-sm">
+                  <div className="grid grid-cols-5 gap-4 text-sm">
                     <span className="font-medium">{index + 1}</span>
                     <span>{PreviewUtils.formatDate(session.date)}</span>
+                    <span className="text-muted-foreground">
+                      {session.startTime && session.endTime ? `${session.startTime} - ${session.endTime}` : '-'}
+                    </span>
                     <span>{session.sessions}</span>
+                    <span className="text-xs text-emerald-600">Atendido</span>
                   </div>
                 </div>
               ))}

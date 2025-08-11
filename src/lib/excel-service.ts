@@ -8,6 +8,8 @@ import { meses, WeekDays, WeekdaySession } from './spreadsheet-schema'
 type SessionRecord = {
   date: Date
   sessions: number
+  startTime?: string
+  endTime?: string
 }
 
 /**
@@ -104,8 +106,35 @@ export class ExcelService {
     worksheet.getCell('J17').value = competencyText
 
     // Preenche o período de horário em J20 (agora na coluna J)
-    if (data.startTime && data.endTime) {
-      worksheet.getCell('J20').value = `${data.startTime} - ${data.endTime}`
+    // Calcula o range de horários baseado nos registros ou usa os horários globais
+    let timeRangeText = ''
+    if (records.length > 0) {
+      // Encontra o horário mais cedo e mais tarde dos registros
+      let earliestTime = '23:59'
+      let latestTime = '00:00'
+
+      records.forEach(record => {
+        if (record.startTime && record.startTime < earliestTime) {
+          earliestTime = record.startTime
+        }
+        if (record.endTime && record.endTime > latestTime) {
+          latestTime = record.endTime
+        }
+      })
+
+      // Se encontrou horários nos registros, usa eles
+      if (earliestTime !== '23:59' && latestTime !== '00:00') {
+        timeRangeText = `${earliestTime} - ${latestTime}`
+      }
+    }
+
+    // Se não encontrou horários nos registros, usa os horários globais como fallback
+    if (!timeRangeText && data.startTime && data.endTime) {
+      timeRangeText = `${data.startTime} - ${data.endTime}`
+    }
+
+    if (timeRangeText) {
+      worksheet.getCell('J20').value = timeRangeText
     }
 
     // Linha inicial para os registros
@@ -136,11 +165,11 @@ export class ExcelService {
         // Data no formato DD/MM/YYYY
         worksheet.getCell(`B${row}`).value = formatDateBrazilian(record.date)
 
-        // Horário de início (agora na coluna C)
-        worksheet.getCell(`C${row}`).value = data.startTime || ''
+        // Horário de início (usa o horário específico do dia se disponível)
+        worksheet.getCell(`C${row}`).value = record.startTime || data.startTime || ''
 
-        // Horário de fim (agora na coluna D)
-        worksheet.getCell(`D${row}`).value = data.endTime || ''
+        // Horário de fim (usa o horário específico do dia se disponível)
+        worksheet.getCell(`D${row}`).value = record.endTime || data.endTime || ''
 
         // Sessões por dia (agora na coluna E)
         worksheet.getCell(`E${row}`).value = record.sessions
@@ -300,11 +329,11 @@ export class ExcelService {
     // Ordena os dias da semana pelo seu índice
     const sortedSessions = [...weekDaySessions].sort((a, b) => this.getDayIndex(a.day) - this.getDayIndex(b.day))
 
-    return sortedSessions.map(({ day, sessions, startTime, endTime }) => {
-      const hasTimeInfo = startTime && endTime
-      const timeRange = hasTimeInfo ? ` ${startTime}-${endTime}` : ''
-      return `${dayAbbreviations[day]}(${sessions})${timeRange}`
-    }).join(', ')
+    return sortedSessions
+      .map(({ day, sessions }) => {
+        return `${dayAbbreviations[day]}(${sessions})`
+      })
+      .join(', ')
   }
 
   /**
@@ -324,9 +353,9 @@ export class ExcelService {
     const endDate = new Date(year, month + 1, 0)
 
     // Cria um mapa para busca rápida de sessões por dia
-    const sessionsMap = new Map<WeekDays, number>()
-    weekDaySessions.forEach(({ day, sessions }) => {
-      sessionsMap.set(day, sessions)
+    const sessionsMap = new Map<WeekDays, { sessions: number; startTime: string; endTime: string }>()
+    weekDaySessions.forEach(({ day, sessions, startTime, endTime }) => {
+      sessionsMap.set(day, { sessions, startTime, endTime })
     })
 
     // Garante que temos o ano correto para a competência
@@ -343,9 +372,12 @@ export class ExcelService {
       const ourDay = this.getWeekDayFromJSDay(jsDay)
 
       if (sessionsMap.has(ourDay)) {
+        const sessionData = sessionsMap.get(ourDay)!
         sessionRecords.push({
           date: new Date(d),
-          sessions: sessionsMap.get(ourDay)!,
+          sessions: sessionData.sessions,
+          startTime: sessionData.startTime,
+          endTime: sessionData.endTime,
         })
       }
     }
@@ -367,10 +399,10 @@ export class ExcelService {
   ): SessionRecord[] {
     const records: SessionRecord[] = []
 
-    // Cria um mapa de dias da semana para contagem de sessões para busca mais rápida
-    const weekDaySessionMap = new Map<WeekDays, number>()
+    // Cria um mapa de dias da semana para busca mais rápida
+    const weekDaySessionMap = new Map<WeekDays, { sessions: number; startTime: string; endTime: string }>()
     weekDaySessions.forEach(ws => {
-      weekDaySessionMap.set(ws.day, ws.sessions)
+      weekDaySessionMap.set(ws.day, { sessions: ws.sessions, startTime: ws.startTime, endTime: ws.endTime })
     })
 
     // Itera através de cada dia no período
@@ -381,10 +413,12 @@ export class ExcelService {
 
       // Verifica se este dia da semana está selecionado
       if (weekDaySessionMap.has(weekDay)) {
-        const sessions = weekDaySessionMap.get(weekDay)!
+        const sessionData = weekDaySessionMap.get(weekDay)!
         records.push({
           date: new Date(currentDate),
-          sessions: sessions,
+          sessions: sessionData.sessions,
+          startTime: sessionData.startTime,
+          endTime: sessionData.endTime,
         })
       }
 
