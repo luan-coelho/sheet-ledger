@@ -551,40 +551,41 @@ export function SpreadsheetForm() {
             />
 
             {/* Horários globais - aplicar a todos os dias */}
-            <div className="bg-muted/30 rounded-lg border p-4">
-              <div className="mb-4 text-center">
-                <h3 className="text-sm font-semibold">Aplicar horário a todos os dias</h3>
-                <p className="text-muted-foreground text-xs">
-                  Configure um horário que será aplicado automaticamente a todos os dias selecionados
+            <div className="bg-muted/30 rounded-lg border p-3">
+              <div className="mb-3 text-center">
+                <h3 className="text-sm font-medium">Aplicar horário a todos os dias</h3>
+                <p className="text-muted-foreground mt-1 text-xs">
+                  Configure um horário para aplicar automaticamente a todos os dias selecionados
                 </p>
               </div>
 
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-center">
-                <div className="flex flex-col items-center">
-                  <label className="text-center text-xs leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Horário início global
-                  </label>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-medium whitespace-nowrap">Início:</label>
                   <TimePickerSelector
                     value={globalStartTime}
                     onChange={setGlobalStartTime}
-                    placeholder="Selecione horário"
-                    className="w-auto"
+                    placeholder="--:--"
+                    className="w-24"
                   />
                 </div>
 
-                <div className="flex flex-col items-center">
-                  <label className="text-center text-xs leading-none font-medium peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                    Horário fim global
-                  </label>
+                <div className="flex items-center gap-2">
+                  <label className="text-xs font-medium whitespace-nowrap">Fim:</label>
                   <TimePickerSelector
                     value={globalEndTime}
                     onChange={setGlobalEndTime}
-                    placeholder="Selecione horário"
-                    className="w-auto"
+                    placeholder="--:--"
+                    className="w-24"
                   />
                 </div>
 
-                <Button type="button" variant="secondary" onClick={applyGlobalTimes} className="shrink-0">
+                <Button
+                  type="button"
+                  variant="secondary"
+                  size="sm"
+                  onClick={applyGlobalTimes}
+                  className="shrink-0 sm:ml-2">
                   Aplicar a todos
                 </Button>
               </div>
