@@ -35,12 +35,14 @@ export type WeekdaySession = {
 
 export const spreadsheetFormSchema = z
   .object({
-    professionalId: z.string().uuid('Selecione um profissional válido'),
-    licenseNumber: z.string().min(1, 'Nº conselho do profissional é obrigatório'),
+    professionalId: z.string().uuid('Selecione um profissional'),
+    licenseNumber: z.string().min(1, 'Nº conselho do profissional'),
     authorizedSession: z.string().optional(),
-    patientId: z.string().uuid('Selecione um paciente válido'),
-    guardianId: z.string().uuid('Selecione um responsável válido'),
-    healthPlanId: z.string().uuid('Selecione um plano de saúde válido'),
+    patientId: z.string().uuid('Selecione um paciente'),
+    guardianId: z.string().uuid('Selecione um responsável'),
+    companyId: z.string().uuid('Selecione uma empresa'),
+    healthPlanId: z.string().uuid('Selecione um plano de saúde'),
+    therapyId: z.string().uuid('Selecione uma terapia'),
     cardNumber: z.string().optional(),
     guideNumber: z.string().optional(),
     weekDaySessions: z

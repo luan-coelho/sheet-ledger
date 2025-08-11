@@ -1,6 +1,6 @@
 'use client'
 
-import { BarChart3, Cloud, CreditCard, FileText, Settings, Shield, Users } from 'lucide-react'
+import { BarChart3, Building2, Cloud, CreditCard, FileText, Settings, Shield, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
 import { UserAvatar } from '@/components/auth/user-avatar'
@@ -43,9 +43,19 @@ const items = [
     icon: Shield,
   },
   {
+    title: 'Empresas',
+    url: routes.frontend.admin.companies.index,
+    icon: Building2,
+  },
+  {
     title: 'Planos de Saúde',
     url: routes.frontend.admin.healthPlans.index,
     icon: CreditCard,
+  },
+  {
+    title: 'Terapias',
+    url: routes.frontend.admin.therapies.index,
+    icon: Users,
   },
   {
     title: 'Google Drive',

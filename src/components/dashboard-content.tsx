@@ -1,10 +1,11 @@
 'use client'
 
-import { CreditCard, FileText, Shield, Users } from 'lucide-react'
+import { Building2, CreditCard, FileText, Shield, Users } from 'lucide-react'
 import Link from 'next/link'
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 
+import { useCompanies } from '@/hooks/use-companies'
 import { useGuardians } from '@/hooks/use-guardians'
 import { useHealthPlans } from '@/hooks/use-health-plans'
 import { usePatients } from '@/hooks/use-patients'
@@ -16,6 +17,7 @@ export function DashboardContent() {
   const { data: professionals } = useProfessionals()
   const { data: patients } = usePatients()
   const { data: guardians } = useGuardians()
+  const { data: companies } = useCompanies()
   const { data: healthPlans } = useHealthPlans()
 
   return (
@@ -25,7 +27,7 @@ export function DashboardContent() {
         <p className="text-muted-foreground mt-2">Acompanhe as estatísticas e atividades do sistema.</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-5">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-6">
         <Card className="overflow-hidden border-none bg-gradient-to-br from-blue-50 to-blue-100 shadow-md dark:from-blue-950 dark:to-indigo-900">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Planilhas</CardTitle>
@@ -98,6 +100,21 @@ export function DashboardContent() {
             </p>
           </CardContent>
         </Card>
+
+        <Card className="overflow-hidden border-none bg-gradient-to-br from-orange-50 to-orange-100 shadow-md dark:from-orange-950 dark:to-orange-900">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Empresas</CardTitle>
+            <div className="rounded-full bg-orange-100 p-2 dark:bg-orange-800">
+              <Building2 className="h-4 w-4 text-orange-700 dark:text-orange-300" />
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold">{companies?.length || 0}</div>
+            <p className="text-muted-foreground mt-1 text-xs">
+              {companies?.length === 1 ? 'empresa cadastrada' : 'empresas cadastradas'}
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       <Card className="col-span-3 border shadow-sm">
@@ -151,6 +168,18 @@ export function DashboardContent() {
                     <Shield className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
                   </div>
                   <span className="font-medium text-slate-800 dark:text-slate-200">Responsáveis</span>
+                </div>
+              </div>
+            </Link>
+
+            <Link href={routes.frontend.admin.companies.index} className="block">
+              <div className="group relative h-32 overflow-hidden rounded-xl bg-gradient-to-br from-orange-50 to-orange-100 p-4 transition-all hover:shadow-md dark:from-orange-950 dark:to-orange-900">
+                <div className="absolute inset-0 bg-gradient-to-br from-orange-500/5 to-orange-500/20 opacity-0 transition-opacity group-hover:opacity-100"></div>
+                <div className="relative z-10 flex h-full flex-col items-center justify-center space-y-3 text-center">
+                  <div className="rounded-full bg-white p-3 shadow-sm transition-transform group-hover:scale-110 dark:bg-slate-800">
+                    <Building2 className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                  </div>
+                  <span className="font-medium text-slate-800 dark:text-slate-200">Empresas</span>
                 </div>
               </div>
             </Link>

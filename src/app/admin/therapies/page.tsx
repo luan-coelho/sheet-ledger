@@ -3,9 +3,9 @@
 import { Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 
-import { Professional } from '@/app/db/schemas/professional-schema'
+import { Therapy } from '@/app/db/schemas/therapy-schema'
 
-import { ProfessionalModal } from '@/components/professional-modal'
+import { TherapyForm } from '@/components/therapy-form'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -16,45 +16,47 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
-import { useDeleteProfessional, useProfessionals } from '@/hooks/use-professionals'
+import { useDeleteTherapy, useTherapies } from '@/hooks/use-therapies'
 
-export default function ProfissionaisPage() {
+export default function TerapiasPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingProfessional, setEditingProfessional] = useState<Professional | undefined>()
-  const [deletingProfessional, setDeletingProfessional] = useState<Professional | null>(null)
+  const [editingTherapy, setEditingTherapy] = useState<Therapy | undefined>()
+  const [deletingTherapy, setDeletingTherapy] = useState<Therapy | null>(null)
 
-  const { data: professionals, isLoading, error } = useProfessionals()
-  const deleteMutation = useDeleteProfessional()
+  const { data: therapies, isLoading, error } = useTherapies()
+  const deleteMutation = useDeleteTherapy()
 
-  const handleEdit = (professional: Professional) => {
-    setEditingProfessional(professional)
+  const handleEdit = (therapy: Therapy) => {
+    setEditingTherapy(therapy)
     setIsModalOpen(true)
   }
 
   const handleDelete = async () => {
-    if (deletingProfessional) {
+    if (deletingTherapy) {
       try {
-        await deleteMutation.mutateAsync(deletingProfessional.id)
-        setDeletingProfessional(null)
+        await deleteMutation.mutateAsync(deletingTherapy.id)
+        setDeletingTherapy(null)
       } catch (error) {
-        console.error('Erro ao excluir profissional:', error)
+        console.error('Erro ao excluir terapia:', error)
       }
     }
   }
 
-  const handleNewProfessional = () => {
-    setEditingProfessional(undefined)
+  const handleNewTherapy = () => {
+    setEditingTherapy(undefined)
     setIsModalOpen(true)
   }
 
   const handleModalClose = () => {
     setIsModalOpen(false)
-    setEditingProfessional(undefined)
+    setEditingTherapy(undefined)
   }
 
   const formatDate = (date: Date) => {
@@ -71,13 +73,13 @@ export default function ProfissionaisPage() {
     return (
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Profissionais</h1>
-          <p className="text-muted-foreground">Gerencie os profissionais do sistema</p>
+          <h1 className="text-3xl font-bold tracking-tight">Terapias</h1>
+          <p className="text-muted-foreground">Gerencie as terapias do sistema</p>
         </div>
 
         <Card>
           <CardContent className="pt-6">
-            <div className="text-destructive text-center">Erro ao carregar profissionais: {error.message}</div>
+            <div className="text-destructive text-center">Erro ao carregar terapias: {error.message}</div>
           </CardContent>
         </Card>
       </div>
@@ -88,45 +90,49 @@ export default function ProfissionaisPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Profissionais</h1>
-          <p className="text-muted-foreground">Gerencie os profissionais do sistema</p>
+          <h1 className="text-3xl font-bold tracking-tight">Terapias</h1>
+          <p className="text-muted-foreground">Gerencie as terapias do sistema</p>
         </div>
 
-        <Button onClick={handleNewProfessional}>
+        <Button onClick={handleNewTherapy}>
           <Plus className="mr-2 h-4 w-4" />
-          Novo Profissional
+          Nova Terapia
         </Button>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Profissionais</CardTitle>
-          <CardDescription>{professionals?.length || 0} profissional(is) cadastrado(s)</CardDescription>
+          <CardTitle>Lista de Terapias</CardTitle>
+          <CardDescription>{therapies?.length || 0} terapia(s) cadastrada(s)</CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin" />
-              <span className="ml-2">Carregando profissionais...</span>
+              <span className="ml-2">Carregando terapias...</span>
             </div>
-          ) : professionals && professionals.length > 0 ? (
+          ) : therapies && therapies.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Nome</TableHead>
-                  <TableHead>Nº Conselho</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Criado em</TableHead>
                   <TableHead>Atualizado em</TableHead>
                   <TableHead className="w-[70px]">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {professionals.map(professional => (
-                  <TableRow key={professional.id}>
-                    <TableCell className="font-medium">{professional.name}</TableCell>
-                    <TableCell>{professional.councilNumber || '-'}</TableCell>
-                    <TableCell>{formatDate(professional.createdAt)}</TableCell>
-                    <TableCell>{formatDate(professional.updatedAt)}</TableCell>
+                {therapies.map(therapy => (
+                  <TableRow key={therapy.id}>
+                    <TableCell className="font-medium">{therapy.name}</TableCell>
+                    <TableCell>
+                      <Badge variant={therapy.active ? 'default' : 'secondary'}>
+                        {therapy.active ? 'Ativa' : 'Inativa'}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{formatDate(therapy.createdAt)}</TableCell>
+                    <TableCell>{formatDate(therapy.updatedAt)}</TableCell>
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -136,13 +142,11 @@ export default function ProfissionaisPage() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(professional)}>
+                          <DropdownMenuItem onClick={() => handleEdit(therapy)}>
                             <Pencil className="mr-2 h-4 w-4" />
                             Editar
                           </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setDeletingProfessional(professional)}
-                            className="text-destructive">
+                          <DropdownMenuItem onClick={() => setDeletingTherapy(therapy)} className="text-destructive">
                             <Trash2 className="mr-2 h-4 w-4" />
                             Excluir
                           </DropdownMenuItem>
@@ -155,25 +159,36 @@ export default function ProfissionaisPage() {
             </Table>
           ) : (
             <div className="py-8 text-center">
-              <p className="text-muted-foreground mb-4">Nenhum profissional cadastrado ainda.</p>
-              <Button onClick={handleNewProfessional}>
+              <p className="text-muted-foreground mb-4">Nenhuma terapia cadastrada ainda.</p>
+              <Button onClick={handleNewTherapy}>
                 <Plus className="mr-2 h-4 w-4" />
-                Cadastrar Primeiro Profissional
+                Cadastrar Primeira Terapia
               </Button>
             </div>
           )}
         </CardContent>
       </Card>
 
-      <ProfessionalModal open={isModalOpen} onOpenChange={handleModalClose} professional={editingProfessional} />
+      <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>{editingTherapy ? 'Editar Terapia' : 'Nova Terapia'}</DialogTitle>
+            <DialogDescription>
+              {editingTherapy ? 'Atualize as informações da terapia.' : 'Adicione uma nova terapia ao sistema.'}
+            </DialogDescription>
+          </DialogHeader>
 
-      <AlertDialog open={!!deletingProfessional} onOpenChange={() => setDeletingProfessional(null)}>
+          <TherapyForm therapy={editingTherapy} onSuccess={handleModalClose} onCancel={handleModalClose} />
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog open={!!deletingTherapy} onOpenChange={() => setDeletingTherapy(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
             <AlertDialogDescription>
-              Tem certeza que deseja excluir o profissional &quot;{deletingProfessional?.name}?&quot; Esta ação não pode
-              ser desfeita.
+              Tem certeza que deseja excluir a terapia &quot;{deletingTherapy?.name}?&quot; Esta ação não pode ser
+              desfeita.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

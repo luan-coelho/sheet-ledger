@@ -2,45 +2,45 @@ import { desc } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/app/db'
-import { insertProfessionalSchema, professionalsTable } from '@/app/db/schemas/professional-schema'
+import { companiesTable, insertCompanySchema } from '@/app/db/schemas/company-schema'
 
-// GET /api/professionals - List all professionals
+// GET /api/companies - List all companies
 export async function GET() {
   try {
-    const allProfessionals = await db.select().from(professionalsTable).orderBy(desc(professionalsTable.createdAt))
+    const allCompanies = await db.select().from(companiesTable).orderBy(desc(companiesTable.createdAt))
 
     return NextResponse.json({
       success: true,
-      data: allProfessionals,
-      message: 'Professionals listed successfully',
+      data: allCompanies,
+      message: 'Companies listed successfully',
     })
   } catch (error) {
-    console.error('Error fetching professionals:', error)
+    console.error('Error fetching companies:', error)
     return NextResponse.json(
       {
         success: false,
         error: 'Internal server error',
-        message: 'Could not fetch professionals',
+        message: 'Could not fetch companies',
       },
       { status: 500 },
     )
   }
 }
 
-// POST /api/professionals - Create new professional
+// POST /api/companies - Create new company
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
 
     // Validate data using Zod schema
-    const validatedData = insertProfessionalSchema.parse(body)
+    const validatedData = insertCompanySchema.parse(body)
 
     // Insert into database
-    const [newProfessional] = await db
-      .insert(professionalsTable)
+    const [newCompany] = await db
+      .insert(companiesTable)
       .values({
         name: validatedData.name,
-        councilNumber: validatedData.councilNumber,
+        address: validatedData.address,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -49,13 +49,13 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         success: true,
-        data: newProfessional,
-        message: 'Professional created successfully',
+        data: newCompany,
+        message: 'Company created successfully',
       },
       { status: 201 },
     )
   } catch (error) {
-    console.error('Error creating professional:', error)
+    console.error('Error creating company:', error)
 
     // Zod validation error
     if (error instanceof Error && error.name === 'ZodError') {
@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       {
         success: false,
         error: 'Internal server error',
-        message: 'Could not create professional',
+        message: 'Could not create the company',
       },
       { status: 500 },
     )

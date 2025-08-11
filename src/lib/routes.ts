@@ -38,10 +38,20 @@ export const routes = {
         create: '/admin/guardians/novo',
         edit: (id: string) => `/admin/guardians/${validateId(id)}/editar`,
       },
+      companies: {
+        index: '/admin/companies',
+        create: '/admin/companies/novo',
+        edit: (id: string) => `/admin/companies/${validateId(id)}/editar`,
+      },
       healthPlans: {
         index: '/admin/health-plans',
         create: '/admin/health-plans/novo',
         edit: (id: string) => `/admin/health-plans/${validateId(id)}/editar`,
+      },
+      therapies: {
+        index: '/admin/therapies',
+        create: '/admin/therapies/novo',
+        edit: (id: string) => `/admin/therapies/${validateId(id)}/editar`,
       },
       googleDrive: {
         index: '/admin/google-drive',
@@ -74,9 +84,17 @@ export const routes = {
       base: '/api/guardians',
       byId: (id: string) => `/api/guardians/${validateId(id)}`,
     },
+    companies: {
+      base: '/api/companies',
+      byId: (id: string) => `/api/companies/${validateId(id)}`,
+    },
     healthPlans: {
       base: '/api/health-plans',
       byId: (id: string) => `/api/health-plans/${validateId(id)}`,
+    },
+    therapies: {
+      base: '/api/therapies',
+      byId: (id: string) => `/api/therapies/${validateId(id)}`,
     },
     users: {
       base: '/api/users',

@@ -5,51 +5,51 @@ import { Loader2 } from 'lucide-react'
 import { useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 
-import { insertProfessionalSchema, Professional, ProfessionalFormValues } from '@/app/db/schemas/professional-schema'
+import { insertTherapySchema, Therapy, TherapyFormValues } from '@/app/db/schemas/therapy-schema'
 
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
+import { Switch } from '@/components/ui/switch'
 
-import { useCreateProfessional, useUpdateProfessional } from '@/hooks/use-professionals'
+import { useCreateTherapy, useUpdateTherapy } from '@/hooks/use-therapies'
 
-interface ProfessionalFormProps {
-  professional?: Professional
+interface TherapyFormProps {
+  therapy?: Therapy
   onSuccess?: () => void
   onCancel?: () => void
 }
 
-export function ProfessionalForm({ professional, onSuccess, onCancel }: ProfessionalFormProps) {
-  const isEditing = !!professional
+export function TherapyForm({ therapy, onSuccess, onCancel }: TherapyFormProps) {
+  const isEditing = !!therapy
 
-  const form = useForm<ProfessionalFormValues>({
-    resolver: zodResolver(insertProfessionalSchema),
+  const form = useForm<TherapyFormValues>({
+    resolver: zodResolver(insertTherapySchema),
     defaultValues: {
-      name: professional?.name || '',
-      councilNumber: professional?.councilNumber || '',
+      name: therapy?.name || '',
+      active: therapy?.active ?? true,
     },
   })
 
-  const createMutation = useCreateProfessional()
-  const updateMutation = useUpdateProfessional()
+  const createMutation = useCreateTherapy()
+  const updateMutation = useUpdateTherapy()
 
   const isLoading = createMutation.isPending || updateMutation.isPending
 
-  // Reset form when professional changes
   useEffect(() => {
-    if (professional) {
+    if (therapy) {
       form.reset({
-        name: professional.name,
-        councilNumber: professional.councilNumber || '',
+        name: therapy.name,
+        active: therapy.active,
       })
     }
-  }, [professional, form])
+  }, [therapy, form])
 
-  async function onSubmit(values: ProfessionalFormValues) {
+  async function onSubmit(values: TherapyFormValues) {
     try {
-      if (isEditing && professional) {
+      if (isEditing && therapy) {
         await updateMutation.mutateAsync({
-          id: professional.id,
+          id: therapy.id,
           data: values,
         })
       } else {
@@ -59,7 +59,7 @@ export function ProfessionalForm({ professional, onSuccess, onCancel }: Professi
       form.reset()
       onSuccess?.()
     } catch (error) {
-      console.error('Erro ao salvar profissional:', error)
+      console.error('Erro ao salvar terapia:', error)
     }
   }
 
@@ -71,9 +71,9 @@ export function ProfessionalForm({ professional, onSuccess, onCancel }: Professi
           name="name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Nome do Profissional</FormLabel>
+              <FormLabel>Nome da Terapia</FormLabel>
               <FormControl>
-                <Input placeholder="Digite o nome do profissional" {...field} disabled={isLoading} />
+                <Input placeholder="Digite o nome da terapia" {...field} disabled={isLoading} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -82,14 +82,16 @@ export function ProfessionalForm({ professional, onSuccess, onCancel }: Professi
 
         <FormField
           control={form.control}
-          name="councilNumber"
+          name="active"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nº Conselho</FormLabel>
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <FormLabel className="text-base">Terapia Ativa</FormLabel>
+                <p className="text-muted-foreground text-sm">Marque para manter a terapia ativa no sistema</p>
+              </div>
               <FormControl>
-                <Input placeholder="Digite o número do conselho (opcional)" {...field} disabled={isLoading} />
+                <Switch checked={field.value} onCheckedChange={field.onChange} disabled={isLoading} />
               </FormControl>
-              <FormMessage />
             </FormItem>
           )}
         />
@@ -103,15 +105,9 @@ export function ProfessionalForm({ professional, onSuccess, onCancel }: Professi
 
           <Button type="submit" disabled={isLoading}>
             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isEditing ? 'Atualizar' : 'Criar'} Profissional
+            {isEditing ? 'Atualizar' : 'Criar'} Terapia
           </Button>
         </div>
-
-        {(createMutation.error || updateMutation.error) && (
-          <div className="text-destructive text-sm">
-            {createMutation.error?.message || updateMutation.error?.message}
-          </div>
-        )}
       </form>
     </Form>
   )

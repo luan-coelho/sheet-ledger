@@ -28,6 +28,7 @@ export class ExcelService {
     patientName: string
     responsible: string
     healthPlan: string
+    therapy: string
     cardNumber?: string
     guideNumber?: string
     weekDaySessions: WeekdaySession[]
@@ -52,21 +53,22 @@ export class ExcelService {
       throw new Error('Planilha não encontrada no arquivo template')
     }
 
-    // Preenche as células mescladas das colunas C e D (linha 3 a 10)
+    // Preenche as células mescladas das colunas C e D (linha 3 a 11)
     worksheet.getCell('C3').value = data.professional
     worksheet.getCell('C4').value = data.licenseNumber
     worksheet.getCell('C5').value = data.authorizedSession || ''
     worksheet.getCell('C6').value = data.patientName
     worksheet.getCell('C7').value = data.responsible
     worksheet.getCell('C8').value = data.healthPlan
-    worksheet.getCell('C9').value = data.cardNumber || ''
-    worksheet.getCell('C10').value = data.guideNumber || ''
+    worksheet.getCell('C9').value = data.therapy
+    worksheet.getCell('C10').value = data.cardNumber || ''
+    worksheet.getCell('C11').value = data.guideNumber || ''
 
     // Formata os dias da semana para o formato SEG Á SEX
     const weekDaysString = this.formatWeekDaysRangeWithSessions(data.weekDaySessions)
 
-    // Preenche a linha 14 com os dias da semana (agora na coluna J)
-    worksheet.getCell('J14').value = weekDaysString
+    // Preenche a linha 15 com os dias da semana (agora na coluna J)
+    worksheet.getCell('J15').value = weekDaysString
 
     let records: SessionRecord[]
     let competencyText: string
@@ -102,10 +104,10 @@ export class ExcelService {
       throw new Error('É necessário informar a data de início e fim ou a competência')
     }
 
-    // Preenche o campo de competência na linha 17 (agora na coluna J)
-    worksheet.getCell('J17').value = competencyText
+    // Preenche o campo de competência na linha 18 (agora na coluna J)
+    worksheet.getCell('J18').value = competencyText
 
-    // Preenche o período de horário em J20 (agora na coluna J)
+    // Preenche o período de horário em J21 (agora na coluna J)
     // Calcula o range de horários baseado nos registros ou usa os horários globais
     let timeRangeText = ''
     if (records.length > 0) {
@@ -134,7 +136,7 @@ export class ExcelService {
     }
 
     if (timeRangeText) {
-      worksheet.getCell('J20').value = timeRangeText
+      worksheet.getCell('J21').value = timeRangeText
     }
 
     // Linha inicial para os registros

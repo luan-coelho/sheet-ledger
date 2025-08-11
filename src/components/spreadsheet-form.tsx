@@ -24,6 +24,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input'
 import { TimePickerSelector } from '@/components/ui/time-picker'
 
+import { useCompanies } from '@/hooks/use-companies'
 import { useGoogleDriveConfigStatus } from '@/hooks/use-google-drive-config'
 import { useGuardians } from '@/hooks/use-guardians'
 import { useHealthPlans } from '@/hooks/use-health-plans'
@@ -37,15 +38,18 @@ import {
   type GenerateDriveSpreadsheetResponse,
   type TransformedFormData,
 } from '@/hooks/use-spreadsheet-mutations'
+import { useTherapies } from '@/hooks/use-therapies'
 
 import { formatDateISO, getFirstDayOfMonth, getLastDayOfMonth, getNowInBrazil } from '@/lib/date-utils'
 import { spreadsheetFormSchema, WeekDays, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 
+import { CompanySelector } from './company-selector'
 import { GuardianSelector } from './guardian-selector'
 import { HealthPlanSelector } from './health-plan-selector'
 import { PatientSelector } from './patient-selector'
 import { ProfessionalSelector } from './professional-selector'
 import { SpreadsheetPreview } from './spreadsheet-preview'
+import { TherapySelector } from './therapy-selector'
 import { Separator } from './ui/separator'
 import { WeekdaySessionSelector } from './weekday-session-selector'
 
@@ -71,7 +75,9 @@ export function SpreadsheetForm() {
   const { data: professionals } = useProfessionals()
   const { data: patients } = usePatients()
   const { data: guardians } = useGuardians()
+  const { data: companies } = useCompanies()
   const { data: healthPlans } = useHealthPlans()
+  const { data: therapies } = useTherapies()
 
   // Hooks para Google Drive
   const { data: driveStatus } = useGoogleDriveConfigStatus()
@@ -103,7 +109,9 @@ export function SpreadsheetForm() {
       authorizedSession: '',
       patientId: '',
       guardianId: '',
+      companyId: '',
       healthPlanId: '',
+      therapyId: '',
       cardNumber: '',
       guideNumber: '',
       weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4, startTime: '08:00', endTime: '17:00' }],
@@ -138,7 +146,9 @@ export function SpreadsheetForm() {
     const professional = professionals?.find(p => p.id === values.professionalId)
     const patient = patients?.find(p => p.id === values.patientId)
     const guardian = guardians?.find(g => g.id === values.guardianId)
+    const company = companies?.find(c => c.id === values.companyId)
     const healthPlan = healthPlans?.find(h => h.id === values.healthPlanId)
+    const therapy = therapies?.find(t => t.id === values.therapyId)
 
     // Calcular horário mais cedo e mais tarde dos dias selecionados
     let earliestTime = '23:59'
@@ -160,8 +170,10 @@ export function SpreadsheetForm() {
       patientName: patient?.name || '',
       responsible: guardian?.name || '',
       healthPlan: healthPlan?.name || '',
+      therapy: therapy?.name || '',
       cardNumber: values.cardNumber || undefined,
       guideNumber: values.guideNumber || undefined,
+      company: company?.name || '',
       weekDaySessions: values.weekDaySessions,
       startDate: values.startDate,
       endDate: values.endDate,
@@ -414,9 +426,29 @@ export function SpreadsheetForm() {
 
               <FormField
                 control={form.control}
-                name="healthPlanId"
+                name="companyId"
                 render={({ field }) => (
                   <FormItem className="sm:col-span-2 xl:col-span-2">
+                    <FormLabel>Empresa</FormLabel>
+                    <FormControl>
+                      <CompanySelector
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Selecione uma empresa..."
+                        showValidationIcon
+                        error={form.formState.errors.companyId}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="healthPlanId"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-1 xl:col-span-2">
                     <FormLabel>Plano de saúde</FormLabel>
                     <FormControl>
                       <HealthPlanSelector
@@ -434,9 +466,29 @@ export function SpreadsheetForm() {
 
               <FormField
                 control={form.control}
+                name="therapyId"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-1 xl:col-span-2">
+                    <FormLabel>Terapia</FormLabel>
+                    <FormControl>
+                      <TherapySelector
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Selecione uma terapia..."
+                        showValidationIcon
+                        error={form.formState.errors.therapyId}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="cardNumber"
                 render={({ field }) => (
-                  <FormItem className="col-span-1">
+                  <FormItem className="sm:col-span-1 xl:col-span-2">
                     <FormLabel>Nº carteirinha (opcional)</FormLabel>
                     <FormControl>
                       <Input
@@ -455,7 +507,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="guideNumber"
                 render={({ field }) => (
-                  <FormItem className="col-span-1">
+                  <FormItem className="sm:col-span-1 xl:col-span-2">
                     <FormLabel>Guia Nº (opcional)</FormLabel>
                     <FormControl>
                       <Input

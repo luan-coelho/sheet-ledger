@@ -2,21 +2,21 @@ import { eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/app/db'
-import { insertProfessionalSchema, professionalsTable } from '@/app/db/schemas/professional-schema'
+import { companiesTable, insertCompanySchema } from '@/app/db/schemas/company-schema'
 
-// GET /api/professionals/[id] - Get professional by ID
+// GET /api/companies/[id] - Get company by ID
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
 
-    const [professional] = await db.select().from(professionalsTable).where(eq(professionalsTable.id, id)).limit(1)
+    const [company] = await db.select().from(companiesTable).where(eq(companiesTable.id, id)).limit(1)
 
-    if (!professional) {
+    if (!company) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Professional not found',
-          message: 'The requested professional does not exist',
+          error: 'Company not found',
+          message: 'The requested company does not exist',
         },
         { status: 404 },
       )
@@ -24,67 +24,63 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json({
       success: true,
-      data: professional,
-      message: 'Professional found successfully',
+      data: company,
+      message: 'Company found successfully',
     })
   } catch (error) {
-    console.error('Error fetching professional:', error)
+    console.error('Error fetching company:', error)
     return NextResponse.json(
       {
         success: false,
         error: 'Internal server error',
-        message: 'Could not fetch the professional',
+        message: 'Could not fetch the company',
       },
       { status: 500 },
     )
   }
 }
 
-// PUT /api/professionals/[id] - Update professional
+// PUT /api/companies/[id] - Update company
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
     const body = await request.json()
 
     // Validate data using Zod schema
-    const validatedData = insertProfessionalSchema.parse(body)
+    const validatedData = insertCompanySchema.parse(body)
 
-    // Check if professional exists
-    const [existingProfessional] = await db
-      .select()
-      .from(professionalsTable)
-      .where(eq(professionalsTable.id, id))
-      .limit(1)
+    // Check if company exists
+    const [existingCompany] = await db.select().from(companiesTable).where(eq(companiesTable.id, id)).limit(1)
 
-    if (!existingProfessional) {
+    if (!existingCompany) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Professional not found',
-          message: 'The professional you are trying to update does not exist',
+          error: 'Company not found',
+          message: 'The company you are trying to update does not exist',
         },
         { status: 404 },
       )
     }
 
     // Update in database
-    const [updatedProfessional] = await db
-      .update(professionalsTable)
+    const [updatedCompany] = await db
+      .update(companiesTable)
       .set({
         name: validatedData.name,
-        councilNumber: validatedData.councilNumber,
+        address: validatedData.address,
         updatedAt: new Date(),
       })
-      .where(eq(professionalsTable.id, id))
+      .where(eq(companiesTable.id, id))
       .returning()
 
     return NextResponse.json({
       success: true,
-      data: updatedProfessional,
-      message: 'Professional updated successfully',
+      data: updatedCompany,
+      message: 'Company updated successfully',
     })
   } catch (error) {
-    console.error('Error updating professional:', error)
+    console.error('Error updating company:', error)
 
     // Zod validation error
     if (error instanceof Error && error.name === 'ZodError') {
@@ -103,50 +99,46 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       {
         success: false,
         error: 'Internal server error',
-        message: 'Could not update the professional',
+        message: 'Could not update the company',
       },
       { status: 500 },
     )
   }
 }
 
-// DELETE /api/professionals/[id] - Delete professional
+// DELETE /api/companies/[id] - Delete company
 export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
 
-    // Check if professional exists
-    const [existingProfessional] = await db
-      .select()
-      .from(professionalsTable)
-      .where(eq(professionalsTable.id, id))
-      .limit(1)
+    // Check if company exists
+    const [existingCompany] = await db.select().from(companiesTable).where(eq(companiesTable.id, id)).limit(1)
 
-    if (!existingProfessional) {
+    if (!existingCompany) {
       return NextResponse.json(
         {
           success: false,
-          error: 'Professional not found',
-          message: 'The professional you are trying to delete does not exist',
+          error: 'Company not found',
+          message: 'The company you are trying to delete does not exist',
         },
         { status: 404 },
       )
     }
 
     // Delete from database
-    await db.delete(professionalsTable).where(eq(professionalsTable.id, id))
+    await db.delete(companiesTable).where(eq(companiesTable.id, id))
 
     return NextResponse.json({
       success: true,
-      message: 'Professional deleted successfully',
+      message: 'Company deleted successfully',
     })
   } catch (error) {
-    console.error('Error deleting professional:', error)
+    console.error('Error deleting company:', error)
     return NextResponse.json(
       {
         success: false,
         error: 'Internal server error',
-        message: 'Could not delete the professional',
+        message: 'Could not delete the company',
       },
       { status: 500 },
     )

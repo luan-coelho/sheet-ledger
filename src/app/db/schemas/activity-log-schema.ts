@@ -53,6 +53,8 @@ export const ActivityActions = {
   GUARDIAN_UPDATED: 'GUARDIAN_UPDATED',
   HEALTH_PLAN_CREATED: 'HEALTH_PLAN_CREATED',
   HEALTH_PLAN_UPDATED: 'HEALTH_PLAN_UPDATED',
+  THERAPY_CREATED: 'THERAPY_CREATED',
+  THERAPY_UPDATED: 'THERAPY_UPDATED',
 } as const
 
 export type ActivityAction = (typeof ActivityActions)[keyof typeof ActivityActions]
@@ -82,4 +84,6 @@ export const ActivityActionDescriptions: Record<ActivityAction, string> = {
   GUARDIAN_UPDATED: 'Atualizou dados de responsável',
   HEALTH_PLAN_CREATED: 'Criou um novo plano de saúde',
   HEALTH_PLAN_UPDATED: 'Atualizou dados de plano de saúde',
+  THERAPY_CREATED: 'Criou uma nova terapia',
+  THERAPY_UPDATED: 'Atualizou dados de terapia',
 }
