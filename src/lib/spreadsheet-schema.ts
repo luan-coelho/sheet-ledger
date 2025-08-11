@@ -35,12 +35,12 @@ export const spreadsheetFormSchema = z
   .object({
     professionalId: z.string().uuid('Selecione um profissional válido'),
     licenseNumber: z.string().min(1, 'Nº conselho do profissional é obrigatório'),
-    authorizedSession: z.string().min(1, 'Sessão autorizada é obrigatório'),
+    authorizedSession: z.string().optional(),
     patientId: z.string().uuid('Selecione um paciente válido'),
     guardianId: z.string().uuid('Selecione um responsável válido'),
     healthPlanId: z.string().uuid('Selecione um plano de saúde válido'),
-    cardNumber: z.string().min(1, 'Nº carteirinha é obrigatório'),
-    guideNumber: z.string().min(1, 'Guia Nº é obrigatório'),
+    cardNumber: z.string().optional(),
+    guideNumber: z.string().optional(),
     weekDaySessions: z
       .array(
         z.object({

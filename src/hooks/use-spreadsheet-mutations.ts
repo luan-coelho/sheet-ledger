@@ -6,12 +6,12 @@ import { WeekDays } from '@/lib/spreadsheet-schema'
 export interface TransformedFormData {
   professional: string
   licenseNumber: string
-  authorizedSession: string
+  authorizedSession?: string
   patientName: string
   responsible: string
   healthPlan: string
-  cardNumber: string
-  guideNumber: string
+  cardNumber?: string
+  guideNumber?: string
   weekDaySessions: Array<{ day: WeekDays; sessions: number }>
   startDate: string
   endDate: string

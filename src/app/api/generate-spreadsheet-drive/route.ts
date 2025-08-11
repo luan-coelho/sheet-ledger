@@ -73,12 +73,9 @@ export async function POST(request: NextRequest) {
     const requiredFields = [
       'professional',
       'licenseNumber',
-      'authorizedSession',
       'patientName',
       'responsible',
       'healthPlan',
-      'cardNumber',
-      'guideNumber',
       'weekDaySessions',
       'startTime',
       'endTime',

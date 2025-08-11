@@ -22,12 +22,12 @@ export class ExcelService {
   static async generateAttendanceSheet(data: {
     professional: string
     licenseNumber: string
-    authorizedSession: string
+    authorizedSession?: string
     patientName: string
     responsible: string
     healthPlan: string
-    cardNumber: string
-    guideNumber: string
+    cardNumber?: string
+    guideNumber?: string
     weekDaySessions: WeekdaySession[]
     startDate?: string
     endDate?: string
@@ -53,12 +53,12 @@ export class ExcelService {
     // Preenche as células mescladas das colunas C e D (linha 3 a 10)
     worksheet.getCell('C3').value = data.professional
     worksheet.getCell('C4').value = data.licenseNumber
-    worksheet.getCell('C5').value = data.authorizedSession
+    worksheet.getCell('C5').value = data.authorizedSession || ''
     worksheet.getCell('C6').value = data.patientName
     worksheet.getCell('C7').value = data.responsible
     worksheet.getCell('C8').value = data.healthPlan
-    worksheet.getCell('C9').value = data.cardNumber
-    worksheet.getCell('C10').value = data.guideNumber
+    worksheet.getCell('C9').value = data.cardNumber || ''
+    worksheet.getCell('C10').value = data.guideNumber || ''
 
     // Formata os dias da semana para o formato SEG Á SEX
     const weekDaysString = this.formatWeekDaysRangeWithSessions(data.weekDaySessions)

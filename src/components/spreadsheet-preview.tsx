@@ -116,13 +116,15 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
                 <div className="pl-6 font-medium">{formData.licenseNumber}</div>
               </div>
 
-              <div className="space-y-1">
-                <div className="text-muted-foreground flex items-center gap-2 font-medium">
-                  <CheckCircle className="h-4 w-4 text-emerald-600" />
-                  Sessão Autorizada
+              {formData.authorizedSession && (
+                <div className="space-y-1">
+                  <div className="text-muted-foreground flex items-center gap-2 font-medium">
+                    <CheckCircle className="h-4 w-4 text-emerald-600" />
+                    Sessão Autorizada
+                  </div>
+                  <div className="pl-6 font-medium">{formData.authorizedSession}</div>
                 </div>
-                <div className="pl-6 font-medium">{formData.authorizedSession}</div>
-              </div>
+              )}
 
               <div className="space-y-1">
                 <div className="text-muted-foreground flex items-center gap-2 font-medium">
@@ -147,6 +149,26 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
                 </div>
                 <div className="pl-6 font-medium">{healthPlan?.name || 'Carregando...'}</div>
               </div>
+
+              {formData.cardNumber && (
+                <div className="space-y-1">
+                  <div className="text-muted-foreground flex items-center gap-2 font-medium">
+                    <IdCard className="h-4 w-4 text-blue-600" />
+                    Nº Carteirinha
+                  </div>
+                  <div className="pl-6 font-medium">{formData.cardNumber}</div>
+                </div>
+              )}
+
+              {formData.guideNumber && (
+                <div className="space-y-1">
+                  <div className="text-muted-foreground flex items-center gap-2 font-medium">
+                    <Hash className="h-4 w-4 text-indigo-600" />
+                    Guia Nº
+                  </div>
+                  <div className="pl-6 font-medium">{formData.guideNumber}</div>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -6,13 +6,17 @@ import { SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 interface GenerateDriveSpreadsheetData {
   professional: string
   licenseNumber: string
-  authorizedSession: string
+  authorizedSession?: string
   patientName: string
   responsible: string
   healthPlan: string
+  cardNumber?: string
+  guideNumber?: string
   weekDaySessions: SpreadsheetFormValues['weekDaySessions']
   startDate: string
   endDate: string
+  startTime: string
+  endTime: string
 }
 
 interface GenerateDriveSpreadsheetResponse {

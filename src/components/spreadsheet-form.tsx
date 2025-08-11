@@ -141,12 +141,12 @@ export function SpreadsheetForm() {
     return {
       professional: professional?.name || '',
       licenseNumber: values.licenseNumber,
-      authorizedSession: values.authorizedSession,
+      authorizedSession: values.authorizedSession || undefined,
       patientName: patient?.name || '',
       responsible: guardian?.name || '',
       healthPlan: healthPlan?.name || '',
-      cardNumber: values.cardNumber,
-      guideNumber: values.guideNumber,
+      cardNumber: values.cardNumber || undefined,
+      guideNumber: values.guideNumber || undefined,
       weekDaySessions: values.weekDaySessions,
       startDate: values.startDate,
       endDate: values.endDate,
@@ -309,7 +309,7 @@ export function SpreadsheetForm() {
                 name="authorizedSession"
                 render={({ field }) => (
                   <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Sessão autorizada</FormLabel>
+                    <FormLabel>Sessão autorizada (opcional)</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Tipo de sessão autorizada"
@@ -388,7 +388,7 @@ export function SpreadsheetForm() {
                 name="cardNumber"
                 render={({ field }) => (
                   <FormItem className="col-span-1">
-                    <FormLabel>Nº carteirinha</FormLabel>
+                    <FormLabel>Nº carteirinha (opcional)</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Nº da carteirinha"
@@ -407,7 +407,7 @@ export function SpreadsheetForm() {
                 name="guideNumber"
                 render={({ field }) => (
                   <FormItem className="col-span-1">
-                    <FormLabel>Guia Nº</FormLabel>
+                    <FormLabel>Guia Nº (opcional)</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Nº da guia"
