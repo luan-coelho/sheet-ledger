@@ -4,6 +4,7 @@ import ExcelJS from 'exceljs'
 
 import { createBrazilianDate, formatDateBrazilian, getMonthNameInPortuguese } from './date-utils'
 import { meses, WeekDays, WeekdaySession } from './spreadsheet-schema'
+import { formatCNPJ } from './utils'
 
 type SessionRecord = {
   date: Date
@@ -36,6 +37,11 @@ export class ExcelService {
     endDate?: string
     startTime?: string
     endTime?: string
+    companyData?: {
+      name: string
+      cnpj: string
+      address: string
+    }
     competency?: {
       month: string
       year: string
@@ -53,14 +59,30 @@ export class ExcelService {
       throw new Error('Planilha não encontrada no arquivo template')
     }
 
+    // Preenche a célula A1 com as informações da empresa
+    if (data.companyData) {
+      const companyInfo = `${data.companyData.name}\nCNPJ: ${formatCNPJ(data.companyData.cnpj)}\nENDEREÇO: ${data.companyData.address}`
+      worksheet.getCell('A1').value = companyInfo
+
+      // Configurar quebra de linha na célula
+      worksheet.getCell('A1').alignment = {
+        wrapText: true,
+        vertical: 'top',
+        horizontal: 'left',
+      }
+
+      // Definir altura da linha A1 para acomodar múltiplas linhas
+      worksheet.getRow(1).height = 60
+    }
+
     // Preenche as células mescladas das colunas C e D (linha 3 a 11)
     worksheet.getCell('C3').value = data.professional
-    worksheet.getCell('C4').value = data.licenseNumber
-    worksheet.getCell('C5').value = data.authorizedSession || ''
-    worksheet.getCell('C6').value = data.patientName
-    worksheet.getCell('C7').value = data.responsible
-    worksheet.getCell('C8').value = data.healthPlan
-    worksheet.getCell('C9').value = data.therapy
+    worksheet.getCell('C4').value = data.therapy
+    worksheet.getCell('C5').value = data.licenseNumber
+    worksheet.getCell('C6').value = data.authorizedSession || ''
+    worksheet.getCell('C7').value = data.patientName
+    worksheet.getCell('C8').value = data.responsible
+    worksheet.getCell('C9').value = data.healthPlan
     worksheet.getCell('C10').value = data.cardNumber || ''
     worksheet.getCell('C11').value = data.guideNumber || ''
 
@@ -68,7 +90,7 @@ export class ExcelService {
     const weekDaysString = this.formatWeekDaysRangeWithSessions(data.weekDaySessions)
 
     // Preenche a linha 15 com os dias da semana (agora na coluna J)
-    worksheet.getCell('J15').value = weekDaysString
+    worksheet.getCell('C54').value = weekDaysString
 
     let records: SessionRecord[]
     let competencyText: string
@@ -105,44 +127,12 @@ export class ExcelService {
     }
 
     // Preenche o campo de competência na linha 18 (agora na coluna J)
-    worksheet.getCell('J18').value = competencyText
-
-    // Preenche o período de horário em J21 (agora na coluna J)
-    // Calcula o range de horários baseado nos registros ou usa os horários globais
-    let timeRangeText = ''
-    if (records.length > 0) {
-      // Encontra o horário mais cedo e mais tarde dos registros
-      let earliestTime = '23:59'
-      let latestTime = '00:00'
-
-      records.forEach(record => {
-        if (record.startTime && record.startTime < earliestTime) {
-          earliestTime = record.startTime
-        }
-        if (record.endTime && record.endTime > latestTime) {
-          latestTime = record.endTime
-        }
-      })
-
-      // Se encontrou horários nos registros, usa eles
-      if (earliestTime !== '23:59' && latestTime !== '00:00') {
-        timeRangeText = `${earliestTime} - ${latestTime}`
-      }
-    }
-
-    // Se não encontrou horários nos registros, usa os horários globais como fallback
-    if (!timeRangeText && data.startTime && data.endTime) {
-      timeRangeText = `${data.startTime} - ${data.endTime}`
-    }
-
-    if (timeRangeText) {
-      worksheet.getCell('J21').value = timeRangeText
-    }
+    worksheet.getCell('C57').value = competencyText
 
     // Linha inicial para os registros
-    const startRow = 13
+    const startRow = 14
     // Linha final para os registros (expandido para comportar até 31 dias)
-    const endRow = 43
+    const endRow = 44
 
     // Limpa as linhas de dados (da linha 12 até a 42 inclusive)
     for (let row = startRow; row <= endRow; row++) {
@@ -184,48 +174,11 @@ export class ExcelService {
       }
     })
 
-    // Preenche o total de sessões na célula C45
-    worksheet.getCell('C45').value = totalSessions
+    // Preenche o total de sessões na célula C46
+    worksheet.getCell('C46').value = totalSessions
 
     // Gera o buffer da planilha
     return await workbook.xlsx.writeBuffer()
-  }
-
-  /**
-   * Formata o array de dias da semana para o formato SEG Á SEX
-   * @param weekdays Array de dias da semana selecionados
-   * @returns String formatada no formato SEG Á SEX
-   */
-  private static formatWeekDaysRange(weekdays: WeekDays[]): string {
-    if (weekdays.length === 0) return ''
-
-    // Define abreviações dos dias
-    const dayAbbreviations: Record<WeekDays, string> = {
-      [WeekDays.MONDAY]: 'SEG',
-      [WeekDays.TUESDAY]: 'TER',
-      [WeekDays.WEDNESDAY]: 'QUA',
-      [WeekDays.THURSDAY]: 'QUI',
-      [WeekDays.FRIDAY]: 'SEX',
-      [WeekDays.SATURDAY]: 'SAB',
-      [WeekDays.SUNDAY]: 'DOM',
-    }
-
-    // Ordena os dias da semana para encontrar intervalos contínuos
-    const sortedDayIndices = weekdays.map(day => this.getDayIndex(day)).sort((a, b) => a - b)
-
-    // Verifica se os dias da semana são consecutivos
-    const isConsecutive = sortedDayIndices.every((dayIndex, i, array) => i === 0 || dayIndex === array[i - 1] + 1)
-
-    if (isConsecutive && sortedDayIndices.length > 1) {
-      // Obtém o primeiro e último dia
-      const firstDay = this.getDayByIndex(sortedDayIndices[0])
-      const lastDay = this.getDayByIndex(sortedDayIndices[sortedDayIndices.length - 1])
-
-      return `${dayAbbreviations[firstDay]} Á ${dayAbbreviations[lastDay]}`
-    } else {
-      // Retorna lista separada por vírgulas se não for consecutivo
-      return weekdays.map(day => dayAbbreviations[day]).join(', ')
-    }
   }
 
   /**
@@ -260,53 +213,6 @@ export class ExcelService {
     ]
 
     return days[index]
-  }
-
-  /**
-   * Gera registros para um mês e ano específicos, filtrados pelos dias da semana selecionados
-   * @param year Ano
-   * @param month Mês (0-11)
-   * @param daysOfWeek Array de índices de dias (0 = Segunda, 6 = Domingo)
-   * @returns Array de datas representando os dias selecionados
-   */
-  private static generateRecordsForMonth(year: number, month: number, daysOfWeek: number[]): Date[] {
-    const selectedDays: Date[] = []
-    const startDate = new Date(year, month, 1)
-    const endDate = new Date(year, month + 1, 0)
-
-    // Garante que temos o ano correto para a competência
-    const currentYear = new Date().getFullYear()
-
-    // Se o ano solicitado for muito no futuro (mais de 10 anos), ajusta para o ano atual
-    // Esta verificação evita problemas com datas inválidas
-    if (year < currentYear - 10 || year > currentYear + 10) {
-      year = currentYear
-    }
-
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      // Converte dia JS (0 = Domingo) para nosso dia (0 = Segunda)
-      const jsDay = d.getDay() // 0 = Domingo, 1 = Segunda, etc.
-      const ourDay = jsDay === 0 ? 6 : jsDay - 1 // Converte para 0 = Segunda, 6 = Domingo
-
-      if (daysOfWeek.includes(ourDay)) {
-        selectedDays.push(new Date(d))
-      }
-    }
-
-    return selectedDays
-  }
-
-  /**
-   * Formata uma data para o padrão DD/MM/YYYY
-   * @param date Data a ser formatada
-   * @returns String no formato DD/MM/YYYY
-   */
-  private static formatDate(date: Date): string {
-    const day = String(date.getDate()).padStart(2, '0')
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const year = date.getFullYear()
-
-    return `${day}/${month}/${year}`
   }
 
   /**

@@ -40,6 +40,7 @@ export async function POST(request: NextRequest) {
       .insert(companiesTable)
       .values({
         name: validatedData.name,
+        cnpj: validatedData.cnpj,
         address: validatedData.address,
         createdAt: new Date(),
         updatedAt: new Date(),

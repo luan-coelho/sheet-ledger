@@ -167,7 +167,11 @@ export default function EmpresasPage() {
       </Card>
 
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent
+          className="md:min-w-3xl"
+          onInteractOutside={e => {
+            e.preventDefault()
+          }}>
           <DialogHeader>
             <DialogTitle>{editingCompany ? 'Editar Empresa' : 'Nova Empresa'}</DialogTitle>
             <DialogDescription>

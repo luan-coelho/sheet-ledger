@@ -68,6 +68,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       .update(companiesTable)
       .set({
         name: validatedData.name,
+        cnpj: validatedData.cnpj,
         address: validatedData.address,
         updatedAt: new Date(),
       })

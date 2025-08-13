@@ -14,6 +14,11 @@ export interface TransformedFormData {
   cardNumber?: string
   guideNumber?: string
   company: string
+  companyData?: {
+    name: string
+    cnpj: string
+    address: string
+  }
   weekDaySessions: Array<{ day: WeekDays; sessions: number; startTime: string; endTime: string }>
   startDate: string
   endDate: string
@@ -84,7 +89,7 @@ export function useGenerateSpreadsheet() {
       const downloadUrl = window.URL.createObjectURL(blob)
       const downloadLink = document.createElement('a')
       downloadLink.href = downloadUrl
-      downloadLink.download = isMultiMonth ? 'attendance-sheets.zip' : 'attendance-sheet.xlsx'
+      downloadLink.download = isMultiMonth ? 'registros-atendimentos.zip' : 'registro-atendimento.xlsx'
 
       document.body.appendChild(downloadLink)
       downloadLink.click()

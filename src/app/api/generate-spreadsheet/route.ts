@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
 
     // Set headers for download
     response.headers.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response.headers.set('Content-Disposition', 'attachment; filename="attendance-sheet.xlsx"')
+    response.headers.set('Content-Disposition', 'attachment; filename="registro-atendimento.xlsx"')
 
     return response
   } catch (error) {

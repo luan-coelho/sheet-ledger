@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
 import { useCreateCompany, useUpdateCompany } from '@/hooks/use-companies'
+import { formatCNPJ, unformatCNPJ } from '@/lib/utils'
 
 interface CompanyFormProps {
   company?: Company
@@ -29,6 +30,7 @@ export function CompanyForm({ company, onSuccess, onCancel }: CompanyFormProps) 
     resolver: zodResolver(insertCompanySchema),
     defaultValues: {
       name: '',
+      cnpj: '',
       address: '',
     },
   })
@@ -38,6 +40,7 @@ export function CompanyForm({ company, onSuccess, onCancel }: CompanyFormProps) 
     if (company) {
       form.reset({
         name: company.name,
+        cnpj: company.cnpj,
         address: company.address,
       })
     }
@@ -70,6 +73,29 @@ export function CompanyForm({ company, onSuccess, onCancel }: CompanyFormProps) 
               <FormLabel>Nome da Empresa</FormLabel>
               <FormControl>
                 <Input placeholder="Digite o nome da empresa..." {...field} disabled={isLoading} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="cnpj"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>CNPJ</FormLabel>
+              <FormControl>
+                <Input 
+                  placeholder="XX.XXX.XXX/XXXX-XX" 
+                  value={formatCNPJ(field.value || '')}
+                  onChange={(e) => {
+                    const unformattedValue = unformatCNPJ(e.target.value)
+                    field.onChange(unformattedValue)
+                  }}
+                  disabled={isLoading}
+                  maxLength={18}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

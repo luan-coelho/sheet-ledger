@@ -174,6 +174,11 @@ export function SpreadsheetForm() {
       cardNumber: values.cardNumber || undefined,
       guideNumber: values.guideNumber || undefined,
       company: company?.name || '',
+      companyData: company ? {
+        name: company.name,
+        cnpj: company.cnpj,
+        address: company.address
+      } : undefined,
       weekDaySessions: values.weekDaySessions,
       startDate: values.startDate,
       endDate: values.endDate,
@@ -328,6 +333,26 @@ export function SpreadsheetForm() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 xl:grid-cols-6">
               <FormField
                 control={form.control}
+                name="companyId"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-2 xl:col-span-2">
+                    <FormLabel>Empresa</FormLabel>
+                    <FormControl>
+                      <CompanySelector
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Selecione uma empresa..."
+                        showValidationIcon
+                        error={form.formState.errors.companyId}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="professionalId"
                 render={({ field }) => (
                   <FormItem className="sm:col-span-2 xl:col-span-2">
@@ -417,26 +442,6 @@ export function SpreadsheetForm() {
                         placeholder="Selecione um responsável..."
                         showValidationIcon
                         error={form.formState.errors.guardianId}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="companyId"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Empresa</FormLabel>
-                    <FormControl>
-                      <CompanySelector
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        placeholder="Selecione uma empresa..."
-                        showValidationIcon
-                        error={form.formState.errors.companyId}
                       />
                     </FormControl>
                     <FormMessage />

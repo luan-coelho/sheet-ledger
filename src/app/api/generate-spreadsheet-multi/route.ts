@@ -39,7 +39,7 @@ export async function POST(request: NextRequest) {
 
       const response = new NextResponse(spreadsheetBuffer)
       response.headers.set('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-      response.headers.set('Content-Disposition', 'attachment; filename="attendance-sheet.xlsx"')
+      response.headers.set('Content-Disposition', 'attachment; filename="registro-atendimento.xlsx"')
 
       return response
     }
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
     const response = new NextResponse(zipBuffer)
     response.headers.set('Content-Type', 'application/zip')
-    response.headers.set('Content-Disposition', 'attachment; filename="attendance-sheets.zip"')
+    response.headers.set('Content-Disposition', 'attachment; filename="registros-atendimentos.zip"')
 
     return response
   } catch (error) {
