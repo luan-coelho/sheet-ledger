@@ -78,6 +78,7 @@ export async function logSuccessfulSignIn(): Promise<{ success: boolean }> {
         userAgent: headersList.get('user-agent') || 'unknown',
       }
 
+      // Verificar se já existe um log de login recente (últimos 30 segundos) para evitar duplicatas
       await logSignInServer(session.user.id, session.user.email, requestInfo)
       return { success: true }
     }
