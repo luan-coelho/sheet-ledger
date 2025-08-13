@@ -4,7 +4,7 @@ import { AuthError } from 'next-auth'
 import { headers } from 'next/headers'
 
 import { auth, signIn, signOut } from '@/lib/auth'
-import { logSignInServer, logSignOutServer } from '@/lib/auth-server-logger'
+import { logSignOutServer } from '@/lib/auth-server-logger'
 import { routes } from '@/lib/routes'
 
 export interface SignInResult {
@@ -64,29 +64,6 @@ export async function handleGoogleSignIn(callbackUrl?: string): Promise<SignInRe
       success: false,
       error: 'Erro inesperado. Tente novamente.',
     }
-  }
-}
-
-export async function logSuccessfulSignIn(): Promise<{ success: boolean }> {
-  try {
-    const session = await auth()
-
-    if (session?.user?.id && session?.user?.email) {
-      const headersList = await headers()
-      const requestInfo = {
-        ip: headersList.get('x-forwarded-for') || headersList.get('x-real-ip') || 'unknown',
-        userAgent: headersList.get('user-agent') || 'unknown',
-      }
-
-      // Verificar se já existe um log de login recente (últimos 30 segundos) para evitar duplicatas
-      await logSignInServer(session.user.id, session.user.email, requestInfo)
-      return { success: true }
-    }
-
-    return { success: false }
-  } catch (error) {
-    console.error('Erro ao registrar log de login:', error)
-    return { success: false }
   }
 }
 
