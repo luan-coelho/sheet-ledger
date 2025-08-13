@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
       patientName,
       responsible,
       healthPlan,
+      therapy,
       cardNumber,
       guideNumber,
       weekDaySessions,
@@ -67,6 +68,7 @@ export async function POST(request: NextRequest) {
       endDate,
       startTime,
       endTime,
+      companyData,
     } = body
 
     // Validar campos obrigatórios
@@ -76,6 +78,7 @@ export async function POST(request: NextRequest) {
       'patientName',
       'responsible',
       'healthPlan',
+      'therapy',
       'weekDaySessions',
       'startTime',
       'endTime',
@@ -173,6 +176,7 @@ export async function POST(request: NextRequest) {
         patientName,
         responsible,
         healthPlan,
+        therapy,
         cardNumber,
         guideNumber,
         weekDaySessions,
@@ -180,6 +184,7 @@ export async function POST(request: NextRequest) {
         endDate: monthInfo.endDate.toISOString().split('T')[0],
         startTime: startTime,
         endTime: endTime,
+        companyData,
       })
 
       // Nome do arquivo: "Janeiro 2024.xlsx"

@@ -5,9 +5,9 @@ import { db } from '@/app/db'
 import { insertTherapySchema, therapiesTable } from '@/app/db/schemas/therapy-schema'
 
 // GET /api/therapies/[id] - Get therapy by ID
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
 
     const [therapy] = await db.select().from(therapiesTable).where(eq(therapiesTable.id, id))
 
@@ -23,9 +23,9 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // PUT /api/therapies/[id] - Update therapy
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
     const body = await request.json()
 
     // Validate request body
@@ -59,9 +59,9 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE /api/therapies/[id] - Delete therapy
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
 
     const [deletedTherapy] = await db.delete(therapiesTable).where(eq(therapiesTable.id, id)).returning()
 

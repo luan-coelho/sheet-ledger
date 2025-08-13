@@ -46,6 +46,7 @@ export function CompanySelector({
   const handleCreate = async (name: string) => {
     const result = await createCompany.mutateAsync({
       name,
+      cnpj: '00000000000000', // CNPJ temporário - deve ser editado posteriormente
       address: 'Endereço não informado', // Valor padrão temporário
     })
     return result.id
