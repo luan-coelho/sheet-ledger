@@ -13,6 +13,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 
 import { useCreateCompany, useUpdateCompany } from '@/hooks/use-companies'
+
 import { formatCNPJ, unformatCNPJ } from '@/lib/utils'
 
 interface CompanyFormProps {
@@ -86,10 +87,10 @@ export function CompanyForm({ company, onSuccess, onCancel }: CompanyFormProps) 
             <FormItem>
               <FormLabel>CNPJ</FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="XX.XXX.XXX/XXXX-XX" 
+                <Input
+                  placeholder="XX.XXX.XXX/XXXX-XX"
                   value={formatCNPJ(field.value || '')}
-                  onChange={(e) => {
+                  onChange={e => {
                     const unformattedValue = unformatCNPJ(e.target.value)
                     field.onChange(unformattedValue)
                   }}

@@ -13,7 +13,7 @@ export function cn(...inputs: ClassValue[]) {
 export function formatCNPJ(value: string): string {
   // Remove tudo que não for número
   const numbers = value.replace(/\D/g, '')
-  
+
   // Aplica a máscara progressivamente conforme o usuário digita
   if (numbers.length <= 2) {
     return numbers

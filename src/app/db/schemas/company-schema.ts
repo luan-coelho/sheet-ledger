@@ -13,11 +13,12 @@ export const companiesTable = pgTable('companies', {
 // Zod schemas for validation
 export const insertCompanySchema = z.object({
   name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
-  cnpj: z.string()
+  cnpj: z
+    .string()
     .min(1, 'CNPJ é obrigatório')
-    .transform((val) => val.replace(/\D/g, '')) // Remove formatação
-    .refine((val) => val.length === 14, 'CNPJ deve ter 14 dígitos')
-    .refine((val) => /^\d{14}$/.test(val), 'CNPJ deve conter apenas números'),
+    .transform(val => val.replace(/\D/g, '')) // Remove formatação
+    .refine(val => val.length === 14, 'CNPJ deve ter 14 dígitos')
+    .refine(val => /^\d{14}$/.test(val), 'CNPJ deve conter apenas números'),
   address: z.string().min(3, 'Endereço deve ter pelo menos 3 caracteres'),
 })
 

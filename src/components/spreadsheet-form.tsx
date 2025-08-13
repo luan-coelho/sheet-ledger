@@ -174,11 +174,13 @@ export function SpreadsheetForm() {
       cardNumber: values.cardNumber || undefined,
       guideNumber: values.guideNumber || undefined,
       company: company?.name || '',
-      companyData: company ? {
-        name: company.name,
-        cnpj: company.cnpj,
-        address: company.address
-      } : undefined,
+      companyData: company
+        ? {
+            name: company.name,
+            cnpj: company.cnpj,
+            address: company.address,
+          }
+        : undefined,
       weekDaySessions: values.weekDaySessions,
       startDate: values.startDate,
       endDate: values.endDate,
@@ -373,6 +375,26 @@ export function SpreadsheetForm() {
 
               <FormField
                 control={form.control}
+                name="therapyId"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-1 xl:col-span-2">
+                    <FormLabel>Terapia</FormLabel>
+                    <FormControl>
+                      <TherapySelector
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Selecione uma terapia..."
+                        showValidationIcon
+                        error={form.formState.errors.therapyId}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="licenseNumber"
                 render={({ field }) => (
                   <FormItem className="sm:col-span-2 xl:col-span-2">
@@ -462,26 +484,6 @@ export function SpreadsheetForm() {
                         placeholder="Selecione um plano de saúde..."
                         showValidationIcon
                         error={form.formState.errors.healthPlanId}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="therapyId"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-1 xl:col-span-2">
-                    <FormLabel>Terapia</FormLabel>
-                    <FormControl>
-                      <TherapySelector
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        placeholder="Selecione uma terapia..."
-                        showValidationIcon
-                        error={form.formState.errors.therapyId}
                       />
                     </FormControl>
                     <FormMessage />
