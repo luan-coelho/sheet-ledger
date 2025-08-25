@@ -377,7 +377,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="therapyId"
                 render={({ field }) => (
-                  <FormItem className="sm:col-span-1 xl:col-span-2">
+                  <FormItem className="sm:col-span-2 xl:col-span-2">
                     <FormLabel>Terapia</FormLabel>
                     <FormControl>
                       <TherapySelector
@@ -475,7 +475,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="healthPlanId"
                 render={({ field }) => (
-                  <FormItem className="sm:col-span-1 xl:col-span-2">
+                  <FormItem className="sm:col-span-2 xl:col-span-2">
                     <FormLabel>Plano de saúde</FormLabel>
                     <FormControl>
                       <HealthPlanSelector
@@ -495,7 +495,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="cardNumber"
                 render={({ field }) => (
-                  <FormItem className="sm:col-span-1 xl:col-span-2">
+                  <FormItem className="col-span-1 sm:col-span-2 xl:col-span-2">
                     <FormLabel>Nº carteirinha (opcional)</FormLabel>
                     <FormControl>
                       <Input
@@ -514,7 +514,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="guideNumber"
                 render={({ field }) => (
-                  <FormItem className="sm:col-span-1 xl:col-span-2">
+                  <FormItem className="col-span-1 sm:col-span-2 xl:col-span-2">
                     <FormLabel>Guia Nº (opcional)</FormLabel>
                     <FormControl>
                       <Input
@@ -533,7 +533,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="startDate"
                 render={({ field }) => (
-                  <FormItem className="col-span-1">
+                  <FormItem className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-1">
                     <FormLabel>Data de início</FormLabel>
                     <FormControl>
                       <DatePicker
@@ -565,7 +565,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="endDate"
                 render={({ field }) => (
-                  <FormItem className="col-span-1">
+                  <FormItem className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-1">
                     <FormLabel>Data fim</FormLabel>
                     <FormControl>
                       <DatePicker
@@ -618,25 +618,27 @@ export function SpreadsheetForm() {
                 </p>
               </div>
 
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-center">
-                <div className="flex items-center gap-2">
-                  <label className="text-xs font-medium whitespace-nowrap">Início:</label>
-                  <TimePickerSelector
-                    value={globalStartTime}
-                    onChange={setGlobalStartTime}
-                    placeholder="--:--"
-                    className="w-24"
-                  />
-                </div>
+              <div className="flex flex-col gap-3 sm:items-center sm:justify-center md:flex-row">
+                <div className="flex flex-row items-center justify-center gap-3 sm:flex-row">
+                  <div className="flex flex-col items-center gap-2 md:flex-row">
+                    <label className="text-xs font-medium whitespace-nowrap">Início:</label>
+                    <TimePickerSelector
+                      value={globalStartTime}
+                      onChange={setGlobalStartTime}
+                      placeholder="--:--"
+                      className="w-24"
+                    />
+                  </div>
 
-                <div className="flex items-center gap-2">
-                  <label className="text-xs font-medium whitespace-nowrap">Fim:</label>
-                  <TimePickerSelector
-                    value={globalEndTime}
-                    onChange={setGlobalEndTime}
-                    placeholder="--:--"
-                    className="w-24"
-                  />
+                  <div className="flex flex-col items-center gap-2 md:flex-row">
+                    <label className="text-xs font-medium whitespace-nowrap">Fim:</label>
+                    <TimePickerSelector
+                      value={globalEndTime}
+                      onChange={setGlobalEndTime}
+                      placeholder="--:--"
+                      className="w-24"
+                    />
+                  </div>
                 </div>
 
                 <Button

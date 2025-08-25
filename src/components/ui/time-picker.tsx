@@ -109,11 +109,11 @@ export function TimePickerSelector({ value, onChange, placeholder, className }: 
       <PopoverTrigger asChild>
         <Button
           variant="outline"
-          className={cn('w-full justify-start text-left font-normal', !date && 'text-muted-foreground', className)}>
+          className={cn('w-full justify-center text-left font-normal', !date && 'text-muted-foreground', className)}>
           {date ? (
             `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
           ) : (
-            <span>{placeholder || 'Selecione um horário'}</span>
+            <span className="text-center">{placeholder || 'Selecione um horário'}</span>
           )}
         </Button>
       </PopoverTrigger>

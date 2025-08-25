@@ -80,7 +80,7 @@ export function CreatableCombobox({
   }
 
   return (
-    <div className="relative">
+    <div className="relative w-full">
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <Button
@@ -88,14 +88,19 @@ export function CreatableCombobox({
             role="combobox"
             aria-expanded={open}
             className={cn(
-              'h-10 w-full justify-between rounded-sm',
+              'h-10 w-full justify-between overflow-hidden rounded-sm text-left',
               !selectedOption && 'text-muted-foreground',
               hasError ? 'border-destructive' : 'border-zinc-300',
-              showErrorIcon ? 'pr-10' : '',
+              showErrorIcon ? 'pr-10' : 'pr-8',
               className,
             )}
-            disabled={disabled}>
-            {selectedOption ? selectedOption.label : placeholder}
+            disabled={disabled}
+            style={{ minWidth: 0 }}>
+            <span
+              className="block truncate overflow-hidden text-ellipsis whitespace-nowrap"
+              style={{ maxWidth: showErrorIcon ? 'calc(100% - 3.5rem)' : 'calc(100% - 2rem)' }}>
+              {selectedOption ? selectedOption.label : placeholder}
+            </span>
             {!showErrorIcon && <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />}
           </Button>
         </PopoverTrigger>
