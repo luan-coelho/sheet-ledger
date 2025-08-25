@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form'
 
 import { insertProfessionalSchema, Professional, ProfessionalFormValues } from '@/app/db/schemas/professional-schema'
 
+import { TherapySelector } from '@/components/therapy-selector'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -27,6 +28,7 @@ export function ProfessionalForm({ professional, onSuccess, onCancel }: Professi
     defaultValues: {
       name: professional?.name || '',
       councilNumber: professional?.councilNumber || '',
+      therapyId: professional?.therapyId || '',
     },
   })
 
@@ -41,6 +43,7 @@ export function ProfessionalForm({ professional, onSuccess, onCancel }: Professi
       form.reset({
         name: professional.name,
         councilNumber: professional.councilNumber || '',
+        therapyId: professional.therapyId || '',
       })
     }
   }, [professional, form])
@@ -94,6 +97,27 @@ export function ProfessionalForm({ professional, onSuccess, onCancel }: Professi
           )}
         />
 
+        <FormField
+          control={form.control}
+          name="therapyId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Terapia</FormLabel>
+              <FormControl>
+                <TherapySelector
+                  value={field.value || ''}
+                  onValueChange={field.onChange}
+                  placeholder="Selecione a terapia que o profissional atende"
+                  disabled={isLoading}
+                  showValidationIcon
+                  error={form.formState.errors.therapyId}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         <div className="flex justify-end gap-3">
           {onCancel && (
             <Button type="button" variant="outline" onClick={onCancel} disabled={isLoading}>
@@ -106,12 +130,6 @@ export function ProfessionalForm({ professional, onSuccess, onCancel }: Professi
             {isEditing ? 'Atualizar' : 'Criar'} Profissional
           </Button>
         </div>
-
-        {(createMutation.error || updateMutation.error) && (
-          <div className="text-destructive text-sm">
-            {createMutation.error?.message || updateMutation.error?.message}
-          </div>
-        )}
       </form>
     </Form>
   )

@@ -110,6 +110,7 @@ async function importPatients(patientsData: PatientData[]) {
         // Criar novo paciente
         const newPatient: NewPatient = {
           name: patientData.name,
+          guardian: 'Não informado', // Valor padrão para o responsável
         }
 
         await db.insert(patientsTable).values(newPatient)

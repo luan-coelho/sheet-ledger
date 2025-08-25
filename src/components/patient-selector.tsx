@@ -44,7 +44,10 @@ export function PatientSelector({
     })) || []
 
   const handleCreate = async (name: string) => {
-    const result = await createPatient.mutateAsync({ name })
+    const result = await createPatient.mutateAsync({
+      name,
+      guardian: 'Não informado', // Valor padrão para criação rápida
+    })
     return result.id
   }
 

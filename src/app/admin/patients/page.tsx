@@ -32,6 +32,7 @@ import {
 } from '@/components/ui/pagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
+import { useHealthPlans } from '@/hooks/use-health-plans'
 import { useDeletePatient, usePatients } from '@/hooks/use-patients'
 
 export default function PacientesPage() {
@@ -43,6 +44,7 @@ export default function PacientesPage() {
   const itemsPerPage = 10
 
   const { data: patients, isLoading, error } = usePatients()
+  const { data: healthPlans } = useHealthPlans()
   const deleteMutation = useDeletePatient()
 
   // Filtrar pacientes por nome
@@ -148,6 +150,12 @@ export default function PacientesPage() {
     }).format(new Date(date))
   }
 
+  const getHealthPlanName = (healthPlanId: string | null) => {
+    if (!healthPlanId) return '-'
+    const healthPlan = healthPlans?.find(plan => plan.id === healthPlanId)
+    return healthPlan?.name || 'Plano não encontrado'
+  }
+
   if (error) {
     return (
       <div className="space-y-6">
@@ -241,8 +249,11 @@ export default function PacientesPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
+                    <TableHead>Responsável</TableHead>
+                    <TableHead>Plano de Saúde</TableHead>
+                    <TableHead>N° Carteirinha</TableHead>
+                    <TableHead>N° Guia</TableHead>
                     <TableHead>Criado em</TableHead>
-                    <TableHead>Atualizado em</TableHead>
                     <TableHead className="w-[70px]">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -250,8 +261,11 @@ export default function PacientesPage() {
                   {paginatedPatients.map(patient => (
                     <TableRow key={patient.id}>
                       <TableCell className="font-medium">{patient.name}</TableCell>
+                      <TableCell>{patient.guardian}</TableCell>
+                      <TableCell>{getHealthPlanName(patient.healthPlanId)}</TableCell>
+                      <TableCell>{patient.cardNumber || '-'}</TableCell>
+                      <TableCell>{patient.guideNumber || '-'}</TableCell>
                       <TableCell>{formatDate(patient.createdAt)}</TableCell>
-                      <TableCell>{formatDate(patient.updatedAt)}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -341,7 +355,7 @@ export default function PacientesPage() {
       </Card>
 
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>{editingPatient ? 'Editar Paciente' : 'Novo Paciente'}</DialogTitle>
             <DialogDescription>

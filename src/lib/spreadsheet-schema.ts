@@ -39,7 +39,7 @@ export const spreadsheetFormSchema = z
     licenseNumber: z.string().min(1, 'Nº conselho do profissional'),
     authorizedSession: z.string().optional(),
     patientId: z.string().uuid('Selecione um paciente'),
-    guardianId: z.string().uuid('Selecione um responsável'),
+    guardian: z.string().min(1, 'Nome do responsável é obrigatório'),
     companyId: z.string().uuid('Selecione uma empresa'),
     healthPlanId: z.string().uuid('Selecione um plano de saúde'),
     therapyId: z.string().uuid('Selecione uma terapia'),

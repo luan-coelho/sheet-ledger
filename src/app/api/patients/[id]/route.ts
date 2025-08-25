@@ -68,6 +68,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       .update(patientsTable)
       .set({
         name: validatedData.name,
+        guardian: validatedData.guardian,
+        healthPlanId: validatedData.healthPlanId || null,
+        cardNumber: validatedData.cardNumber || null,
+        guideNumber: validatedData.guideNumber || null,
         updatedAt: new Date(),
       })
       .where(eq(patientsTable.id, id))

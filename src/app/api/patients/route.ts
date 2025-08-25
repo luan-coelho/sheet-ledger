@@ -40,6 +40,10 @@ export async function POST(request: NextRequest) {
       .insert(patientsTable)
       .values({
         name: validatedData.name,
+        guardian: validatedData.guardian,
+        healthPlanId: validatedData.healthPlanId || null,
+        cardNumber: validatedData.cardNumber || null,
+        guideNumber: validatedData.guideNumber || null,
         createdAt: new Date(),
         updatedAt: new Date(),
       })

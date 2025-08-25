@@ -40,7 +40,7 @@ export function ProfessionalSelector({
   const options: CreatableComboboxOption[] =
     professionals?.map(professional => ({
       value: professional.id,
-      label: professional.name,
+      label: professional.therapy ? `${professional.name} - ${professional.therapy.name}` : professional.name,
     })) || []
 
   const handleCreate = async (name: string) => {

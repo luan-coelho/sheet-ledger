@@ -26,7 +26,6 @@ import { TimePickerSelector } from '@/components/ui/time-picker'
 
 import { useCompanies } from '@/hooks/use-companies'
 import { useGoogleDriveConfigStatus } from '@/hooks/use-google-drive-config'
-import { useGuardians } from '@/hooks/use-guardians'
 import { useHealthPlans } from '@/hooks/use-health-plans'
 import { usePatients } from '@/hooks/use-patients'
 import { useProfessionals } from '@/hooks/use-professionals'
@@ -44,7 +43,6 @@ import { formatDateISO, getFirstDayOfMonth, getLastDayOfMonth, getNowInBrazil } 
 import { spreadsheetFormSchema, WeekDays, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 
 import { CompanySelector } from './company-selector'
-import { GuardianSelector } from './guardian-selector'
 import { HealthPlanSelector } from './health-plan-selector'
 import { PatientSelector } from './patient-selector'
 import { ProfessionalSelector } from './professional-selector'
@@ -74,7 +72,6 @@ export function SpreadsheetForm() {
   // Hooks para buscar dados das entidades
   const { data: professionals } = useProfessionals()
   const { data: patients } = usePatients()
-  const { data: guardians } = useGuardians()
   const { data: companies } = useCompanies()
   const { data: healthPlans } = useHealthPlans()
   const { data: therapies } = useTherapies()
@@ -108,7 +105,7 @@ export function SpreadsheetForm() {
       licenseNumber: '',
       authorizedSession: '',
       patientId: '',
-      guardianId: '',
+      guardian: '',
       companyId: '',
       healthPlanId: '',
       therapyId: '',
@@ -141,11 +138,46 @@ export function SpreadsheetForm() {
     return date
   }
 
+  // Função para preencher automaticamente campos do profissional
+  const handleProfessionalChange = (professionalId: string) => {
+    // Primeiro atualiza o professionalId
+    form.setValue('professionalId', professionalId)
+
+    if (!professionalId || !professionals) return
+
+    // Busca o profissional selecionado
+    const selectedProfessional = professionals.find(p => p.id === professionalId)
+
+    if (selectedProfessional) {
+      // Preenche automaticamente os campos relacionados ao profissional
+      form.setValue('licenseNumber', selectedProfessional.councilNumber || '')
+      form.setValue('therapyId', selectedProfessional.therapyId || '')
+    }
+  }
+
+  // Função para preencher automaticamente campos do paciente
+  const handlePatientChange = (patientId: string) => {
+    // Primeiro atualiza o patientId
+    form.setValue('patientId', patientId)
+
+    if (!patientId || !patients) return
+
+    // Busca o paciente selecionado
+    const selectedPatient = patients.find(p => p.id === patientId)
+
+    if (selectedPatient) {
+      // Preenche automaticamente os campos relacionados ao paciente
+      form.setValue('guardian', selectedPatient.guardian || '')
+      form.setValue('healthPlanId', selectedPatient.healthPlanId || '')
+      form.setValue('cardNumber', selectedPatient.cardNumber || '')
+      form.setValue('guideNumber', selectedPatient.guideNumber || '')
+    }
+  }
+
   // Função para transformar dados do formulário para API
   function transformFormDataToApi(values: SpreadsheetFormValues): TransformedFormData {
     const professional = professionals?.find(p => p.id === values.professionalId)
     const patient = patients?.find(p => p.id === values.patientId)
-    const guardian = guardians?.find(g => g.id === values.guardianId)
     const company = companies?.find(c => c.id === values.companyId)
     const healthPlan = healthPlans?.find(h => h.id === values.healthPlanId)
     const therapy = therapies?.find(t => t.id === values.therapyId)
@@ -168,7 +200,7 @@ export function SpreadsheetForm() {
       licenseNumber: values.licenseNumber,
       authorizedSession: values.authorizedSession || undefined,
       patientName: patient?.name || '',
-      responsible: guardian?.name || '',
+      responsible: values.guardian,
       healthPlan: healthPlan?.name || '',
       therapy: therapy?.name || '',
       cardNumber: values.cardNumber || undefined,
@@ -362,10 +394,29 @@ export function SpreadsheetForm() {
                     <FormControl>
                       <ProfessionalSelector
                         value={field.value}
-                        onValueChange={field.onChange}
+                        onValueChange={handleProfessionalChange}
                         placeholder="Selecione um profissional..."
                         showValidationIcon
                         error={form.formState.errors.professionalId}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="licenseNumber"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-2 xl:col-span-2">
+                    <FormLabel>Nº conselho</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Nº conselho do profissional"
+                        {...field}
+                        showValidationIcon
+                        error={form.formState.errors.licenseNumber}
                       />
                     </FormControl>
                     <FormMessage />
@@ -386,25 +437,6 @@ export function SpreadsheetForm() {
                         placeholder="Selecione uma terapia..."
                         showValidationIcon
                         error={form.formState.errors.therapyId}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="licenseNumber"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Nº conselho</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nº conselho do profissional"
-                        {...field}
-                        showValidationIcon
-                        error={form.formState.errors.licenseNumber}
                       />
                     </FormControl>
                     <FormMessage />
@@ -440,7 +472,7 @@ export function SpreadsheetForm() {
                     <FormControl>
                       <PatientSelector
                         value={field.value}
-                        onValueChange={field.onChange}
+                        onValueChange={handlePatientChange}
                         placeholder="Selecione um paciente..."
                         showValidationIcon
                         error={form.formState.errors.patientId}
@@ -453,17 +485,16 @@ export function SpreadsheetForm() {
 
               <FormField
                 control={form.control}
-                name="guardianId"
+                name="guardian"
                 render={({ field }) => (
                   <FormItem className="sm:col-span-2 xl:col-span-2">
                     <FormLabel>Responsável</FormLabel>
                     <FormControl>
-                      <GuardianSelector
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        placeholder="Selecione um responsável..."
+                      <Input
+                        placeholder="Nome do responsável"
+                        {...field}
                         showValidationIcon
-                        error={form.formState.errors.guardianId}
+                        error={form.formState.errors.guardian}
                       />
                     </FormControl>
                     <FormMessage />
@@ -533,7 +564,7 @@ export function SpreadsheetForm() {
                 control={form.control}
                 name="startDate"
                 render={({ field }) => (
-                  <FormItem className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-1">
+                  <FormItem className="col-span-1 sm:col-span-1 md:col-span-2 lg:col-span-1">
                     <FormLabel>Data de início</FormLabel>
                     <FormControl>
                       <DatePicker

@@ -73,6 +73,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       .set({
         name: validatedData.name,
         councilNumber: validatedData.councilNumber,
+        therapyId: validatedData.therapyId || null,
         updatedAt: new Date(),
       })
       .where(eq(professionalsTable.id, id))

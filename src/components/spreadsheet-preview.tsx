@@ -20,7 +20,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 
-import { useGuardians } from '@/hooks/use-guardians'
 import { useHealthPlans } from '@/hooks/use-health-plans'
 import { usePatients } from '@/hooks/use-patients'
 import { useProfessionals } from '@/hooks/use-professionals'
@@ -36,13 +35,11 @@ interface SpreadsheetPreviewProps {
 export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProps) {
   const { data: professionals } = useProfessionals()
   const { data: patients } = usePatients()
-  const { data: guardians } = useGuardians()
   const { data: healthPlans } = useHealthPlans()
 
   // Find entity names by IDs
   const professional = professionals?.find(p => p.id === formData.professionalId)
   const patient = patients?.find(p => p.id === formData.patientId)
-  const guardian = guardians?.find(g => g.id === formData.guardianId)
   const healthPlan = healthPlans?.find(h => h.id === formData.healthPlanId)
 
   // Generate session dates with sessions per day
@@ -139,7 +136,7 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
                   <UserRound className="h-4 w-4 text-purple-600" />
                   Responsável
                 </div>
-                <div className="pl-6 font-medium">{guardian?.name || 'Carregando...'}</div>
+                <div className="pl-6 font-medium">{formData.guardian || 'Não informado'}</div>
               </div>
 
               <div className="space-y-1">

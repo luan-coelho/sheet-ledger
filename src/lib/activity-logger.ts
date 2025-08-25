@@ -138,14 +138,14 @@ export class ActivityLogger {
   }
 
   // Registrar criação de responsável
-  async logGuardianCreated(userId: string, guardianName: string) {
-    await logActivity(userId, ActivityActions.GUARDIAN_CREATED, `Criou o responsável ${guardianName}`, { guardianName })
+  async logGuardianCreated(userId: string, guardian: string) {
+    await logActivity(userId, ActivityActions.GUARDIAN_CREATED, `Criou o responsável ${guardian}`, { guardian })
   }
 
   // Registrar atualização de responsável
-  async logGuardianUpdated(userId: string, guardianName: string, changes: Record<string, unknown>) {
-    await logActivity(userId, ActivityActions.GUARDIAN_UPDATED, `Atualizou dados do responsável ${guardianName}`, {
-      guardianName,
+  async logGuardianUpdated(userId: string, guardian: string, changes: Record<string, unknown>) {
+    await logActivity(userId, ActivityActions.GUARDIAN_UPDATED, `Atualizou dados do responsável ${guardian}`, {
+      guardian,
       changes,
     })
   }

@@ -38,11 +38,6 @@ const items = [
     icon: Users,
   },
   {
-    title: 'Responsáveis',
-    url: routes.frontend.admin.guardians.index,
-    icon: Shield,
-  },
-  {
     title: 'Empresas',
     url: routes.frontend.admin.companies.index,
     icon: Building2,
