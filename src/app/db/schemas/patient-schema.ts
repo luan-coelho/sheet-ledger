@@ -1,12 +1,15 @@
 import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
 import { z } from 'zod'
 
-import { professionalsTable } from './professional-schema'
+import { healthPlansTable } from './health-plan-schema'
 
 export const patientsTable = pgTable('patients', {
   id: uuid('id').primaryKey().defaultRandom(),
   name: text('name').notNull(),
-  professionalId: uuid('professional_id').references(() => professionalsTable.id),
+  guardian: text('guardian').notNull(), // Responsável
+  healthPlanId: uuid('health_plan_id').references(() => healthPlansTable.id), // Plano de saúde (opcional)
+  cardNumber: text('card_number'), // N carteirinha
+  guideNumber: text('guide_number'), // N guia
   createdAt: timestamp('created_at').defaultNow().notNull(),
   updatedAt: timestamp('updated_at').defaultNow().notNull(),
 })
@@ -14,13 +17,19 @@ export const patientsTable = pgTable('patients', {
 // Zod schemas for validation
 export const insertPatientSchema = z.object({
   name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
-  professionalId: z.string().uuid('ID do profissional deve ser um UUID válido').optional(),
+  guardian: z.string().min(3, 'guardiansável deve ter pelo menos 3 caracteres'),
+  healthPlanId: z.string().uuid().optional(),
+  cardNumber: z.string().optional(),
+  guideNumber: z.string().optional(),
 })
 
 export const selectPatientSchema = z.object({
   id: z.string().uuid(),
   name: z.string(),
-  professionalId: z.string().uuid().nullable(),
+  guardian: z.string(),
+  healthPlanId: z.string().uuid().nullable(),
+  cardNumber: z.string().nullable(),
+  guideNumber: z.string().nullable(),
   createdAt: z.date(),
   updatedAt: z.date(),
 })
@@ -29,12 +38,3 @@ export const selectPatientSchema = z.object({
 export type Patient = typeof patientsTable.$inferSelect
 export type NewPatient = typeof patientsTable.$inferInsert
 export type PatientFormValues = z.infer<typeof insertPatientSchema>
-
-// Tipo extendido para paciente com profissional
-export type PatientWithProfessional = Patient & {
-  professional?: {
-    id: string
-    name: string
-    councilNumber: string | null
-  } | null
-}

@@ -3,7 +3,7 @@
 import { Loader2, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
 import { useState } from 'react'
 
-import { Patient, PatientWithProfessional } from '@/app/db/schemas/patient-schema'
+import { Patient } from '@/app/db/schemas/patient-schema'
 
 import { PatientForm } from '@/components/patient-form'
 import {
@@ -32,17 +32,19 @@ import {
 } from '@/components/ui/pagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
+import { useHealthPlans } from '@/hooks/use-health-plans'
 import { useDeletePatient, usePatients } from '@/hooks/use-patients'
 
 export default function PacientesPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingPatient, setEditingPatient] = useState<Patient | undefined>()
-  const [deletingPatient, setDeletingPatient] = useState<PatientWithProfessional | null>(null)
+  const [deletingPatient, setDeletingPatient] = useState<Patient | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [searchFilter, setSearchFilter] = useState('')
   const itemsPerPage = 10
 
   const { data: patients, isLoading, error } = usePatients()
+  const { data: healthPlans } = useHealthPlans()
   const deleteMutation = useDeletePatient()
 
   // Filtrar pacientes por nome
@@ -91,16 +93,8 @@ export default function PacientesPage() {
     return pages
   }
 
-  const handleEdit = (patient: PatientWithProfessional) => {
-    // Convertemos para o tipo Patient básico já que o formulário não precisa dos dados do profissional carregados
-    const basicPatient: Patient = {
-      id: patient.id,
-      name: patient.name,
-      professionalId: patient.professionalId,
-      createdAt: patient.createdAt,
-      updatedAt: patient.updatedAt,
-    }
-    setEditingPatient(basicPatient)
+  const handleEdit = (patient: Patient) => {
+    setEditingPatient(patient)
     setIsModalOpen(true)
   }
 
@@ -154,6 +148,12 @@ export default function PacientesPage() {
       hour: '2-digit',
       minute: '2-digit',
     }).format(new Date(date))
+  }
+
+  const getHealthPlanName = (healthPlanId: string | null) => {
+    if (!healthPlanId) return '-'
+    const healthPlan = healthPlans?.find(plan => plan.id === healthPlanId)
+    return healthPlan?.name || 'Plano não encontrado'
   }
 
   if (error) {
@@ -249,9 +249,11 @@ export default function PacientesPage() {
                 <TableHeader>
                   <TableRow>
                     <TableHead>Nome</TableHead>
-                    <TableHead>Profissional Responsável</TableHead>
+                    <TableHead>Responsável</TableHead>
+                    <TableHead>Plano de Saúde</TableHead>
+                    <TableHead>N° Carteirinha</TableHead>
+                    <TableHead>N° Guia</TableHead>
                     <TableHead>Criado em</TableHead>
-                    <TableHead>Atualizado em</TableHead>
                     <TableHead className="w-[70px]">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -259,9 +261,11 @@ export default function PacientesPage() {
                   {paginatedPatients.map(patient => (
                     <TableRow key={patient.id}>
                       <TableCell className="font-medium">{patient.name}</TableCell>
-                      <TableCell>{patient.professional ? patient.professional.name : 'Não definido'}</TableCell>
+                      <TableCell>{patient.guardian}</TableCell>
+                      <TableCell>{getHealthPlanName(patient.healthPlanId)}</TableCell>
+                      <TableCell>{patient.cardNumber || '-'}</TableCell>
+                      <TableCell>{patient.guideNumber || '-'}</TableCell>
                       <TableCell>{formatDate(patient.createdAt)}</TableCell>
-                      <TableCell>{formatDate(patient.updatedAt)}</TableCell>
                       <TableCell>
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -351,7 +355,7 @@ export default function PacientesPage() {
       </Card>
 
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
             <DialogTitle>{editingPatient ? 'Editar Paciente' : 'Novo Paciente'}</DialogTitle>
             <DialogDescription>
@@ -376,7 +380,7 @@ export default function PacientesPage() {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-destructive hover:bg-destructive/90 text-white"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={deleteMutation.isPending}>
               {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Excluir

@@ -11,8 +11,7 @@ export default async function SheetsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Gerador de Planilhas</h1>
-        <p className="text-muted-foreground">Crie e configure suas planilhas de atendimento, {session.user?.name}</p>
+        <h1 className="text-3xl font-bold tracking-tight">Gerador de Frequência</h1>
       </div>
 
       <SpreadsheetForm />

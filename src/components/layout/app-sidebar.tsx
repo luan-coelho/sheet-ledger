@@ -38,11 +38,6 @@ const items = [
     icon: Users,
   },
   {
-    title: 'Responsáveis',
-    url: routes.frontend.admin.guardians.index,
-    icon: Shield,
-  },
-  {
     title: 'Empresas',
     url: routes.frontend.admin.companies.index,
     icon: Building2,
@@ -75,6 +70,11 @@ const userManagementItems = [
 
 // Menu items de configuração
 const configItems = [
+  {
+    title: 'Relatórios',
+    url: routes.frontend.admin.home,
+    icon: BarChart3,
+  },
   {
     title: 'Configurações',
     url: routes.frontend.admin.settings,

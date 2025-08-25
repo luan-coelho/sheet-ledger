@@ -1,13 +1,29 @@
-import { desc } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/app/db'
 import { insertProfessionalSchema, professionalsTable } from '@/app/db/schemas/professional-schema'
+import { therapiesTable } from '@/app/db/schemas/therapy-schema'
 
 // GET /api/professionals - List all professionals
 export async function GET() {
   try {
-    const allProfessionals = await db.select().from(professionalsTable).orderBy(desc(professionalsTable.createdAt))
+    const allProfessionals = await db
+      .select({
+        id: professionalsTable.id,
+        name: professionalsTable.name,
+        councilNumber: professionalsTable.councilNumber,
+        therapyId: professionalsTable.therapyId,
+        therapy: {
+          id: therapiesTable.id,
+          name: therapiesTable.name,
+        },
+        createdAt: professionalsTable.createdAt,
+        updatedAt: professionalsTable.updatedAt,
+      })
+      .from(professionalsTable)
+      .leftJoin(therapiesTable, eq(professionalsTable.therapyId, therapiesTable.id))
+      .orderBy(desc(professionalsTable.createdAt))
 
     return NextResponse.json({
       success: true,
@@ -41,6 +57,7 @@ export async function POST(request: NextRequest) {
       .values({
         name: validatedData.name,
         councilNumber: validatedData.councilNumber,
+        therapyId: validatedData.therapyId || null,
         createdAt: new Date(),
         updatedAt: new Date(),
       })

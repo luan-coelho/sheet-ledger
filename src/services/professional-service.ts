@@ -1,4 +1,4 @@
-import { Professional, ProfessionalFormValues } from '@/app/db/schemas/professional-schema'
+import { Professional, ProfessionalFormValues, ProfessionalWithTherapy } from '@/app/db/schemas/professional-schema'
 
 // Tipos para as respostas da API
 export interface ApiResponse<T = unknown> {
@@ -37,8 +37,8 @@ async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<Ap
 }
 
 // Listar todos os profissionais
-export async function getAllProfessionals(): Promise<Professional[]> {
-  const response = await apiRequest<Professional[]>(API_BASE_URL)
+export async function getAllProfessionals(): Promise<ProfessionalWithTherapy[]> {
+  const response = await apiRequest<ProfessionalWithTherapy[]>(API_BASE_URL)
   return response.data || []
 }
 

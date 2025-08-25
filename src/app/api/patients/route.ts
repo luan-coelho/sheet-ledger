@@ -1,29 +1,13 @@
-import { asc, eq } from 'drizzle-orm'
+import { asc } from 'drizzle-orm'
 import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/app/db'
 import { insertPatientSchema, patientsTable } from '@/app/db/schemas/patient-schema'
-import { professionalsTable } from '@/app/db/schemas/professional-schema'
 
 // GET /api/patients - List all patients
 export async function GET() {
   try {
-    const allPatients = await db
-      .select({
-        id: patientsTable.id,
-        name: patientsTable.name,
-        professionalId: patientsTable.professionalId,
-        createdAt: patientsTable.createdAt,
-        updatedAt: patientsTable.updatedAt,
-        professional: {
-          id: professionalsTable.id,
-          name: professionalsTable.name,
-          councilNumber: professionalsTable.councilNumber,
-        },
-      })
-      .from(patientsTable)
-      .leftJoin(professionalsTable, eq(patientsTable.professionalId, professionalsTable.id))
-      .orderBy(asc(patientsTable.name))
+    const allPatients = await db.select().from(patientsTable).orderBy(asc(patientsTable.name))
 
     return NextResponse.json({
       success: true,
@@ -56,7 +40,10 @@ export async function POST(request: NextRequest) {
       .insert(patientsTable)
       .values({
         name: validatedData.name,
-        professionalId: validatedData.professionalId,
+        guardian: validatedData.guardian,
+        healthPlanId: validatedData.healthPlanId || null,
+        cardNumber: validatedData.cardNumber || null,
+        guideNumber: validatedData.guideNumber || null,
         createdAt: new Date(),
         updatedAt: new Date(),
       })

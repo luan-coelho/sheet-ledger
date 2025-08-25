@@ -3,7 +3,7 @@
 import { Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 
-import { Professional } from '@/app/db/schemas/professional-schema'
+import { Professional, ProfessionalWithTherapy } from '@/app/db/schemas/professional-schema'
 
 import { ProfessionalModal } from '@/components/professional-modal'
 import {
@@ -25,13 +25,13 @@ import { useDeleteProfessional, useProfessionals } from '@/hooks/use-professiona
 
 export default function ProfissionaisPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
-  const [editingProfessional, setEditingProfessional] = useState<Professional | undefined>()
-  const [deletingProfessional, setDeletingProfessional] = useState<Professional | null>(null)
+  const [editingProfessional, setEditingProfessional] = useState<ProfessionalWithTherapy | undefined>()
+  const [deletingProfessional, setDeletingProfessional] = useState<ProfessionalWithTherapy | null>(null)
 
   const { data: professionals, isLoading, error } = useProfessionals()
   const deleteMutation = useDeleteProfessional()
 
-  const handleEdit = (professional: Professional) => {
+  const handleEdit = (professional: ProfessionalWithTherapy) => {
     setEditingProfessional(professional)
     setIsModalOpen(true)
   }
@@ -115,6 +115,7 @@ export default function ProfissionaisPage() {
                 <TableRow>
                   <TableHead>Nome</TableHead>
                   <TableHead>Nº Conselho</TableHead>
+                  <TableHead>Terapia</TableHead>
                   <TableHead>Criado em</TableHead>
                   <TableHead>Atualizado em</TableHead>
                   <TableHead className="w-[70px]">Ações</TableHead>
@@ -125,6 +126,13 @@ export default function ProfissionaisPage() {
                   <TableRow key={professional.id}>
                     <TableCell className="font-medium">{professional.name}</TableCell>
                     <TableCell>{professional.councilNumber || '-'}</TableCell>
+                    <TableCell>
+                      {professional.therapy ? (
+                        <span className="text-sm">{professional.therapy.name}</span>
+                      ) : (
+                        <span className="text-muted-foreground text-sm">Nenhuma terapia</span>
+                      )}
+                    </TableCell>
                     <TableCell>{formatDate(professional.createdAt)}</TableCell>
                     <TableCell>{formatDate(professional.updatedAt)}</TableCell>
                     <TableCell>
@@ -180,7 +188,7 @@ export default function ProfissionaisPage() {
             <AlertDialogCancel>Cancelar</AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive hover:bg-destructive/90 text-white"
               disabled={deleteMutation.isPending}>
               {deleteMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Excluir

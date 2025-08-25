@@ -3,30 +3,13 @@ import { NextRequest, NextResponse } from 'next/server'
 
 import { db } from '@/app/db'
 import { insertPatientSchema, patientsTable } from '@/app/db/schemas/patient-schema'
-import { professionalsTable } from '@/app/db/schemas/professional-schema'
 
 // GET /api/patients/[id] - Get patient by ID
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
 
-    const [patient] = await db
-      .select({
-        id: patientsTable.id,
-        name: patientsTable.name,
-        professionalId: patientsTable.professionalId,
-        createdAt: patientsTable.createdAt,
-        updatedAt: patientsTable.updatedAt,
-        professional: {
-          id: professionalsTable.id,
-          name: professionalsTable.name,
-          councilNumber: professionalsTable.councilNumber,
-        },
-      })
-      .from(patientsTable)
-      .leftJoin(professionalsTable, eq(patientsTable.professionalId, professionalsTable.id))
-      .where(eq(patientsTable.id, id))
-      .limit(1)
+    const [patient] = await db.select().from(patientsTable).where(eq(patientsTable.id, id)).limit(1)
 
     if (!patient) {
       return NextResponse.json(
@@ -85,7 +68,10 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       .update(patientsTable)
       .set({
         name: validatedData.name,
-        professionalId: validatedData.professionalId,
+        guardian: validatedData.guardian,
+        healthPlanId: validatedData.healthPlanId || null,
+        cardNumber: validatedData.cardNumber || null,
+        guideNumber: validatedData.guideNumber || null,
         updatedAt: new Date(),
       })
       .where(eq(patientsTable.id, id))

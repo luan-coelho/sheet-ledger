@@ -7,7 +7,7 @@ import { useForm } from 'react-hook-form'
 
 import { insertPatientSchema, Patient, PatientFormValues } from '@/app/db/schemas/patient-schema'
 
-import { ProfessionalSelector } from '@/components/professional-selector'
+import { HealthPlanSelector } from '@/components/health-plan-selector'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -27,7 +27,10 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
     resolver: zodResolver(insertPatientSchema),
     defaultValues: {
       name: patient?.name || '',
-      professionalId: patient?.professionalId || undefined,
+      guardian: patient?.guardian || '',
+      healthPlanId: patient?.healthPlanId || undefined,
+      cardNumber: patient?.cardNumber || '',
+      guideNumber: patient?.guideNumber || '',
     },
   })
 
@@ -41,7 +44,10 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
     if (patient) {
       form.reset({
         name: patient.name,
-        professionalId: patient.professionalId || undefined,
+        guardian: patient.guardian,
+        healthPlanId: patient.healthPlanId || undefined,
+        cardNumber: patient.cardNumber || '',
+        guideNumber: patient.guideNumber || '',
       })
     }
   }, [patient, form])
@@ -83,23 +89,67 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
 
         <FormField
           control={form.control}
-          name="professionalId"
+          name="guardian"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Profissional Responsável</FormLabel>
+              <FormLabel>Responsável</FormLabel>
               <FormControl>
-                <ProfessionalSelector
+                <Input placeholder="Digite o nome do responsável" {...field} disabled={isLoading} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="healthPlanId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Plano de Saúde (Opcional)</FormLabel>
+              <FormControl>
+                <HealthPlanSelector
                   value={field.value}
                   onValueChange={field.onChange}
-                  placeholder="Selecione o profissional responsável..."
+                  placeholder="Selecione um plano de saúde"
                   disabled={isLoading}
-                  error={form.formState.errors.professionalId}
+                  error={form.formState.errors.healthPlanId}
                 />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
+
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <FormField
+            control={form.control}
+            name="cardNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Número da Carteirinha (Opcional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Digite o número da carteirinha" {...field} disabled={isLoading} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="guideNumber"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Número da Guia (Opcional)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Digite o número da guia" {...field} disabled={isLoading} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
 
         <div className="flex justify-end gap-3">
           {onCancel && (
