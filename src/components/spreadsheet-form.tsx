@@ -139,9 +139,9 @@ export function SpreadsheetForm() {
   }
 
   // Função para preencher automaticamente campos do profissional
-  const handleProfessionalChange = (professionalId: string) => {
+  const handleProfessionalChange = (professionalId: string | undefined) => {
     // Primeiro atualiza o professionalId
-    form.setValue('professionalId', professionalId)
+    form.setValue('professionalId', professionalId || '')
 
     if (!professionalId || !professionals) return
 
@@ -156,9 +156,9 @@ export function SpreadsheetForm() {
   }
 
   // Função para preencher automaticamente campos do paciente
-  const handlePatientChange = (patientId: string) => {
+  const handlePatientChange = (patientId: string | undefined) => {
     // Primeiro atualiza o patientId
-    form.setValue('patientId', patientId)
+    form.setValue('patientId', patientId || '')
 
     if (!patientId || !patients) return
 
