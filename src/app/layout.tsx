@@ -1,14 +1,9 @@
-import { QueryProvider } from '@/providers/query-provider'
-import { SessionProvider } from '@/providers/session-provider'
-import { ThemeConfigProvider } from '@/providers/theme-config-provider'
-import { ThemeProvider } from '@/providers/theme-provider'
-import { Analytics } from '@vercel/analytics/next'
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 
-import { Toaster } from '@/components/ui/sonner'
-
 import './globals.css'
+
+import Providers from '@/providers'
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -33,28 +28,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-          storageKey="sheet-ledger-theme">
-          <ThemeConfigProvider>
-            <SessionProvider>
-              <QueryProvider>
-                {children}
-                <Analytics />
-                <Toaster
-                  expand
-                  richColors
-                  toastOptions={{
-                    duration: 5000,
-                  }}
-                />
-              </QueryProvider>
-            </SessionProvider>
-          </ThemeConfigProvider>
-        </ThemeProvider>
+        <Providers>{children}</Providers>
       </body>
     </html>
   )
