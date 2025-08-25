@@ -7,6 +7,7 @@ import { useForm } from 'react-hook-form'
 
 import { insertPatientSchema, Patient, PatientFormValues } from '@/app/db/schemas/patient-schema'
 
+import { ProfessionalSelector } from '@/components/professional-selector'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -26,6 +27,7 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
     resolver: zodResolver(insertPatientSchema),
     defaultValues: {
       name: patient?.name || '',
+      professionalId: patient?.professionalId || undefined,
     },
   })
 
@@ -39,6 +41,7 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
     if (patient) {
       form.reset({
         name: patient.name,
+        professionalId: patient.professionalId || undefined,
       })
     }
   }, [patient, form])
@@ -72,6 +75,26 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
               <FormLabel>Nome do Paciente</FormLabel>
               <FormControl>
                 <Input placeholder="Digite o nome do paciente" {...field} disabled={isLoading} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="professionalId"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Profissional Responsável</FormLabel>
+              <FormControl>
+                <ProfessionalSelector
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  placeholder="Selecione o profissional responsável..."
+                  disabled={isLoading}
+                  error={form.formState.errors.professionalId}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>

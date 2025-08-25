@@ -1,4 +1,4 @@
-import { Patient, PatientFormValues } from '@/app/db/schemas/patient-schema'
+import { Patient, PatientFormValues, PatientWithProfessional } from '@/app/db/schemas/patient-schema'
 
 // Tipos para as respostas da API
 export interface ApiResponse<T = unknown> {
@@ -37,14 +37,14 @@ async function apiRequest<T>(url: string, options: RequestInit = {}): Promise<Ap
 }
 
 // Listar todos os pacientes
-export async function getAllPatients(): Promise<Patient[]> {
-  const response = await apiRequest<Patient[]>(API_BASE_URL)
+export async function getAllPatients(): Promise<PatientWithProfessional[]> {
+  const response = await apiRequest<PatientWithProfessional[]>(API_BASE_URL)
   return response.data || []
 }
 
 // Buscar paciente por ID
-export async function getPatientById(id: string): Promise<Patient> {
-  const response = await apiRequest<Patient>(`${API_BASE_URL}/${id}`)
+export async function getPatientById(id: string): Promise<PatientWithProfessional> {
+  const response = await apiRequest<PatientWithProfessional>(`${API_BASE_URL}/${id}`)
   if (!response.data) {
     throw new Error('Paciente não encontrado')
   }

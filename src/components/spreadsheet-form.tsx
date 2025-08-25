@@ -120,6 +120,37 @@ export function SpreadsheetForm() {
     },
   })
 
+  // Watch patient ID para preencher automaticamente o profissional
+  const patientId = form.watch('patientId')
+
+  // Efeito para preencher profissional automaticamente quando paciente é selecionado
+  useEffect(() => {
+    if (patientId && patients) {
+      const selectedPatient = patients.find(p => p.id === patientId)
+      if (selectedPatient && selectedPatient.professionalId) {
+        // Buscar dados do profissional
+        const professional = professionals?.find(p => p.id === selectedPatient.professionalId)
+        if (professional) {
+          form.setValue('professionalId', professional.id)
+          form.setValue('licenseNumber', professional.councilNumber || '')
+
+          // Mostrar toast informativo
+          toast.success('Profissional preenchido automaticamente com base no paciente selecionado')
+        }
+      } else if (selectedPatient && !selectedPatient.professionalId) {
+        // Se o paciente não tem profissional responsável, limpar os campos
+        form.setValue('professionalId', '')
+        form.setValue('licenseNumber', '')
+
+        // Mostrar aviso
+        toast.info('Este paciente não possui um profissional responsável definido')
+      }
+    } else if (!patientId) {
+      // Se nenhum paciente está selecionado, não limpar os campos automaticamente
+      // O usuário pode ter selecionado um profissional manualmente
+    }
+  }, [patientId, patients, professionals, form])
+
   // Watch form values para preview e validação
   const formValues = form.watch()
   const startDate = form.watch('startDate')
@@ -355,17 +386,17 @@ export function SpreadsheetForm() {
 
               <FormField
                 control={form.control}
-                name="professionalId"
+                name="patientId"
                 render={({ field }) => (
                   <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Profissional</FormLabel>
+                    <FormLabel>Paciente</FormLabel>
                     <FormControl>
-                      <ProfessionalSelector
+                      <PatientSelector
                         value={field.value}
                         onValueChange={field.onChange}
-                        placeholder="Selecione um profissional..."
+                        placeholder="Selecione um paciente..."
                         showValidationIcon
-                        error={form.formState.errors.professionalId}
+                        error={form.formState.errors.patientId}
                       />
                     </FormControl>
                     <FormMessage />
@@ -386,6 +417,26 @@ export function SpreadsheetForm() {
                         placeholder="Selecione uma terapia..."
                         showValidationIcon
                         error={form.formState.errors.therapyId}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="professionalId"
+                render={({ field }) => (
+                  <FormItem className="sm:col-span-2 xl:col-span-2">
+                    <FormLabel>Profissional</FormLabel>
+                    <FormControl>
+                      <ProfessionalSelector
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Selecione um profissional..."
+                        showValidationIcon
+                        error={form.formState.errors.professionalId}
                       />
                     </FormControl>
                     <FormMessage />
@@ -424,26 +475,6 @@ export function SpreadsheetForm() {
                         {...field}
                         showValidationIcon
                         error={form.formState.errors.authorizedSession}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="patientId"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Paciente</FormLabel>
-                    <FormControl>
-                      <PatientSelector
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        placeholder="Selecione um paciente..."
-                        showValidationIcon
-                        error={form.formState.errors.patientId}
                       />
                     </FormControl>
                     <FormMessage />

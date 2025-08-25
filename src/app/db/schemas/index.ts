@@ -19,6 +19,7 @@ export * from './health-plan-schema'
 export * from './user-schema'
 export * from './google-drive-config-schema'
 export * from './therapy-schema'
+export * from './relations'
 
 export const schema = {
   activityLogsTable,

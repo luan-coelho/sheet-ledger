@@ -9,7 +9,7 @@ import { useCreateProfessional, useProfessionals } from '@/hooks/use-professiona
 
 interface ProfessionalSelectorProps {
   value?: string
-  onValueChange: (value: string) => void
+  onValueChange: (value: string | undefined) => void
   placeholder?: string
   className?: string
   disabled?: boolean

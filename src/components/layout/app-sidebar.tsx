@@ -1,6 +1,6 @@
 'use client'
 
-import { BarChart3, Building2, Cloud, CreditCard, FileText, Settings, Shield, Users } from 'lucide-react'
+import { Building2, Cloud, CreditCard, FileText, Settings, Shield, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 
 import { UserAvatar } from '@/components/auth/user-avatar'
