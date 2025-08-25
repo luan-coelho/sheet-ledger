@@ -5,7 +5,6 @@ import { googleDriveConfigTable } from './google-drive-config-schema'
 import { healthPlansTable } from './health-plan-schema'
 import { patientsTable } from './patient-schema'
 import { professionalsTable } from './professional-schema'
-import { professionalTherapiesTable } from './professional-therapy-schema'
 import { therapiesTable } from './therapy-schema'
 import { usersTable } from './user-schema'
 
@@ -16,8 +15,6 @@ export * from './google-drive-config-schema'
 export * from './health-plan-schema'
 export * from './patient-schema'
 export * from './professional-schema'
-export * from './professional-therapy-schema'
-export * from './relations'
 export * from './therapy-schema'
 export * from './user-schema'
 
@@ -30,5 +27,4 @@ export const schema = {
   usersTable,
   googleDriveConfigTable,
   therapiesTable,
-  professionalTherapiesTable,
 }
