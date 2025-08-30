@@ -69,6 +69,9 @@ export function SpreadsheetForm() {
   // Ref para o card de resultado do Google Drive
   const driveResultRef = useRef<HTMLDivElement>(null)
 
+  // Ref para o card de prévia
+  const previewRef = useRef<HTMLDivElement>(null)
+
   // Hooks para buscar dados das entidades
   const { data: professionals } = useProfessionals()
   const { data: patients } = usePatients()
@@ -260,6 +263,16 @@ export function SpreadsheetForm() {
     const isFormValid = await form.trigger()
     if (isFormValid) {
       setShowPreview(true)
+      // Scroll automático para a prévia após um pequeno delay
+      setTimeout(() => {
+        if (previewRef.current) {
+          previewRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest',
+          })
+        }
+      }, 100)
     }
   }
 
@@ -709,8 +722,8 @@ export function SpreadsheetForm() {
                 onClick={handlePreview}
                 disabled={isLoading || isCheckingFiles}>
                 {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eye className="mr-2 h-4 w-4" />}
-                <span className="hidden sm:inline">Visualizar Preview</span>
-                <span className="sm:hidden">Preview</span>
+                <span className="hidden sm:inline">Visualizar Prévia</span>
+                <span className="sm:hidden">Prévia</span>
               </Button>
 
               <Button type="submit" className="w-full sm:flex-1" disabled={isLoading || isCheckingFiles}>
@@ -834,7 +847,7 @@ export function SpreadsheetForm() {
 
         {/* Preview */}
         {showPreview && (
-          <div className="mt-6">
+          <div ref={previewRef} className="mt-6">
             <SpreadsheetPreview formData={formValues} onClose={() => setShowPreview(false)} />
           </div>
         )}
