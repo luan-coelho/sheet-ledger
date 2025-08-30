@@ -631,7 +631,7 @@ export function SpreadsheetForm() {
                     Selecione os dias de atendimento, configure a quantidade de sessões e os horários por dia
                   </FormDescription>
                   <FormControl>
-                    <div className="mx-auto w-auto max-w-4xl">
+                    <div className="">
                       <WeekdaySessionSelector value={field.value} onChange={field.onChange} />
                     </div>
                   </FormControl>

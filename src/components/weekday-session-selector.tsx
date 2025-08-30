@@ -16,13 +16,13 @@ export type WeekdaySessionSelectorProps = {
 
 export function WeekdaySessionSelector({ className, value = [], onChange }: WeekdaySessionSelectorProps) {
   const weekdayItems = [
-    { key: WeekDays.MONDAY, label: 'S', fullName: 'Segunda' },
-    { key: WeekDays.TUESDAY, label: 'T', fullName: 'Terça' },
-    { key: WeekDays.WEDNESDAY, label: 'Q', fullName: 'Quarta' },
-    { key: WeekDays.THURSDAY, label: 'Q', fullName: 'Quinta' },
-    { key: WeekDays.FRIDAY, label: 'S', fullName: 'Sexta' },
-    { key: WeekDays.SATURDAY, label: 'S', fullName: 'Sábado' },
-    { key: WeekDays.SUNDAY, label: 'D', fullName: 'Domingo' },
+    { key: WeekDays.MONDAY, label: 'SEG', fullName: 'Segunda' },
+    { key: WeekDays.TUESDAY, label: 'TER', fullName: 'Terça' },
+    { key: WeekDays.WEDNESDAY, label: 'QUA', fullName: 'Quarta' },
+    { key: WeekDays.THURSDAY, label: 'QUI', fullName: 'Quinta' },
+    { key: WeekDays.FRIDAY, label: 'SEX', fullName: 'Sexta' },
+    { key: WeekDays.SATURDAY, label: 'SAB', fullName: 'Sábado' },
+    { key: WeekDays.SUNDAY, label: 'DOM', fullName: 'Domingo' },
   ]
 
   function handleToggleDay(day: WeekDays) {
@@ -76,7 +76,7 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
               type="button"
               onClick={() => handleToggleDay(item.key)}
               className={cn(
-                'flex h-8 w-8 items-center justify-center rounded text-xs font-medium transition-colors',
+                'flex h-8 w-12 items-center justify-center rounded text-xs font-medium transition-colors',
                 'border-input hover:bg-accent hover:text-accent-foreground focus-visible:ring-ring border focus-visible:ring-1 focus-visible:outline-none',
                 isSelected
                   ? 'bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground'
@@ -101,15 +101,15 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
             </Badge>
           </div>
 
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
             {value.map(({ day, sessions, startTime, endTime }) => {
               const dayItem = weekdayItems.find(item => item.key === day)
               return (
-                <div key={day} className="bg-muted/20 rounded border p-2">
+                <div key={day} className="bg-muted/20 rounded border p-3">
                   {/* Mobile layout - vertical stack */}
-                  <div className="flex flex-col gap-2 sm:hidden">
+                  <div className="flex flex-col items-center gap-2 sm:hidden">
                     <Label className="text-sm font-medium">{dayItem?.fullName}</Label>
-                    <div className="flex items-center gap-2">
+                    <div className="flex flex-col items-center gap-2">
                       <div className="flex items-center gap-1">
                         <Label className="text-muted-foreground text-xs">Sessões:</Label>
                         <Input
@@ -125,23 +125,26 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
                           className="h-7 w-12 text-center text-xs"
                         />
                       </div>
-                      <TimePickerSelector
-                        value={startTime}
-                        onChange={time => handleStartTimeChange(day, time)}
-                        placeholder="Início"
-                        className="h-7 w-16 flex-1 text-xs"
-                      />
-                      <TimePickerSelector
-                        value={endTime}
-                        onChange={time => handleEndTimeChange(day, time)}
-                        placeholder="Fim"
-                        className="h-7 w-16 flex-1 text-xs"
-                      />
+                      <div className="flex items-center gap-2">
+                        <TimePickerSelector
+                          value={startTime}
+                          onChange={time => handleStartTimeChange(day, time)}
+                          placeholder="Início"
+                          className="h-7 w-16 flex-1 text-xs"
+                        />
+                        <span>-</span>
+                        <TimePickerSelector
+                          value={endTime}
+                          onChange={time => handleEndTimeChange(day, time)}
+                          placeholder="Fim"
+                          className="h-7 w-16 flex-1 text-xs"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   {/* Desktop layout - horizontal */}
-                  <div className="hidden sm:flex sm:items-center sm:gap-3">
+                  <div className="hidden items-center justify-center gap-4 sm:flex">
                     <Label className="w-16 flex-shrink-0 text-sm font-medium">{dayItem?.fullName}</Label>
 
                     <div className="flex items-center gap-1">
@@ -160,19 +163,24 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
                       />
                     </div>
 
-                    <TimePickerSelector
-                      value={startTime}
-                      onChange={time => handleStartTimeChange(day, time)}
-                      placeholder="Início"
-                      className="h-7 w-16 text-xs"
-                    />
-
-                    <TimePickerSelector
-                      value={endTime}
-                      onChange={time => handleEndTimeChange(day, time)}
-                      placeholder="Fim"
-                      className="h-7 w-16 text-xs"
-                    />
+                    <div className="flex items-center gap-2 md:flex-row">
+                      <Label className="text-muted-foreground hidden text-xs lg:block">Horários:</Label>
+                      <div className="space-x-2">
+                        <TimePickerSelector
+                          value={startTime}
+                          onChange={time => handleStartTimeChange(day, time)}
+                          placeholder="Início"
+                          className="h-7 w-16 text-xs"
+                        />
+                        <span>-</span>
+                        <TimePickerSelector
+                          value={endTime}
+                          onChange={time => handleEndTimeChange(day, time)}
+                          placeholder="Fim"
+                          className="h-7 w-16 text-xs"
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )

@@ -174,8 +174,8 @@ export class ExcelService {
       }
     })
 
-    // Preenche o total de sessões na célula C46
-    worksheet.getCell('C46').value = totalSessions
+    // Preenche o total de sessões na célula E46
+    worksheet.getCell('E46').value = totalSessions
 
     // Gera o buffer da planilha
     return await workbook.xlsx.writeBuffer()
