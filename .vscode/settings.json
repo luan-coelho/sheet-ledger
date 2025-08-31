@@ -1,3 +1,8 @@
 {
-  "chat.mcp.autostart": "newAndOutdated"
+  "chat.mcp.autostart": "newAndOutdated",
+  "chat.mcp.serverSampling": {
+    "sheet-ledger/.vscode/mcp.json: memory": {
+      "allowedModels": ["copilot/claude-sonnet-4"]
+    }
+  }
 }
