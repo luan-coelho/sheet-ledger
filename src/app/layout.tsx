@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 })
 
 export const metadata: Metadata = {
-  title: 'Sistema - Gestão de Planilhas',
-  description: 'Sistema de gestão de planilhas para profissionais de saúde',
+  title: 'Grupo Estímulos - Geração de Frequência',
+  description: 'Grupo Estímulos Neurodesenvolvimento - Letícia Bringel',
 }
 
 export default function RootLayout({
