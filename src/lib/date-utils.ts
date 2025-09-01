@@ -1,3 +1,5 @@
+import { toZonedTime } from 'date-fns-tz'
+
 /**
  * Utilitários para operações de data com fuso horário brasileiro
  */
@@ -11,7 +13,7 @@ export const BRAZIL_TIMEZONE = 'America/Sao_Paulo'
  * @returns Date object no fuso horário brasileiro
  */
 export function createBrazilianDate(dateString: string): Date {
-  return new Date(dateString + 'T00:00:00')
+  return toZonedTime(dateString, BRAZIL_TIMEZONE)
 }
 
 /**
