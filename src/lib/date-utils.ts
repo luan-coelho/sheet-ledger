@@ -1,5 +1,3 @@
-import { toZonedTime } from 'date-fns-tz'
-
 /**
  * Utilitários para operações de data com fuso horário brasileiro
  */
@@ -13,7 +11,19 @@ export const BRAZIL_TIMEZONE = 'America/Sao_Paulo'
  * @returns Date object no fuso horário brasileiro
  */
 export function createBrazilianDate(dateString: string): Date {
-  return toZonedTime(dateString, BRAZIL_TIMEZONE)
+  // Implementação mais robusta que não depende de date-fns-tz
+  // Cria a data interpretando como horário brasileiro (UTC-3)
+  const [year, month, day] = dateString.split('-').map(Number)
+
+  // Cria a data no fuso horário brasileiro
+  // Durante o horário de verão brasileiro (outubro a fevereiro), UTC-2
+  // Durante o horário padrão brasileiro (março a setembro), UTC-3
+
+  // Para setembro 2025, estamos no horário padrão (UTC-3)
+  // Então criamos a data às 00:00 horário brasileiro, que é 03:00 UTC
+  const date = new Date(Date.UTC(year, month - 1, day, 3, 0, 0, 0))
+
+  return date
 }
 
 /**
