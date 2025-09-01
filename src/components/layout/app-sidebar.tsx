@@ -152,7 +152,7 @@ export function AppSidebar() {
           </SidebarGroup>
         </SidebarContent>
 
-        <SidebarFooter>
+        <SidebarFooter className="pointer-events-none">
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton>
