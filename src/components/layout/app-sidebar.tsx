@@ -1,7 +1,9 @@
 'use client'
 
+import GrupoEstimulos from '@/images/grupo-estimulos.png'
 import { Building2, Cloud, CreditCard, FileText, Settings, Shield, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
+import Image from 'next/image'
 
 import { UserAvatar } from '@/components/auth/user-avatar'
 import {
@@ -86,12 +88,10 @@ export function AppSidebar() {
       <Sidebar className="bg-sidebar" variant="inset">
         <SidebarHeader>
           <div className="flex items-center gap-2 px-4 py-2">
-            <div className="bg-primary text-primary-foreground flex h-8 w-8 items-center justify-center rounded-lg">
-              <FileText className="h-4 w-4" />
-            </div>
+            <Image className="size-10 rounded-xl" src={GrupoEstimulos} alt="Grupo Estímulos" />
             <div className="grid flex-1 text-left text-sm leading-tight">
-              <span className="truncate font-semibold">Sistema</span>
-              <span className="text-muted-foreground truncate text-xs">Gestão de Planilhas</span>
+              <span className="truncate font-semibold">Grupo Estímulos</span>
+              <span className="text-muted-foreground truncate text-xs">Neurodesenvolvimento</span>
             </div>
           </div>
         </SidebarHeader>

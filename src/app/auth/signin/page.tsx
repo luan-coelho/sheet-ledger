@@ -1,4 +1,6 @@
+import GrupoEstimulos from '@/images/grupo-estimulos.png'
 import { FileText } from 'lucide-react'
+import Image from 'next/image'
 import { Suspense } from 'react'
 
 import { LoginForm } from '@/components/login-form'
@@ -7,7 +9,7 @@ export default function SignInPage() {
   return (
     <div className="flex min-h-screen w-full">
       {/* Left Side - Hero Section */}
-      <div className="relative hidden overflow-hidden bg-blue-900 lg:flex lg:w-3/5 xl:w-2/3">
+      <div className="bg-primary relative hidden overflow-hidden lg:flex lg:w-3/5 xl:w-2/3">
         {/* Background Pattern */}
         <div className="absolute inset-0 opacity-30">
           <svg className="absolute inset-0 h-full w-full" xmlns="http://www.w3.org/2000/svg">
@@ -25,11 +27,11 @@ export default function SignInPage() {
           {/* Logo/Brand */}
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm">
-              <FileText className="h-6 w-6 text-white" />
+              <Image className="h-6 w-6" src={GrupoEstimulos} alt="Grupo Estímulos" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold tracking-tight">Sistema</h1>
-              <p className="text-sm font-medium text-white/80">Gestão de Planilhas</p>
+              <h1 className="text-2xl font-bold tracking-tight">Grupo Estímulos</h1>
+              <p className="text-sm font-medium text-white/80">Neurodesenvolvimento</p>
             </div>
           </div>
 

@@ -92,7 +92,7 @@ export function PatientForm({ patient, onSuccess, onCancel }: PatientFormProps) 
           name="guardian"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Responsável</FormLabel>
+              <FormLabel>Nome do responsável</FormLabel>
               <FormControl>
                 <Input placeholder="Digite o nome do responsável" {...field} disabled={isLoading} />
               </FormControl>

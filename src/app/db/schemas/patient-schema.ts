@@ -17,7 +17,7 @@ export const patientsTable = pgTable('patients', {
 // Zod schemas for validation
 export const insertPatientSchema = z.object({
   name: z.string().min(3, 'Nome deve ter pelo menos 3 caracteres'),
-  guardian: z.string().min(3, 'guardiansável deve ter pelo menos 3 caracteres'),
+  guardian: z.string().min(3, 'Nome do responsável deve ter pelo menos 3 caracteres'),
   healthPlanId: z.string().uuid().optional(),
   cardNumber: z.string().optional(),
   guideNumber: z.string().optional(),

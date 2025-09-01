@@ -371,7 +371,7 @@ export function SpreadsheetForm() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>Preencha os dados para gerar a planilha de atendimento baseada no template.</CardTitle>
+        <CardTitle>Preencha os dados para gerar a planilha de atendimento.</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -644,11 +644,9 @@ export function SpreadsheetForm() {
                     Selecione os dias de atendimento, configure a quantidade de sessões e os horários por dia
                   </FormDescription>
                   <FormControl>
-                    <div className="">
-                      <WeekdaySessionSelector value={field.value} onChange={field.onChange} />
-                    </div>
+                    <WeekdaySessionSelector value={field.value} onChange={field.onChange} />
                   </FormControl>
-                  <FormMessage />
+                  <FormMessage className="text-center" />
                 </FormItem>
               )}
             />

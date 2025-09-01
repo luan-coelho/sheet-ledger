@@ -15,7 +15,7 @@ export function AppHeader() {
       <div className="flex flex-1 items-center justify-end gap-2">
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon">
-            <Bell className="h-4 w-4" />
+            {/* <Bell className="h-4 w-4" /> */}
             <span className="sr-only">Notificações</span>
           </Button>
 

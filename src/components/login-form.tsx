@@ -76,7 +76,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             <Button
               onClick={handleGoogleSignIn}
               disabled={isLoading}
-              className="h-12 w-full border-0 bg-gray-900 text-sm font-semibold text-white hover:bg-gray-800 disabled:bg-gray-700 disabled:text-gray-300"
+              className="h-12 w-full border-0 bg-gray-800 text-sm font-semibold text-white hover:bg-gray-700 disabled:bg-gray-600 disabled:text-gray-300"
               size="lg">
               {isLoading ? (
                 <>
