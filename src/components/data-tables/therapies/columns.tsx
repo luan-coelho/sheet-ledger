@@ -107,7 +107,6 @@ export function createColumns(actions: {
         return cellValue.toString() === value
       },
     },
-    ,
     /* {
       accessorKey: 'createdAt',
       header: ({ column }) => {
