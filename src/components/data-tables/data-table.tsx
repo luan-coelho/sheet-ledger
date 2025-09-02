@@ -14,7 +14,7 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreHorizontal, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreHorizontal, Search, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import * as React from 'react'
 
@@ -24,7 +24,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 /**
- * Componente DataTable usando TanStack Table v8 com shadcn/ui
+ * Componente DataTable genérico e reutilizável usando TanStack Table v8 com shadcn/ui
  *
  * Características implementadas:
  * - Filtros individuais por coluna nos headers
@@ -37,6 +37,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
  * - Seletor de itens por página
  * - Reset de filtros
  * - Tipagem completa em TypeScript
+ * - Configurações customizáveis
  *
  * Paginação via URL:
  * - ?page=1&size=10 (página 1, 10 itens por página)
@@ -52,15 +53,71 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
  * - Performance otimizada com React.memo implícito
  */
 
+export interface DataTableConfig {
+  /** Habilitar/desabilitar busca global */
+  enableGlobalFilter?: boolean
+  /** Habilitar/desabilitar filtros por coluna */
+  enableColumnFilters?: boolean
+  /** Habilitar/desabilitar paginação via URL */
+  enableUrlPagination?: boolean
+  /** Tamanhos de página disponíveis */
+  pageSizes?: number[]
+  /** Tamanho inicial da página */
+  initialPageSize?: number
+  /** Máximo de páginas visíveis na navegação */
+  maxVisiblePages?: number
+  /** Texto customizado para "nenhum resultado" */
+  noResultsText?: string
+  /** Texto customizado para informações de paginação */
+  paginationLabels?: {
+    showing?: string
+    of?: string
+    results?: string
+    itemsPerPage?: string
+    previous?: string
+    next?: string
+  }
+}
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
+  config?: DataTableConfig
+}
+
+const defaultConfig: Required<DataTableConfig> = {
+  enableGlobalFilter: true,
+  enableColumnFilters: true,
+  enableUrlPagination: true,
+  pageSizes: [5, 10, 20, 50, 100],
+  initialPageSize: 10,
+  maxVisiblePages: 5,
+  noResultsText: 'Nenhum resultado encontrado.',
+  paginationLabels: {
+    showing: 'Mostrando',
+    of: 'de',
+    results: 'resultados',
+    itemsPerPage: 'Itens por página:',
+    previous: 'Anterior',
+    next: 'Próxima',
+  },
 }
 
 // Componente de filtro individual para cada coluna
-function ColumnFilter<TData>({ column }: { column: Column<TData, unknown> }) {
+function ColumnFilter<TData>({
+  column,
+  config,
+}: {
+  column: Column<TData, unknown>
+  config: Required<DataTableConfig>
+}) {
   const columnFilterValue = column.getFilterValue()
 
+  if (!config.enableColumnFilters || !column.getCanFilter()) {
+    return null
+  }
+
+  // Filtro para campos de status (active)
   if (column.id === 'active') {
     return (
       <Select
@@ -78,7 +135,8 @@ function ColumnFilter<TData>({ column }: { column: Column<TData, unknown> }) {
     )
   }
 
-  if (column.id === 'actions' || !column.getCanFilter()) {
+  // Não mostrar filtro para coluna de ações
+  if (column.id === 'actions') {
     return null
   }
 
@@ -106,10 +164,26 @@ function ColumnFilter<TData>({ column }: { column: Column<TData, unknown> }) {
     )
   }
 
+  // Filtro de texto padrão
+  const getPlaceholder = () => {
+    switch (column.id) {
+      case 'name':
+        return 'Filtrar nome...'
+      case 'email':
+        return 'Filtrar e-mail...'
+      case 'title':
+        return 'Filtrar título...'
+      case 'description':
+        return 'Filtrar descrição...'
+      default:
+        return `Filtrar ${column.id}...`
+    }
+  }
+
   return (
     <div className="flex items-center space-x-1">
       <Input
-        placeholder={`Filtrar ${column.id === 'name' ? 'nome' : column.id === 'email' ? 'e-mail' : 'campo'}...`}
+        placeholder={getPlaceholder()}
         value={(columnFilterValue ?? '') as string}
         onChange={event => column.setFilterValue(event.target.value)}
         className="h-8 w-full border-dashed"
@@ -124,7 +198,8 @@ function ColumnFilter<TData>({ column }: { column: Column<TData, unknown> }) {
   )
 }
 
-export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+export function DataTable<TData, TValue>({ columns, data, config: userConfig }: DataTableProps<TData, TValue>) {
+  const config = { ...defaultConfig, ...userConfig }
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -134,10 +209,17 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [globalFilter, setGlobalFilter] = React.useState('')
 
-  // Estado de paginação sincronizado com URL
+  // Estado de paginação sincronizado com URL (se habilitado)
   const [pagination, setPagination] = React.useState<PaginationState>(() => {
+    if (!config.enableUrlPagination) {
+      return {
+        pageIndex: 0,
+        pageSize: config.initialPageSize,
+      }
+    }
+
     const page = parseInt(searchParams.get('page') || '1', 10)
-    const size = parseInt(searchParams.get('size') || '10', 10)
+    const size = parseInt(searchParams.get('size') || config.initialPageSize.toString(), 10)
 
     return {
       pageIndex: Math.max(0, page - 1), // Converter para índice baseado em 0
@@ -148,19 +230,23 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
   // Função para atualizar a URL quando a paginação mudar
   const updateURLPagination = React.useCallback(
     (newPagination: PaginationState) => {
+      if (!config.enableUrlPagination) return
+
       const params = new URLSearchParams(searchParams.toString())
       params.set('page', (newPagination.pageIndex + 1).toString()) // Converter para página baseada em 1
       params.set('size', newPagination.pageSize.toString())
 
       router.replace(`?${params.toString()}`, { scroll: false })
     },
-    [router, searchParams],
+    [router, searchParams, config.enableUrlPagination],
   )
 
   // Efeito para sincronizar mudanças na URL com o estado local
   React.useEffect(() => {
+    if (!config.enableUrlPagination) return
+
     const page = parseInt(searchParams.get('page') || '1', 10)
-    const size = parseInt(searchParams.get('size') || '10', 10)
+    const size = parseInt(searchParams.get('size') || config.initialPageSize.toString(), 10)
 
     const newPagination = {
       pageIndex: Math.max(0, page - 1),
@@ -171,7 +257,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
     if (newPagination.pageIndex !== pagination.pageIndex || newPagination.pageSize !== pagination.pageSize) {
       setPagination(newPagination)
     }
-  }, [searchParams, pagination.pageIndex, pagination.pageSize])
+  }, [searchParams, pagination.pageIndex, pagination.pageSize, config.enableUrlPagination, config.initialPageSize])
 
   const table = useReactTable({
     data,
@@ -200,7 +286,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
     const pages: (number | 'ellipsis')[] = []
     const totalPages = table.getPageCount()
     const currentPage = pagination.pageIndex + 1
-    const maxVisiblePages = 5
+    const maxVisiblePages = config.maxVisiblePages
 
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
@@ -231,10 +317,42 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
     }
 
     return pages
-  }, [pagination.pageIndex, table])
+  }, [pagination.pageIndex, table, config.maxVisiblePages])
+
+  // Função para limpar todos os filtros
+  const clearAllFilters = () => {
+    table.resetColumnFilters()
+    setGlobalFilter('')
+  }
+
+  // Verificar se existem filtros ativos
+  const hasActiveFilters = columnFilters.length > 0 || globalFilter !== ''
 
   return (
-    <div className="w-full">
+    <div className="w-full space-y-4">
+      {/* Barra de busca global e ações */}
+      {config.enableGlobalFilter && (
+        <div className="flex items-center justify-between">
+          <div className="flex flex-1 items-center space-x-2">
+            <div className="relative">
+              <Search className="text-muted-foreground absolute left-2 top-2.5 h-4 w-4" />
+              <Input
+                placeholder="Buscar em todos os campos..."
+                value={globalFilter ?? ''}
+                onChange={event => setGlobalFilter(event.target.value)}
+                className="max-w-sm pl-8"
+              />
+            </div>
+            {hasActiveFilters && (
+              <Button variant="ghost" onClick={clearAllFilters} className="h-8 px-2 lg:px-3">
+                Limpar filtros
+                <X className="ml-2 h-4 w-4" />
+              </Button>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Tabela */}
       <div className="bg-background rounded-md border">
         <Table>
@@ -250,13 +368,15 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                   ))}
                 </TableRow>
                 {/* Linha de filtros */}
-                <TableRow className="border-b">
-                  {headerGroup.headers.map(header => (
-                    <TableHead key={`${header.id}-filter`} className="p-2">
-                      <ColumnFilter column={header.column} />
-                    </TableHead>
-                  ))}
-                </TableRow>
+                {config.enableColumnFilters && (
+                  <TableRow className="border-b">
+                    {headerGroup.headers.map(header => (
+                      <TableHead key={`${header.id}-filter`} className="p-2">
+                        <ColumnFilter column={header.column} config={config} />
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                )}
               </React.Fragment>
             ))}
           </TableHeader>
@@ -274,7 +394,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">
-                  Nenhum resultado encontrado.
+                  {config.noResultsText}
                 </TableCell>
               </TableRow>
             )}
@@ -288,16 +408,17 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                   {/* Informações e itens por página */}
                   <div className="text-muted-foreground flex items-center gap-4 text-sm">
                     <span>
-                      Mostrando {pagination.pageIndex * pagination.pageSize + 1} a{' '}
+                      {config.paginationLabels.showing} {pagination.pageIndex * pagination.pageSize + 1} a{' '}
                       {Math.min(
                         (pagination.pageIndex + 1) * pagination.pageSize,
                         table.getFilteredRowModel().rows.length,
                       )}{' '}
-                      de {table.getFilteredRowModel().rows.length} resultados
+                      {config.paginationLabels.of} {table.getFilteredRowModel().rows.length}{' '}
+                      {config.paginationLabels.results}
                     </span>
 
                     <div className="flex items-center gap-2">
-                      <span>Itens por página:</span>
+                      <span>{config.paginationLabels.itemsPerPage}</span>
                       <Select
                         value={pagination.pageSize.toString()}
                         onValueChange={value => {
@@ -312,11 +433,11 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="5">5</SelectItem>
-                          <SelectItem value="10">10</SelectItem>
-                          <SelectItem value="20">20</SelectItem>
-                          <SelectItem value="50">50</SelectItem>
-                          <SelectItem value="100">100</SelectItem>
+                          {config.pageSizes.map(size => (
+                            <SelectItem key={size} value={size.toString()}>
+                              {size}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -349,7 +470,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                       }}
                       disabled={!table.getCanPreviousPage()}>
                       <ChevronLeft className="h-4 w-4" />
-                      <span className="hidden sm:inline">Anterior</span>
+                      <span className="hidden sm:inline">{config.paginationLabels.previous}</span>
                     </Button>
 
                     {/* Números das páginas */}
@@ -387,7 +508,7 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                         updateURLPagination(newPagination)
                       }}
                       disabled={!table.getCanNextPage()}>
-                      <span className="hidden sm:inline">Próxima</span>
+                      <span className="hidden sm:inline">{config.paginationLabels.next}</span>
                       <ChevronRight className="h-4 w-4" />
                     </Button>
 

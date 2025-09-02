@@ -7,6 +7,7 @@ import { Suspense, useState } from 'react'
 import { User } from '@/app/db/schemas/user-schema'
 
 import { ActivityLogsViewer } from '@/components/activity-logs-viewer'
+import { createColumns, DataTable } from '@/components/data-tables/users'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +22,6 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { UserForm } from '@/components/user-form'
-import { createColumns, DataTable } from '@/components/users-table'
 
 import { useDeleteUser, useToggleUserStatus, useUsers } from '@/hooks/use-users'
 
