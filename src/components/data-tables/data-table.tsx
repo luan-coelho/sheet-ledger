@@ -14,7 +14,7 @@ import {
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table'
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreHorizontal, Search, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreHorizontal, X } from 'lucide-react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import * as React from 'react'
 
@@ -319,40 +319,8 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
     return pages
   }, [pagination.pageIndex, table, config.maxVisiblePages])
 
-  // Função para limpar todos os filtros
-  const clearAllFilters = () => {
-    table.resetColumnFilters()
-    setGlobalFilter('')
-  }
-
-  // Verificar se existem filtros ativos
-  const hasActiveFilters = columnFilters.length > 0 || globalFilter !== ''
-
   return (
     <div className="w-full space-y-4">
-      {/* Barra de busca global e ações */}
-      {config.enableGlobalFilter && (
-        <div className="flex items-center justify-between">
-          <div className="flex flex-1 items-center space-x-2">
-            <div className="relative">
-              <Search className="text-muted-foreground absolute left-2 top-2.5 h-4 w-4" />
-              <Input
-                placeholder="Buscar em todos os campos..."
-                value={globalFilter ?? ''}
-                onChange={event => setGlobalFilter(event.target.value)}
-                className="max-w-sm pl-8"
-              />
-            </div>
-            {hasActiveFilters && (
-              <Button variant="ghost" onClick={clearAllFilters} className="h-8 px-2 lg:px-3">
-                Limpar filtros
-                <X className="ml-2 h-4 w-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-      )}
-
       {/* Tabela */}
       <div className="bg-background rounded-md border">
         <Table>

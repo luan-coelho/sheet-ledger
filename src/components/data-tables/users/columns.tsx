@@ -1,13 +1,23 @@
 'use client'
 
 import { ColumnDef } from '@tanstack/react-table'
-import { Activity, ArrowUpDown, MoreHorizontal, Pencil, UserCheck, UserX } from 'lucide-react'
+import { Activity, ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Pencil, UserCheck, UserX } from 'lucide-react'
 
 import { User } from '@/app/db/schemas/user-schema'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+
+function getSortIcon(sortDirection: false | 'asc' | 'desc') {
+  if (sortDirection === 'asc') {
+    return <ArrowUp className="ml-2 h-4 w-4" />
+  }
+  if (sortDirection === 'desc') {
+    return <ArrowDown className="ml-2 h-4 w-4" />
+  }
+  return <ArrowUpDown className="ml-2 h-4 w-4" />
+}
 
 interface ColumnActionsProps {
   user: User
@@ -83,7 +93,7 @@ export function createColumns(
         return (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
             Nome
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            {getSortIcon(column.getIsSorted())}
           </Button>
         )
       },
@@ -112,7 +122,7 @@ export function createColumns(
         return (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
             E-mail
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            {getSortIcon(column.getIsSorted())}
           </Button>
         )
       },
@@ -126,7 +136,7 @@ export function createColumns(
         return (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
             Status
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            {getSortIcon(column.getIsSorted())}
           </Button>
         )
       },
@@ -147,7 +157,7 @@ export function createColumns(
         return (
           <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
             Criado em
-            <ArrowUpDown className="ml-2 h-4 w-4" />
+            {getSortIcon(column.getIsSorted())}
           </Button>
         )
       },
