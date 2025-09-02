@@ -1,12 +1,14 @@
 'use client'
 
-import { Activity, Loader2, MoreHorizontal, Pencil, Plus, Search, UserCheck, UserX, X } from 'lucide-react'
+import { Activity, Loader2, MoreHorizontal, Pencil, Plus, UserCheck, UserX } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import { useState } from 'react'
+import { Suspense, useMemo, useState } from 'react'
 
 import { User } from '@/app/db/schemas/user-schema'
 
 import { ActivityLogsViewer } from '@/components/activity-logs-viewer'
+import { PaginationControls } from '@/components/pagination-controls'
+import { SearchBar } from '@/components/search-bar'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,87 +24,53 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { UserForm } from '@/components/user-form'
 
+import { usePagination } from '@/hooks/use-pagination'
+import { useSearchFilter } from '@/hooks/use-search-filter'
 import { useDeleteUser, useToggleUserStatus, useUsers } from '@/hooks/use-users'
 
-export default function UsuariosPage() {
+function UsuariosPageContent() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingUser, setEditingUser] = useState<User | undefined>()
   const [deletingUser, setDeletingUser] = useState<User | null>(null)
   const [togglingUser, setTogglingUser] = useState<User | null>(null)
   const [viewingLogsUser, setViewingLogsUser] = useState<User | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchFilter, setSearchFilter] = useState('')
-  const itemsPerPage = 10
 
   const { data: session } = useSession()
   const { data: users, isLoading, error } = useUsers()
   const deleteMutation = useDeleteUser()
   const toggleStatusMutation = useToggleUserStatus()
 
+  // Hook para gerenciar filtro de busca
+  const { searchFilter, setSearchFilter, clearSearchFilter } = useSearchFilter({
+    paramName: 'search',
+    resetPagination: true,
+  })
+
   // Filtrar usuários por nome ou email
-  const filteredUsers =
-    users?.filter(user => {
-      // Aplicar filtro de pesquisa
+  const filteredUsers = useMemo(() => {
+    if (!users) return []
+
+    return users.filter(user => {
       return (
         user.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
         user.email.toLowerCase().includes(searchFilter.toLowerCase())
       )
-    }) || []
+    })
+  }, [users, searchFilter])
 
-  // Calcular paginação dos usuários filtrados
-  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const paginatedUsers = filteredUsers.slice(startIndex, endIndex)
+  // Hook para gerenciar paginação
+  const pagination = usePagination({
+    itemsPerPage: 25,
+    totalItems: filteredUsers.length,
+  })
 
-  // Gerar páginas para navegação
-  const getPageNumbers = () => {
-    const pages = []
-    const maxVisiblePages = 5
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i)
-      }
-    } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) {
-          pages.push(i)
-        }
-        pages.push('ellipsis')
-        pages.push(totalPages)
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1)
-        pages.push('ellipsis')
-        for (let i = totalPages - 3; i <= totalPages; i++) {
-          pages.push(i)
-        }
-      } else {
-        pages.push(1)
-        pages.push('ellipsis')
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-          pages.push(i)
-        }
-        pages.push('ellipsis')
-        pages.push(totalPages)
-      }
-    }
-
-    return pages
-  }
+  // Obter usuários da página atual
+  const paginatedUsers = useMemo(() => {
+    return filteredUsers.slice(pagination.startIndex, pagination.endIndex)
+  }, [filteredUsers, pagination.startIndex, pagination.endIndex])
 
   const handleEdit = (user: User) => {
     setEditingUser(user)
@@ -118,13 +86,6 @@ export default function UsuariosPage() {
       try {
         await deleteMutation.mutateAsync(deletingUser.id)
         setDeletingUser(null)
-
-        // Ajustar página atual se necessário
-        const newTotalItems = filteredUsers.length - 1
-        const newTotalPages = Math.ceil(newTotalItems / itemsPerPage)
-        if (currentPage > newTotalPages && newTotalPages > 0) {
-          setCurrentPage(newTotalPages)
-        }
       } catch (error) {
         console.error('Erro ao desativar usuário:', error)
       }
@@ -153,20 +114,6 @@ export default function UsuariosPage() {
   const handleModalClose = () => {
     setIsModalOpen(false)
     setEditingUser(undefined)
-  }
-
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
-  const handleSearchChange = (value: string) => {
-    setSearchFilter(value)
-    setCurrentPage(1) // Resetar para primeira página ao filtrar
-  }
-
-  const clearSearch = () => {
-    setSearchFilter('')
-    setCurrentPage(1)
   }
 
   const formatDate = (date: Date) => {
@@ -215,26 +162,14 @@ export default function UsuariosPage() {
           <CardTitle>Lista de Usuários</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="mb-4 flex items-center space-x-2">
-            <div className="relative max-w-sm flex-1">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-              <Input
-                placeholder="Buscar por nome..."
-                value={searchFilter}
-                onChange={e => handleSearchChange(e.target.value)}
-                className="pr-10 pl-10"
-              />
-              {searchFilter && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearSearch}
-                  className="hover:bg-muted absolute top-1/2 right-1 h-6 w-6 -translate-y-1/2 transform p-0">
-                  <X className="h-3 w-3" />
-                  <span className="sr-only">Limpar busca</span>
-                </Button>
-              )}
-            </div>
+          <div className="mb-4">
+            <SearchBar
+              value={searchFilter}
+              onChange={setSearchFilter}
+              onClear={clearSearchFilter}
+              placeholder="Buscar por nome ou email..."
+              className="max-w-sm"
+            />
           </div>
 
           {isLoading ? (
@@ -335,43 +270,23 @@ export default function UsuariosPage() {
                 </TableBody>
               </Table>
 
-              {/* Paginação */}
-              {totalPages > 1 && (
-                <div className="mt-4">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                      </PaginationItem>
-
-                      {getPageNumbers().map((page, index) => (
-                        <PaginationItem key={index}>
-                          {page === 'ellipsis' ? (
-                            <PaginationEllipsis />
-                          ) : (
-                            <PaginationLink
-                              onClick={() => handlePageChange(page as number)}
-                              isActive={currentPage === page}
-                              className="cursor-pointer">
-                              {page}
-                            </PaginationLink>
-                          )}
-                        </PaginationItem>
-                      ))}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
-              )}
+              {/* Controles de Paginação */}
+              <PaginationControls
+                currentPage={pagination.currentPage}
+                totalPages={pagination.totalPages}
+                totalItems={filteredUsers.length}
+                itemsPerPage={pagination.itemsPerPage}
+                startIndex={pagination.startIndex}
+                endIndex={pagination.endIndex}
+                hasNextPage={pagination.hasNextPage}
+                hasPreviousPage={pagination.hasPreviousPage}
+                visiblePages={pagination.getVisiblePages()}
+                onPageChange={pagination.setPage}
+                onFirstPage={pagination.goToFirstPage}
+                onLastPage={pagination.goToLastPage}
+                onNextPage={pagination.nextPage}
+                onPreviousPage={pagination.previousPage}
+              />
             </>
           )}
         </CardContent>
@@ -442,5 +357,31 @@ export default function UsuariosPage() {
         </DialogContent>
       </Dialog>
     </div>
+  )
+}
+
+export default function UsuariosPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Usuários</h1>
+              <p className="text-muted-foreground">Gerencie os usuários do sistema</p>
+            </div>
+          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-2">Carregando...</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }>
+      <UsuariosPageContent />
+    </Suspense>
   )
 }
