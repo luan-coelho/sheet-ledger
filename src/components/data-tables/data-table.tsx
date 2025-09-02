@@ -60,6 +60,8 @@ export interface DataTableConfig {
   enableColumnFilters?: boolean
   /** Habilitar/desabilitar paginação via URL */
   enableUrlPagination?: boolean
+  /** Habilitar/desabilitar ordenação via URL */
+  enableUrlSorting?: boolean
   /** Tamanhos de página disponíveis */
   pageSizes?: number[]
   /** Tamanho inicial da página */
@@ -89,6 +91,7 @@ const defaultConfig: Required<DataTableConfig> = {
   enableGlobalFilter: true,
   enableColumnFilters: true,
   enableUrlPagination: true,
+  enableUrlSorting: true,
   pageSizes: [5, 10, 20, 50, 100],
   initialPageSize: 10,
   maxVisiblePages: 5,
@@ -204,7 +207,20 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
   const searchParams = useSearchParams()
 
   // Estado local para filtros e ordenação
-  const [sorting, setSorting] = React.useState<SortingState>([])
+  const [sorting, setSorting] = React.useState<SortingState>(() => {
+    if (!config.enableUrlSorting) {
+      return []
+    }
+
+    const sortBy = searchParams.get('sortBy')
+    const sortOrder = searchParams.get('sortOrder')
+
+    if (sortBy && (sortOrder === 'asc' || sortOrder === 'desc')) {
+      return [{ id: sortBy, desc: sortOrder === 'desc' }]
+    }
+
+    return []
+  })
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
   const [globalFilter, setGlobalFilter] = React.useState('')
@@ -241,6 +257,32 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
     [router, searchParams, config.enableUrlPagination],
   )
 
+  // Função para atualizar a URL quando a ordenação mudar
+  const updateURLSorting = React.useCallback(
+    (newSorting: SortingState) => {
+      if (!config.enableUrlSorting) return
+
+      const params = new URLSearchParams(searchParams.toString())
+      
+      if (newSorting.length > 0) {
+        const sort = newSorting[0]
+        params.set('sortBy', sort.id)
+        params.set('sortOrder', sort.desc ? 'desc' : 'asc')
+      } else {
+        params.delete('sortBy')
+        params.delete('sortOrder')
+      }
+
+      // Reset page to 1 when sorting changes
+      if (config.enableUrlPagination) {
+        params.set('page', '1')
+      }
+
+      router.replace(`?${params.toString()}`, { scroll: false })
+    },
+    [router, searchParams, config.enableUrlSorting, config.enableUrlPagination],
+  )
+
   // Efeito para sincronizar mudanças na URL com o estado local
   React.useEffect(() => {
     if (!config.enableUrlPagination) return
@@ -259,10 +301,39 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
     }
   }, [searchParams, pagination.pageIndex, pagination.pageSize, config.enableUrlPagination, config.initialPageSize])
 
+  // Efeito para sincronizar mudanças na URL de sorting com o estado local
+  React.useEffect(() => {
+    if (!config.enableUrlSorting) return
+
+    const sortBy = searchParams.get('sortBy')
+    const sortOrder = searchParams.get('sortOrder')
+
+    let newSorting: SortingState = []
+    if (sortBy && (sortOrder === 'asc' || sortOrder === 'desc')) {
+      newSorting = [{ id: sortBy, desc: sortOrder === 'desc' }]
+    }
+
+    // Só atualizar se houver diferença para evitar loops
+    const currentSort = sorting[0]
+    const newSort = newSorting[0]
+    
+    if (
+      (currentSort?.id !== newSort?.id) || 
+      (currentSort?.desc !== newSort?.desc) ||
+      (sorting.length !== newSorting.length)
+    ) {
+      setSorting(newSorting)
+    }
+  }, [searchParams, sorting, config.enableUrlSorting])
+
   const table = useReactTable({
     data,
     columns,
-    onSortingChange: setSorting,
+    onSortingChange: (updater) => {
+      const newSorting = typeof updater === 'function' ? updater(sorting) : updater
+      setSorting(newSorting)
+      updateURLSorting(newSorting)
+    },
     onColumnFiltersChange: setColumnFilters,
     onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),

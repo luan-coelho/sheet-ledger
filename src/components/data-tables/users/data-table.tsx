@@ -18,6 +18,7 @@ const usersTableConfig: DataTableConfig = {
   enableGlobalFilter: true,
   enableColumnFilters: true,
   enableUrlPagination: true,
+  enableUrlSorting: true,
   pageSizes: [5, 10, 20, 50, 100],
   initialPageSize: 10,
   maxVisiblePages: 5,
