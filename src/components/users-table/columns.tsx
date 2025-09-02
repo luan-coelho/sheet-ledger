@@ -161,26 +161,16 @@ export function createColumns(
           minute: '2-digit',
         }).format(new Date(date))
       },
-    },
-    {
-      accessorKey: 'updatedAt',
-      header: ({ column }) => {
+      filterFn: (row, id, value) => {
+        if (!value) return true
+        const rowDate = new Date(row.getValue(id) as Date)
+        const filterDate = new Date(value)
+        // Comparar apenas a data (ignorar o horário)
         return (
-          <Button variant="ghost" onClick={() => column.toggleSorting(column.getIsSorted() === 'asc')}>
-            Atualizado em
-            <ArrowUpDown className="ml-2 h-4 w-4" />
-          </Button>
+          rowDate.getFullYear() === filterDate.getFullYear() &&
+          rowDate.getMonth() === filterDate.getMonth() &&
+          rowDate.getDate() === filterDate.getDate()
         )
-      },
-      cell: ({ row }) => {
-        const date = row.getValue('updatedAt') as Date
-        return new Intl.DateTimeFormat('pt-BR', {
-          day: '2-digit',
-          month: '2-digit',
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit',
-        }).format(new Date(date))
       },
     },
     {

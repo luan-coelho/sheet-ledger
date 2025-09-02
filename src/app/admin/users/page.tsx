@@ -18,7 +18,7 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { UserForm } from '@/components/user-form'
 import { createColumns, DataTable } from '@/components/users-table'
@@ -120,23 +120,16 @@ function UsuariosPageContent() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Usuários</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin" />
-              <span className="ml-2">Carregando usuários...</span>
-            </div>
-          ) : users && users.length === 0 ? (
-            <div className="text-muted-foreground py-8 text-center">Nenhum usuário cadastrado.</div>
-          ) : (
-            <DataTable columns={columns} data={users || []} />
-          )}
-        </CardContent>
-      </Card>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Carregando usuários...</span>
+        </div>
+      ) : users && users.length === 0 ? (
+        <div className="text-muted-foreground py-8 text-center">Nenhum usuário cadastrado.</div>
+      ) : (
+        <DataTable columns={columns} data={users || []} />
+      )}
 
       {/* Modal de Criação/Edição */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>

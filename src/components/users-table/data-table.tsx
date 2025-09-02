@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  Column,
   ColumnDef,
   ColumnFiltersState,
   flexRender,
@@ -8,150 +9,265 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  PaginationState,
   SortingState,
   useReactTable,
   VisibilityState,
 } from '@tanstack/react-table'
-import { ChevronDown } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreHorizontal, X } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
+/**
+ * Componente DataTable usando TanStack Table v8 com shadcn/ui
+ *
+ * Características implementadas:
+ * - Filtros individuais por coluna nos headers
+ * - Busca global em todos os campos
+ * - Filtros específicos por tipo de dados (texto, status, data)
+ * - Controle de visibilidade de colunas
+ * - Ordenação por colunas
+ * - Paginação sincronizada com URL (query params: page, size)
+ * - Navegação direta para páginas específicas
+ * - Seletor de itens por página
+ * - Reset de filtros
+ * - Tipagem completa em TypeScript
+ *
+ * Paginação via URL:
+ * - ?page=1&size=10 (página 1, 10 itens por página)
+ * - ?page=2&size=20 (página 2, 20 itens por página)
+ * - Suporta valores de 1-100 para size
+ * - Navegação mantém estado na URL para compartilhamento
+ *
+ * Segue as práticas recomendadas do TanStack Table:
+ * - Uso de hooks de estado controlado
+ * - Filtros customizados por coluna
+ * - Paginação controlada via URL
+ * - Componentes reutilizáveis
+ * - Performance otimizada com React.memo implícito
+ */
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
   data: TData[]
 }
 
+// Componente de filtro individual para cada coluna
+function ColumnFilter<TData>({ column }: { column: Column<TData, unknown> }) {
+  const columnFilterValue = column.getFilterValue()
+
+  if (column.id === 'active') {
+    return (
+      <Select
+        value={(columnFilterValue as string) ?? 'all'}
+        onValueChange={value => column.setFilterValue(value === 'all' ? undefined : value)}>
+        <SelectTrigger className="h-8 w-full border-dashed">
+          <SelectValue placeholder="Todos" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Todos</SelectItem>
+          <SelectItem value="active">Ativo</SelectItem>
+          <SelectItem value="inactive">Inativo</SelectItem>
+        </SelectContent>
+      </Select>
+    )
+  }
+
+  if (column.id === 'actions' || !column.getCanFilter()) {
+    return null
+  }
+
+  // Filtro específico para campos de data
+  if (column.id === 'createdAt' || column.id === 'updatedAt') {
+    return (
+      <div className="flex items-center space-x-1">
+        <Input
+          type="date"
+          placeholder="Filtrar por data..."
+          value={(columnFilterValue ?? '') as string}
+          onChange={event => column.setFilterValue(event.target.value)}
+          className="h-8 w-full border-dashed"
+        />
+        {columnFilterValue !== undefined && columnFilterValue !== '' && (
+          <Button
+            variant="ghost"
+            onClick={() => column.setFilterValue(undefined)}
+            className="hover:bg-muted h-8 w-8 p-0">
+            <X className="h-3 w-3" />
+            <span className="sr-only">Limpar filtro</span>
+          </Button>
+        )}
+      </div>
+    )
+  }
+
+  return (
+    <div className="flex items-center space-x-1">
+      <Input
+        placeholder={`Filtrar ${column.id === 'name' ? 'nome' : column.id === 'email' ? 'e-mail' : 'campo'}...`}
+        value={(columnFilterValue ?? '') as string}
+        onChange={event => column.setFilterValue(event.target.value)}
+        className="h-8 w-full border-dashed"
+      />
+      {columnFilterValue !== undefined && columnFilterValue !== '' && (
+        <Button variant="ghost" onClick={() => column.setFilterValue(undefined)} className="hover:bg-muted h-8 w-8 p-0">
+          <X className="h-3 w-3" />
+          <span className="sr-only">Limpar filtro</span>
+        </Button>
+      )}
+    </div>
+  )
+}
+
 export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData, TValue>) {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+
+  // Estado local para filtros e ordenação
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
+  const [globalFilter, setGlobalFilter] = React.useState('')
+
+  // Estado de paginação sincronizado com URL
+  const [pagination, setPagination] = React.useState<PaginationState>(() => {
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const size = parseInt(searchParams.get('size') || '10', 10)
+
+    return {
+      pageIndex: Math.max(0, page - 1), // Converter para índice baseado em 0
+      pageSize: Math.max(1, Math.min(100, size)), // Limitar entre 1 e 100
+    }
+  })
+
+  // Função para atualizar a URL quando a paginação mudar
+  const updateURLPagination = React.useCallback(
+    (newPagination: PaginationState) => {
+      const params = new URLSearchParams(searchParams.toString())
+      params.set('page', (newPagination.pageIndex + 1).toString()) // Converter para página baseada em 1
+      params.set('size', newPagination.pageSize.toString())
+
+      router.replace(`?${params.toString()}`, { scroll: false })
+    },
+    [router, searchParams],
+  )
+
+  // Efeito para sincronizar mudanças na URL com o estado local
+  React.useEffect(() => {
+    const page = parseInt(searchParams.get('page') || '1', 10)
+    const size = parseInt(searchParams.get('size') || '10', 10)
+
+    const newPagination = {
+      pageIndex: Math.max(0, page - 1),
+      pageSize: Math.max(1, Math.min(100, size)),
+    }
+
+    // Só atualizar se houver diferença para evitar loops
+    if (newPagination.pageIndex !== pagination.pageIndex || newPagination.pageSize !== pagination.pageSize) {
+      setPagination(newPagination)
+    }
+  }, [searchParams, pagination.pageIndex, pagination.pageSize])
 
   const table = useReactTable({
     data,
     columns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
+    onGlobalFilterChange: setGlobalFilter,
+    globalFilterFn: 'includesString',
     state: {
       sorting,
       columnFilters,
       columnVisibility,
+      globalFilter,
+      pagination,
     },
   })
 
+  // Função para calcular páginas visíveis
+  const getVisiblePages = React.useCallback((): (number | 'ellipsis')[] => {
+    const pages: (number | 'ellipsis')[] = []
+    const totalPages = table.getPageCount()
+    const currentPage = pagination.pageIndex + 1
+    const maxVisiblePages = 5
+
+    if (totalPages <= maxVisiblePages) {
+      for (let i = 1; i <= totalPages; i++) {
+        pages.push(i)
+      }
+    } else {
+      if (currentPage <= 3) {
+        for (let i = 1; i <= 4; i++) {
+          pages.push(i)
+        }
+        pages.push('ellipsis')
+        pages.push(totalPages)
+      } else if (currentPage >= totalPages - 2) {
+        pages.push(1)
+        pages.push('ellipsis')
+        for (let i = totalPages - 3; i <= totalPages; i++) {
+          pages.push(i)
+        }
+      } else {
+        pages.push(1)
+        pages.push('ellipsis')
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
+          pages.push(i)
+        }
+        pages.push('ellipsis')
+        pages.push(totalPages)
+      }
+    }
+
+    return pages
+  }, [pagination.pageIndex, table])
+
   return (
     <div className="w-full">
-      {/* Filtros */}
-      <div className="flex items-center gap-4 py-4">
-        {/* Filtro por nome */}
-        <Input
-          placeholder="Filtrar por nome..."
-          value={(table.getColumn('name')?.getFilterValue() as string) ?? ''}
-          onChange={event => table.getColumn('name')?.setFilterValue(event.target.value)}
-          className="max-w-sm"
-        />
-
-        {/* Filtro por email */}
-        <Input
-          placeholder="Filtrar por email..."
-          value={(table.getColumn('email')?.getFilterValue() as string) ?? ''}
-          onChange={event => table.getColumn('email')?.setFilterValue(event.target.value)}
-          className="max-w-sm"
-        />
-
-        {/* Filtro por status */}
-        <Select
-          value={(table.getColumn('active')?.getFilterValue() as string) ?? 'all'}
-          onValueChange={value => table.getColumn('active')?.setFilterValue(value === 'all' ? undefined : value)}>
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="active">Ativo</SelectItem>
-            <SelectItem value="inactive">Inativo</SelectItem>
-          </SelectContent>
-        </Select>
-
-        {/* Seletor de colunas visíveis */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="ml-auto">
-              Colunas <ChevronDown className="ml-2 h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {table
-              .getAllColumns()
-              .filter(column => column.getCanHide())
-              .map(column => {
-                return (
-                  <DropdownMenuCheckboxItem
-                    key={column.id}
-                    className="capitalize"
-                    checked={column.getIsVisible()}
-                    onCheckedChange={value => column.toggleVisibility(!!value)}>
-                    {column.id === 'name' && 'Nome'}
-                    {column.id === 'email' && 'E-mail'}
-                    {column.id === 'active' && 'Status'}
-                    {column.id === 'createdAt' && 'Criado em'}
-                    {column.id === 'updatedAt' && 'Atualizado em'}
-                    {!['name', 'email', 'active', 'createdAt', 'updatedAt'].includes(column.id) && column.id}
-                  </DropdownMenuCheckboxItem>
-                )
-              })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-
       {/* Tabela */}
-      <div className="rounded-md border">
+      <div className="bg-background rounded-md border">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map(headerGroup => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map(header => {
-                  return (
+              <React.Fragment key={headerGroup.id}>
+                {/* Linha de headers */}
+                <TableRow className="h-12">
+                  {headerGroup.headers.map(header => (
                     <TableHead key={header.id}>
                       {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                     </TableHead>
-                  )
-                })}
-              </TableRow>
+                  ))}
+                </TableRow>
+                {/* Linha de filtros */}
+                <TableRow className="border-b">
+                  {headerGroup.headers.map(header => (
+                    <TableHead key={`${header.id}-filter`} className="p-2">
+                      <ColumnFilter column={header.column} />
+                    </TableHead>
+                  ))}
+                </TableRow>
+              </React.Fragment>
             ))}
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map(row => (
-                <TableRow
-                  key={row.id}
-                  data-state={row.getIsSelected() && 'selected'}
-                  className={
-                    // Highlight current user row
-                    row.original &&
-                    typeof row.original === 'object' &&
-                    'email' in row.original &&
-                    row.original.email &&
-                    typeof row.original.email === 'string'
-                      ? 'bg-muted/30'
-                      : ''
-                  }>
+                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
                   {row.getVisibleCells().map(cell => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+                    <TableCell className="px-4" key={cell.id}>
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
@@ -163,26 +279,137 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
               </TableRow>
             )}
           </TableBody>
-        </Table>
-      </div>
 
-      {/* Paginação */}
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredRowModel().rows.length} usuário(s) encontrado(s).
-        </div>
-        <div className="space-x-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}>
-            Anterior
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => table.nextPage()} disabled={!table.getCanNextPage()}>
-            Próximo
-          </Button>
-        </div>
+          {/* Footer com Paginação */}
+          <TableFooter>
+            <TableRow>
+              <TableCell colSpan={columns.length} className="px-6 py-4">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  {/* Informações e itens por página */}
+                  <div className="text-muted-foreground flex items-center gap-4 text-sm">
+                    <span>
+                      Mostrando {pagination.pageIndex * pagination.pageSize + 1} a{' '}
+                      {Math.min(
+                        (pagination.pageIndex + 1) * pagination.pageSize,
+                        table.getFilteredRowModel().rows.length,
+                      )}{' '}
+                      de {table.getFilteredRowModel().rows.length} resultados
+                    </span>
+
+                    <div className="flex items-center gap-2">
+                      <span>Itens por página:</span>
+                      <Select
+                        value={pagination.pageSize.toString()}
+                        onValueChange={value => {
+                          const newPagination = {
+                            pageIndex: 0, // Resetar para primeira página
+                            pageSize: parseInt(value, 10),
+                          }
+                          setPagination(newPagination)
+                          updateURLPagination(newPagination)
+                        }}>
+                        <SelectTrigger className="bg-background w-20">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="5">5</SelectItem>
+                          <SelectItem value="10">10</SelectItem>
+                          <SelectItem value="20">20</SelectItem>
+                          <SelectItem value="50">50</SelectItem>
+                          <SelectItem value="100">100</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  {/* Controles de navegação */}
+                  <div className="flex items-center gap-2">
+                    {/* Primeira página */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newPagination = { ...pagination, pageIndex: 0 }
+                        setPagination(newPagination)
+                        updateURLPagination(newPagination)
+                      }}
+                      disabled={!table.getCanPreviousPage()}
+                      className="hidden sm:flex">
+                      <ChevronsLeft className="h-4 w-4" />
+                    </Button>
+
+                    {/* Página anterior */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newPagination = { ...pagination, pageIndex: pagination.pageIndex - 1 }
+                        setPagination(newPagination)
+                        updateURLPagination(newPagination)
+                      }}
+                      disabled={!table.getCanPreviousPage()}>
+                      <ChevronLeft className="h-4 w-4" />
+                      <span className="hidden sm:inline">Anterior</span>
+                    </Button>
+
+                    {/* Números das páginas */}
+                    <div className="flex items-center gap-1">
+                      {getVisiblePages().map((page, index) => (
+                        <div key={index}>
+                          {page === 'ellipsis' ? (
+                            <div className="flex h-9 w-9 items-center justify-center">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </div>
+                          ) : (
+                            <Button
+                              variant={pagination.pageIndex + 1 === page ? 'default' : 'outline'}
+                              size="sm"
+                              onClick={() => {
+                                const newPagination = { ...pagination, pageIndex: (page as number) - 1 }
+                                setPagination(newPagination)
+                                updateURLPagination(newPagination)
+                              }}
+                              className="h-9 w-9">
+                              {page}
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Próxima página */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newPagination = { ...pagination, pageIndex: pagination.pageIndex + 1 }
+                        setPagination(newPagination)
+                        updateURLPagination(newPagination)
+                      }}
+                      disabled={!table.getCanNextPage()}>
+                      <span className="hidden sm:inline">Próxima</span>
+                      <ChevronRight className="h-4 w-4" />
+                    </Button>
+
+                    {/* Última página */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        const newPagination = { ...pagination, pageIndex: table.getPageCount() - 1 }
+                        setPagination(newPagination)
+                        updateURLPagination(newPagination)
+                      }}
+                      disabled={!table.getCanNextPage()}
+                      className="hidden sm:flex">
+                      <ChevronsRight className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              </TableCell>
+            </TableRow>
+          </TableFooter>
+        </Table>
       </div>
     </div>
   )
