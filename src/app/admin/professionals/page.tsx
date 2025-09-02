@@ -1,10 +1,11 @@
 'use client'
 
-import { Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { Loader2, Plus } from 'lucide-react'
+import { Suspense, useState } from 'react'
 
-import { Professional, ProfessionalWithTherapy } from '@/app/db/schemas/professional-schema'
+import { ProfessionalWithTherapy } from '@/app/db/schemas/professional-schema'
 
+import { createColumns, DataTable } from '@/components/data-tables/professionals'
 import { ProfessionalModal } from '@/components/professional-modal'
 import {
   AlertDialog,
@@ -17,18 +18,18 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Card, CardContent } from '@/components/ui/card'
 
 import { useDeleteProfessional, useProfessionals } from '@/hooks/use-professionals'
+import { useTherapies } from '@/hooks/use-therapies'
 
-export default function ProfissionaisPage() {
+function ProfissionaisPageContent() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingProfessional, setEditingProfessional] = useState<ProfessionalWithTherapy | undefined>()
   const [deletingProfessional, setDeletingProfessional] = useState<ProfessionalWithTherapy | null>(null)
 
   const { data: professionals, isLoading, error } = useProfessionals()
+  const { data: therapies } = useTherapies()
   const deleteMutation = useDeleteProfessional()
 
   const handleEdit = (professional: ProfessionalWithTherapy) => {
@@ -57,15 +58,11 @@ export default function ProfissionaisPage() {
     setEditingProfessional(undefined)
   }
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(date))
-  }
+  // Criar as colunas com as ações
+  const columns = createColumns(therapies, {
+    onEdit: handleEdit,
+    onDelete: setDeletingProfessional,
+  })
 
   if (error) {
     return (
@@ -98,83 +95,20 @@ export default function ProfissionaisPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Profissionais</CardTitle>
-          <CardDescription>{professionals?.length || 0} profissional(is) cadastrado(s)</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin" />
-              <span className="ml-2">Carregando profissionais...</span>
-            </div>
-          ) : professionals && professionals.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Nº Conselho</TableHead>
-                  <TableHead>Terapia</TableHead>
-                  <TableHead>Criado em</TableHead>
-                  <TableHead>Atualizado em</TableHead>
-                  <TableHead className="w-[70px]">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {professionals.map(professional => (
-                  <TableRow key={professional.id}>
-                    <TableCell className="font-medium">{professional.name}</TableCell>
-                    <TableCell>{professional.councilNumber || '-'}</TableCell>
-                    <TableCell>
-                      {professional.therapy ? (
-                        <span className="text-sm">{professional.therapy.name}</span>
-                      ) : (
-                        <span className="text-muted-foreground text-sm">Nenhuma terapia</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{formatDate(professional.createdAt)}</TableCell>
-                    <TableCell>{formatDate(professional.updatedAt)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(professional)}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            onClick={() => setDeletingProfessional(professional)}
-                            className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="py-8 text-center">
-              <p className="text-muted-foreground mb-4">Nenhum profissional cadastrado ainda.</p>
-              <Button onClick={handleNewProfessional}>
-                <Plus className="mr-2 h-4 w-4" />
-                Cadastrar Primeiro Profissional
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Carregando profissionais...</span>
+        </div>
+      ) : professionals && professionals.length === 0 ? (
+        <div className="text-muted-foreground py-8 text-center">Nenhum profissional cadastrado.</div>
+      ) : (
+        <DataTable columns={columns} data={professionals || []} />
+      )}
 
       <ProfessionalModal open={isModalOpen} onOpenChange={handleModalClose} professional={editingProfessional} />
 
+      {/* Dialog de Confirmação de Exclusão */}
       <AlertDialog open={!!deletingProfessional} onOpenChange={() => setDeletingProfessional(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -197,5 +131,31 @@ export default function ProfissionaisPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  )
+}
+
+export default function ProfissionaisPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Profissionais</h1>
+              <p className="text-muted-foreground">Gerencie os profissionais do sistema</p>
+            </div>
+          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-2">Carregando...</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }>
+      <ProfissionaisPageContent />
+    </Suspense>
   )
 }
