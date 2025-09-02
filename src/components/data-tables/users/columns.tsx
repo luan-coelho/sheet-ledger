@@ -97,6 +97,12 @@ export function createColumns(
           </Button>
         )
       },
+      meta: {
+        filterType: 'text',
+        filterOptions: {
+          placeholder: 'Filtrar por nome...',
+        },
+      },
       cell: ({ row }) => {
         const user = row.original
         const isCurrentUser = currentUserEmail === user.email
@@ -126,6 +132,12 @@ export function createColumns(
           </Button>
         )
       },
+      meta: {
+        filterType: 'text',
+        filterOptions: {
+          placeholder: 'Filtrar por e-mail...',
+        },
+      },
       filterFn: (row, id, value) => {
         return row.getValue(id)?.toString().toLowerCase().includes(value.toLowerCase()) || false
       },
@@ -140,15 +152,24 @@ export function createColumns(
           </Button>
         )
       },
+      meta: {
+        filterType: 'select',
+        filterOptions: {
+          placeholder: 'Filtrar por status',
+          allLabel: 'Todos os status',
+          items: [
+            { value: 'true', label: 'Ativo' },
+            { value: 'false', label: 'Inativo' },
+          ],
+        },
+      },
       cell: ({ row }) => {
         const isActive = row.getValue('active') as boolean
         return <Badge variant={isActive ? 'default' : 'secondary'}>{isActive ? 'Ativo' : 'Inativo'}</Badge>
       },
       filterFn: (row, id, value) => {
-        if (value === 'all') return true
-        if (value === 'active') return row.getValue(id) === true
-        if (value === 'inactive') return row.getValue(id) === false
-        return true
+        const cellValue = row.getValue(id) as boolean
+        return cellValue.toString() === value
       },
     },
     {
@@ -160,6 +181,12 @@ export function createColumns(
             {getSortIcon(column.getIsSorted())}
           </Button>
         )
+      },
+      meta: {
+        filterType: 'date',
+        dateFilterConfig: {
+          placeholder: 'Filtrar por data de criação',
+        },
       },
       cell: ({ row }) => {
         const date = row.getValue('createdAt') as Date

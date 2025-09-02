@@ -19,9 +19,12 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import * as React from 'react'
 
 import { Button } from '@/components/ui/button'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+
+import type { ColumnFilterSelectOption, ColumnMeta, DataTableConfig } from './types'
 
 /**
  * Componente DataTable genérico e reutilizável usando TanStack Table v8 com shadcn/ui
@@ -29,7 +32,7 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
  * Características implementadas:
  * - Filtros individuais por coluna nos headers
  * - Busca global em todos os campos
- * - Filtros específicos por tipo de dados (texto, status, data)
+ * - Filtros específicos por tipo de dados (texto, select, data)
  * - Controle de visibilidade de colunas
  * - Ordenação por colunas
  * - Paginação sincronizada com URL (query params: page, size)
@@ -45,6 +48,27 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
  * - Suporta valores de 1-100 para size
  * - Navegação mantém estado na URL para compartilhamento
  *
+ * Configuração de filtros por coluna:
+ * Para configurar filtros customizados, use a propriedade `meta` na definição da coluna:
+ *
+ * ```typescript
+ * {
+ *   id: 'status',
+ *   header: 'Status',
+ *   meta: {
+ *     filterType: 'select',
+ *     filterOptions: {
+ *       placeholder: 'Selecionar status',
+ *       allLabel: 'Todos os status',
+ *       items: [
+ *         { value: 'active', label: 'Ativo' },
+ *         { value: 'inactive', label: 'Inativo' }
+ *       ]
+ *     }
+ *   }
+ * }
+ * ```
+ *
  * Segue as práticas recomendadas do TanStack Table:
  * - Uso de hooks de estado controlado
  * - Filtros customizados por coluna
@@ -52,34 +76,6 @@ import { Table, TableBody, TableCell, TableFooter, TableHead, TableHeader, Table
  * - Componentes reutilizáveis
  * - Performance otimizada com React.memo implícito
  */
-
-export interface DataTableConfig {
-  /** Habilitar/desabilitar busca global */
-  enableGlobalFilter?: boolean
-  /** Habilitar/desabilitar filtros por coluna */
-  enableColumnFilters?: boolean
-  /** Habilitar/desabilitar paginação via URL */
-  enableUrlPagination?: boolean
-  /** Habilitar/desabilitar ordenação via URL */
-  enableUrlSorting?: boolean
-  /** Tamanhos de página disponíveis */
-  pageSizes?: number[]
-  /** Tamanho inicial da página */
-  initialPageSize?: number
-  /** Máximo de páginas visíveis na navegação */
-  maxVisiblePages?: number
-  /** Texto customizado para "nenhum resultado" */
-  noResultsText?: string
-  /** Texto customizado para informações de paginação */
-  paginationLabels?: {
-    showing?: string
-    of?: string
-    results?: string
-    itemsPerPage?: string
-    previous?: string
-    next?: string
-  }
-}
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[]
@@ -120,19 +116,25 @@ function ColumnFilter<TData>({
     return null
   }
 
-  // Filtro para campos de status (active)
-  if (column.id === 'active') {
+  // Filtros para campos de data customizados
+  const columnMeta = column.columnDef.meta as ColumnMeta
+
+  if (columnMeta?.filterType === 'select' && columnMeta?.filterOptions) {
+    const options = columnMeta.filterOptions
     return (
       <Select
         value={(columnFilterValue as string) ?? 'all'}
         onValueChange={value => column.setFilterValue(value === 'all' ? undefined : value)}>
         <SelectTrigger className="h-8 w-full border-dashed">
-          <SelectValue placeholder="Todos" />
+          <SelectValue placeholder={options.placeholder || 'Todos'} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Todos</SelectItem>
-          <SelectItem value="active">Ativo</SelectItem>
-          <SelectItem value="inactive">Inativo</SelectItem>
+          <SelectItem value="all">{options.allLabel || 'Todos'}</SelectItem>
+          {options.items.map((item: ColumnFilterSelectOption) => (
+            <SelectItem key={item.value} value={item.value}>
+              {item.label}
+            </SelectItem>
+          ))}
         </SelectContent>
       </Select>
     )
@@ -144,14 +146,16 @@ function ColumnFilter<TData>({
   }
 
   // Filtro específico para campos de data
-  if (column.id === 'createdAt' || column.id === 'updatedAt') {
+  if (columnMeta?.filterType === 'date' || column.id === 'createdAt' || column.id === 'updatedAt') {
+    const placeholder = columnMeta?.dateFilterConfig?.placeholder || 'Filtrar por data...'
+    const currentDate = columnFilterValue ? new Date(columnFilterValue as string) : undefined
+
     return (
       <div className="flex items-center space-x-1">
-        <Input
-          type="date"
-          placeholder="Filtrar por data..."
-          value={(columnFilterValue ?? '') as string}
-          onChange={event => column.setFilterValue(event.target.value)}
+        <DatePicker
+          date={currentDate}
+          onSelect={date => column.setFilterValue(date ? date.toISOString().split('T')[0] : undefined)}
+          placeholder={placeholder}
           className="h-8 w-full border-dashed"
         />
         {columnFilterValue !== undefined && columnFilterValue !== '' && (
@@ -169,18 +173,20 @@ function ColumnFilter<TData>({
 
   // Filtro de texto padrão
   const getPlaceholder = () => {
-    switch (column.id) {
-      case 'name':
-        return 'Filtrar nome...'
-      case 'email':
-        return 'Filtrar e-mail...'
-      case 'title':
-        return 'Filtrar título...'
-      case 'description':
-        return 'Filtrar descrição...'
-      default:
-        return `Filtrar ${column.id}...`
+    // Primeiro verifica se há configuração customizada de placeholder
+    if (columnMeta?.filterOptions?.placeholder) {
+      return columnMeta.filterOptions.placeholder
     }
+
+    // Caso contrário, usa placeholders padrão baseados no ID da coluna
+    const placeholderMap: Record<string, string> = {
+      name: 'Filtrar nome...',
+      email: 'Filtrar e-mail...',
+      title: 'Filtrar título...',
+      description: 'Filtrar descrição...',
+    }
+
+    return placeholderMap[column.id] || `Filtrar ${column.id}...`
   }
 
   return (

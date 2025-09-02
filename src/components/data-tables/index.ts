@@ -1,1 +1,12 @@
-export { DataTable, type DataTableConfig } from './data-table'
+/**
+ * Exportações do módulo data-tables
+ */
+
+export { DataTable } from './data-table'
+export type {
+  ColumnFilterSelectOption,
+  ColumnFilterSelectConfig,
+  ColumnFilterDateConfig,
+  ColumnMeta,
+  DataTableConfig,
+} from './types'
