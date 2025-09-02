@@ -1,7 +1,7 @@
 'use client'
 
 import { zodResolver } from '@hookform/resolvers/zod'
-import { Cloud, Eye, FileText, Loader2 } from 'lucide-react'
+import { Calendar, Cloud, Eye, FileText, Loader2 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
@@ -46,6 +46,7 @@ import { CompanySelector } from './company-selector'
 import { HealthPlanSelector } from './health-plan-selector'
 import { PatientSelector } from './patient-selector'
 import { ProfessionalSelector } from './professional-selector'
+import { SpreadsheetCalendar } from './spreadsheet-calendar'
 import { SpreadsheetPreview } from './spreadsheet-preview'
 import { TherapySelector } from './therapy-selector'
 import { Separator } from './ui/separator'
@@ -58,6 +59,7 @@ interface ExistingFilesInfo {
 
 export function SpreadsheetForm() {
   const [showPreview, setShowPreview] = useState(false)
+  const [showCalendar, setShowCalendar] = useState(false)
   const [showOverwriteDialog, setShowOverwriteDialog] = useState(false)
   const [existingFilesInfo, setExistingFilesInfo] = useState<ExistingFilesInfo | null>(null)
   const [driveGenerationResult, setDriveGenerationResult] = useState<GenerateDriveSpreadsheetResponse | null>(null)
@@ -71,6 +73,9 @@ export function SpreadsheetForm() {
 
   // Ref para o card de prévia
   const previewRef = useRef<HTMLDivElement>(null)
+
+  // Ref para o card do calendário
+  const calendarRef = useRef<HTMLDivElement>(null)
 
   // Hooks para buscar dados das entidades
   const { data: professionals } = useProfessionals()
@@ -277,6 +282,23 @@ export function SpreadsheetForm() {
       setTimeout(() => {
         if (previewRef.current) {
           previewRef.current.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'nearest',
+          })
+        }
+      }, 100)
+    }
+  }
+
+  async function handleShowCalendar() {
+    const isFormValid = await form.trigger()
+    if (isFormValid) {
+      setShowCalendar(true)
+      // Scroll automático para o calendário após um pequeno delay
+      setTimeout(() => {
+        if (calendarRef.current) {
+          calendarRef.current.scrollIntoView({
             behavior: 'smooth',
             block: 'center',
             inline: 'nearest',
@@ -735,6 +757,17 @@ export function SpreadsheetForm() {
                 <span className="sm:hidden">Prévia</span>
               </Button>
 
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full sm:flex-1"
+                onClick={handleShowCalendar}
+                disabled={isLoading || isCheckingFiles}>
+                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Calendar className="mr-2 h-4 w-4" />}
+                <span className="hidden sm:inline">Ver Calendário</span>
+                <span className="sm:hidden">Calendário</span>
+              </Button>
+
               <Button type="submit" className="w-full sm:flex-1" disabled={isLoading || isCheckingFiles}>
                 {generateSpreadsheet.isPending ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -858,6 +891,13 @@ export function SpreadsheetForm() {
         {showPreview && (
           <div ref={previewRef} className="mt-6">
             <SpreadsheetPreview formData={formValues} onClose={() => setShowPreview(false)} />
+          </div>
+        )}
+
+        {/* Calendar */}
+        {showCalendar && (
+          <div ref={calendarRef} className="mt-6">
+            <SpreadsheetCalendar formData={formValues} onClose={() => setShowCalendar(false)} />
           </div>
         )}
 
