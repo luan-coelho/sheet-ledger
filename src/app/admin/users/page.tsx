@@ -63,7 +63,7 @@ function UsuariosPageContent() {
 
   // Hook para gerenciar paginação
   const pagination = usePagination({
-    itemsPerPage: 25,
+    itemsPerPage: 4,
     totalItems: filteredUsers.length,
   })
 

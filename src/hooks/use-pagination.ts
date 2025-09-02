@@ -17,6 +17,7 @@ interface UsePaginationReturn {
   hasNextPage: boolean
   hasPreviousPage: boolean
   setPage: (page: number) => void
+  setItemsPerPage: (itemsPerPage: number) => void
   nextPage: () => void
   previousPage: () => void
   goToFirstPage: () => void
@@ -28,22 +29,35 @@ export function usePagination({ itemsPerPage = 10, totalItems }: UsePaginationOp
   const router = useRouter()
   const searchParams = useSearchParams()
 
+  // Obter itemsPerPage da query param "size" se disponível
+  const actualItemsPerPage = useMemo(() => {
+    const sizeParam = searchParams.get('size')
+    if (sizeParam) {
+      const parsedSize = parseInt(sizeParam, 10)
+      // Validar se é um número positivo e razoável (entre 1 e 100)
+      if (!isNaN(parsedSize) && parsedSize > 0 && parsedSize <= 100) {
+        return parsedSize
+      }
+    }
+    return itemsPerPage
+  }, [searchParams, itemsPerPage])
+
   const currentPage = useMemo(() => {
     const page = parseInt(searchParams.get('page') || '1', 10)
     return Math.max(1, page)
   }, [searchParams])
 
   const totalPages = useMemo(() => {
-    return Math.ceil(totalItems / itemsPerPage)
-  }, [totalItems, itemsPerPage])
+    return Math.ceil(totalItems / actualItemsPerPage)
+  }, [totalItems, actualItemsPerPage])
 
   const startIndex = useMemo(() => {
-    return (currentPage - 1) * itemsPerPage
-  }, [currentPage, itemsPerPage])
+    return (currentPage - 1) * actualItemsPerPage
+  }, [currentPage, actualItemsPerPage])
 
   const endIndex = useMemo(() => {
-    return Math.min(startIndex + itemsPerPage, totalItems)
-  }, [startIndex, itemsPerPage, totalItems])
+    return Math.min(startIndex + actualItemsPerPage, totalItems)
+  }, [startIndex, actualItemsPerPage, totalItems])
 
   const hasNextPage = useMemo(() => {
     return currentPage < totalPages
@@ -79,6 +93,28 @@ export function usePagination({ itemsPerPage = 10, totalItems }: UsePaginationOp
       }
     },
     [currentPage, totalPages, updateURL],
+  )
+
+  const setItemsPerPage = useCallback(
+    (newItemsPerPage: number) => {
+      const params = new URLSearchParams(searchParams.toString())
+
+      // Validar se é um número positivo e razoável
+      if (newItemsPerPage > 0 && newItemsPerPage <= 100) {
+        params.set('size', newItemsPerPage.toString())
+        // Reset para a primeira página quando mudar o tamanho
+        params.delete('page')
+      } else {
+        params.delete('size')
+        params.delete('page')
+      }
+
+      const queryString = params.toString()
+      const url = queryString ? `?${queryString}` : window.location.pathname
+
+      router.push(url, { scroll: false })
+    },
+    [router, searchParams],
   )
 
   const nextPage = useCallback(() => {
@@ -144,12 +180,13 @@ export function usePagination({ itemsPerPage = 10, totalItems }: UsePaginationOp
   return {
     currentPage,
     totalPages,
-    itemsPerPage,
+    itemsPerPage: actualItemsPerPage,
     startIndex,
     endIndex,
     hasNextPage,
     hasPreviousPage,
     setPage,
+    setItemsPerPage,
     nextPage,
     previousPage,
     goToFirstPage,
