@@ -122,21 +122,32 @@ function ColumnFilter<TData>({
   if (columnMeta?.filterType === 'select' && columnMeta?.filterOptions) {
     const options = columnMeta.filterOptions
     return (
-      <Select
-        value={(columnFilterValue as string) ?? 'all'}
-        onValueChange={value => column.setFilterValue(value === 'all' ? undefined : value)}>
-        <SelectTrigger className="h-8 w-full border-dashed">
-          <SelectValue placeholder={options.placeholder || 'Todos'} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">{options.allLabel || 'Todos'}</SelectItem>
-          {options.items.map((item: ColumnFilterSelectOption) => (
-            <SelectItem key={item.value} value={item.value}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
+      <div className="flex items-center space-x-1">
+        <Select
+          value={(columnFilterValue as string) ?? 'all'}
+          onValueChange={value => column.setFilterValue(value === 'all' ? undefined : value)}>
+          <SelectTrigger className="h-8 w-full border-dashed">
+            <SelectValue placeholder={options.placeholder || 'Todos'} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">{options.allLabel || 'Todos'}</SelectItem>
+            {options.items.map((item: ColumnFilterSelectOption) => (
+              <SelectItem key={item.value} value={item.value}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        {columnFilterValue !== undefined && columnFilterValue !== '' && (
+          <Button
+            variant="ghost"
+            onClick={() => column.setFilterValue(undefined)}
+            className="hover:bg-muted h-8 w-8 p-0">
+            <X className="h-3 w-3" />
+            <span className="sr-only">Limpar filtro</span>
+          </Button>
+        )}
+      </div>
     )
   }
 
