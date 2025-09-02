@@ -76,7 +76,7 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
             <Button
               onClick={handleGoogleSignIn}
               disabled={isLoading}
-              className="h-12 w-full border-0 bg-gray-800 text-sm font-semibold text-white hover:bg-gray-700 disabled:bg-gray-600 disabled:text-gray-300"
+              className="h-12 w-full border-0 bg-[#f26992] text-sm font-semibold text-white hover:bg-[#f77ca1] disabled:bg-[#f77ca1] disabled:text-gray-300"
               size="lg">
               {isLoading ? (
                 <>
@@ -105,14 +105,6 @@ export function LoginForm({ className, ...props }: React.ComponentProps<'div'>) 
                 </p>
               </div>
             )}
-
-            {/* Aviso de segurança */}
-            <div className="text-center">
-              <div className="inline-flex items-center gap-2 rounded-full border border-green-200 bg-green-50 px-4 py-2">
-                <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                <span className="text-sm font-medium text-green-700">Autenticação segura via Google</span>
-              </div>
-            </div>
           </div>
         </CardContent>
       </Card>

@@ -1,6 +1,6 @@
 'use client'
 
-import GrupoEstimulos from '@/images/grupo-estimulos.png'
+import IconeEstimulos from '@/images/icone-estimulos.png'
 import { Building2, Cloud, CreditCard, FileText, Settings, Shield, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
@@ -19,6 +19,8 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
+
+import { useActivePath } from '@/hooks/use-active-path'
 
 import { routes } from '@/lib/routes'
 
@@ -81,6 +83,7 @@ const configItems = [
 
 export function AppSidebar() {
   const { data: session } = useSession()
+  const { isActive } = useActivePath()
 
   // Sidebar sempre usa o tema dark
   return (
@@ -88,7 +91,7 @@ export function AppSidebar() {
       <Sidebar className="bg-sidebar" variant="inset">
         <SidebarHeader>
           <div className="flex items-center gap-2 px-4 py-2">
-            <Image className="size-10 rounded-xl" src={GrupoEstimulos} alt="Grupo Estímulos" />
+            <Image className="size-10 rounded-xl" src={IconeEstimulos} alt="Ícone Estímulos" />
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-semibold">Grupo Estímulos</span>
               <span className="text-muted-foreground truncate text-xs">Neurodesenvolvimento</span>
@@ -103,7 +106,7 @@ export function AppSidebar() {
               <SidebarMenu>
                 {items.map(item => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <a href={item.url}>
                         <item.icon />
                         <span>{item.title}</span>
@@ -121,7 +124,7 @@ export function AppSidebar() {
               <SidebarMenu>
                 {userManagementItems.map(item => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <a href={item.url}>
                         <item.icon />
                         <span>{item.title}</span>
@@ -139,7 +142,7 @@ export function AppSidebar() {
               <SidebarMenu>
                 {configItems.map(item => (
                   <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton asChild>
+                    <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <a href={item.url}>
                         <item.icon />
                         <span>{item.title}</span>

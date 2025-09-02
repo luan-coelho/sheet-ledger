@@ -1,6 +1,5 @@
-import GrupoEstimulos from '@/images/grupo-estimulos.png'
 import IconeEstimulos from '@/images/icone-estimulos.png'
-import { FileText } from 'lucide-react'
+import { HandHeart } from 'lucide-react'
 import Image from 'next/image'
 import { Suspense } from 'react'
 
@@ -104,7 +103,7 @@ export default function SignInPage() {
           {/* Logo/Brand */}
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-white/20 bg-white/10 backdrop-blur-sm">
-              <Image className="h-6 w-6" src={GrupoEstimulos} alt="Grupo Estímulos" />
+              <HandHeart className="h-6 w-6" />
             </div>
             <div>
               <h1 className="text-2xl font-bold tracking-tight">Grupo Estímulos</h1>
@@ -130,12 +129,11 @@ export default function SignInPage() {
         <div className="w-full max-w-lg space-y-8">
           {/* Mobile Brand */}
           <div className="mb-8 flex items-center justify-center gap-3 lg:hidden">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-600">
-              <FileText className="h-6 w-6 text-white" />
-            </div>
+            <Image className="size-16" src={IconeEstimulos} alt="Ícone Estímulos" />
+
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Sistema</h1>
-              <p className="text-sm text-gray-600">Gestão de Planilhas</p>
+              <h1 className="text-2xl font-bold text-gray-900">Grupo Estímulos</h1>
+              <p className="text-sm text-gray-600">Neurodesenvolvimento</p>
             </div>
           </div>
 
