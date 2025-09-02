@@ -1,14 +1,12 @@
 'use client'
 
-import { Activity, Loader2, MoreHorizontal, Pencil, Plus, UserCheck, UserX } from 'lucide-react'
+import { Loader2, Plus } from 'lucide-react'
 import { useSession } from 'next-auth/react'
-import { Suspense, useMemo, useState } from 'react'
+import { Suspense, useState } from 'react'
 
 import { User } from '@/app/db/schemas/user-schema'
 
 import { ActivityLogsViewer } from '@/components/activity-logs-viewer'
-import { PaginationControls } from '@/components/pagination-controls'
-import { SearchBar } from '@/components/search-bar'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,16 +17,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { UserForm } from '@/components/user-form'
+import { createColumns, DataTable } from '@/components/users-table'
 
-import { usePagination } from '@/hooks/use-pagination'
-import { useSearchFilter } from '@/hooks/use-search-filter'
 import { useDeleteUser, useToggleUserStatus, useUsers } from '@/hooks/use-users'
 
 function UsuariosPageContent() {
@@ -42,34 +36,6 @@ function UsuariosPageContent() {
   const { data: users, isLoading, error } = useUsers()
   const deleteMutation = useDeleteUser()
   const toggleStatusMutation = useToggleUserStatus()
-
-  // Hook para gerenciar filtro de busca
-  const { searchFilter, setSearchFilter, clearSearchFilter } = useSearchFilter({
-    paramName: 'search',
-    resetPagination: true,
-  })
-
-  // Filtrar usuários por nome ou email
-  const filteredUsers = useMemo(() => {
-    if (!users) return []
-
-    return users.filter(user => {
-      return (
-        user.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchFilter.toLowerCase())
-      )
-    })
-  }, [users, searchFilter])
-
-  // Hook para gerenciar paginação
-  const pagination = usePagination({
-    totalItems: filteredUsers.length,
-  })
-
-  // Obter usuários da página atual
-  const paginatedUsers = useMemo(() => {
-    return filteredUsers.slice(pagination.startIndex, pagination.endIndex)
-  }, [filteredUsers, pagination.startIndex, pagination.endIndex])
 
   const handleEdit = (user: User) => {
     setEditingUser(user)
@@ -115,15 +81,13 @@ function UsuariosPageContent() {
     setEditingUser(undefined)
   }
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(date))
-  }
+  // Criar as colunas com as ações
+  const columns = createColumns(session?.user?.email ?? undefined, {
+    onEdit: handleEdit,
+    onViewLogs: handleViewLogs,
+    onToggleStatus: setTogglingUser,
+    onDelete: setDeletingUser,
+  })
 
   if (error) {
     return (
@@ -161,133 +125,15 @@ function UsuariosPageContent() {
           <CardTitle>Lista de Usuários</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="mb-4">
-            <SearchBar
-              value={searchFilter}
-              onChange={setSearchFilter}
-              onClear={clearSearchFilter}
-              placeholder="Buscar por nome ou email..."
-              className="max-w-sm"
-            />
-          </div>
-
           {isLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-8 w-8 animate-spin" />
               <span className="ml-2">Carregando usuários...</span>
             </div>
-          ) : paginatedUsers.length === 0 ? (
-            <div className="text-muted-foreground py-8 text-center">
-              {searchFilter ? 'Nenhum usuário encontrado com os critérios de busca.' : 'Nenhum usuário cadastrado.'}
-            </div>
+          ) : users && users.length === 0 ? (
+            <div className="text-muted-foreground py-8 text-center">Nenhum usuário cadastrado.</div>
           ) : (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>E-mail</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Criado em</TableHead>
-                    <TableHead>Atualizado em</TableHead>
-                    <TableHead className="w-12"></TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedUsers.map(user => {
-                    const isCurrentUser = session?.user?.email === user.email
-                    return (
-                      <TableRow key={user.id} className={isCurrentUser ? 'bg-muted/30' : ''}>
-                        <TableCell className="font-medium">
-                          <div className="flex items-center gap-2">
-                            {user.name}
-                            {isCurrentUser && (
-                              <Badge variant="outline" className="text-xs">
-                                Você
-                              </Badge>
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>{user.email}</TableCell>
-                        <TableCell>
-                          <Badge variant={user.active ? 'default' : 'secondary'}>
-                            {user.active ? 'Ativo' : 'Inativo'}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>{formatDate(user.createdAt)}</TableCell>
-                        <TableCell>{formatDate(user.updatedAt)}</TableCell>
-                        <TableCell>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0">
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              {isCurrentUser ? (
-                                <DropdownMenuItem onClick={() => handleViewLogs(user)}>
-                                  <Activity className="mr-2 h-4 w-4" />
-                                  Ver Logs
-                                </DropdownMenuItem>
-                              ) : (
-                                <>
-                                  <DropdownMenuItem onClick={() => handleEdit(user)}>
-                                    <Pencil className="mr-2 h-4 w-4" />
-                                    Editar
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleViewLogs(user)}>
-                                    <Activity className="mr-2 h-4 w-4" />
-                                    Ver Logs
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => setTogglingUser(user)}>
-                                    {user.active ? (
-                                      <>
-                                        <UserX className="mr-2 h-4 w-4" />
-                                        Desativar
-                                      </>
-                                    ) : (
-                                      <>
-                                        <UserCheck className="mr-2 h-4 w-4" />
-                                        Ativar
-                                      </>
-                                    )}
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => setDeletingUser(user)}
-                                    className="text-destructive focus:text-destructive">
-                                    <UserX className="mr-2 h-4 w-4" />
-                                    Desativar permanentemente
-                                  </DropdownMenuItem>
-                                </>
-                              )}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </TableCell>
-                      </TableRow>
-                    )
-                  })}
-                </TableBody>
-              </Table>
-
-              {/* Controles de Paginação */}
-              <PaginationControls
-                className="mt-4"
-                currentPage={pagination.currentPage}
-                totalPages={pagination.totalPages}
-                totalItems={filteredUsers.length}
-                itemsPerPage={pagination.itemsPerPage}
-                startIndex={pagination.startIndex}
-                endIndex={pagination.endIndex}
-                hasNextPage={pagination.hasNextPage}
-                hasPreviousPage={pagination.hasPreviousPage}
-                visiblePages={pagination.getVisiblePages()}
-                onPageChange={pagination.setPage}
-                onFirstPage={pagination.goToFirstPage}
-                onLastPage={pagination.goToLastPage}
-                onNextPage={pagination.nextPage}
-                onPreviousPage={pagination.previousPage}
-              />
-            </>
+            <DataTable columns={columns} data={users || []} />
           )}
         </CardContent>
       </Card>
