@@ -5,6 +5,8 @@ import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, MoreHorizontal 
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
+import { cn } from '@/lib/utils'
+
 interface PaginationControlsProps {
   currentPage: number
   totalPages: number
@@ -23,6 +25,7 @@ interface PaginationControlsProps {
   showItemsPerPage?: boolean
   itemsPerPageOptions?: number[]
   onItemsPerPageChange?: (itemsPerPage: number) => void
+  className?: string
 }
 
 export function PaginationControls({
@@ -43,13 +46,14 @@ export function PaginationControls({
   showItemsPerPage = false,
   itemsPerPageOptions = [10, 20, 50, 100],
   onItemsPerPageChange,
+  className,
 }: PaginationControlsProps) {
   if (totalPages <= 1) {
     return null
   }
 
   return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className={cn('flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between', className)}>
       {/* Informações e itens por página */}
       <div className="text-muted-foreground flex items-center gap-4 text-sm">
         <span>

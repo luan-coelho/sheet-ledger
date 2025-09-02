@@ -63,7 +63,6 @@ function UsuariosPageContent() {
 
   // Hook para gerenciar paginação
   const pagination = usePagination({
-    itemsPerPage: 4,
     totalItems: filteredUsers.length,
   })
 
@@ -272,6 +271,7 @@ function UsuariosPageContent() {
 
               {/* Controles de Paginação */}
               <PaginationControls
+                className="mt-4"
                 currentPage={pagination.currentPage}
                 totalPages={pagination.totalPages}
                 totalItems={filteredUsers.length}
