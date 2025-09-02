@@ -12,13 +12,11 @@ import {
   startOfWeek,
 } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Calendar, ChevronLeft, ChevronRight, Clock, MapPin } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 
 import { WeekDays, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 
@@ -36,17 +34,6 @@ const weekDayToNumber: Record<WeekDays, number> = {
   [WeekDays.THURSDAY]: 4,
   [WeekDays.FRIDAY]: 5,
   [WeekDays.SATURDAY]: 6,
-}
-
-// Mapear números para nomes dos dias em português
-const dayNames: Record<number, string> = {
-  0: 'Domingo',
-  1: 'Segunda-feira',
-  2: 'Terça-feira',
-  3: 'Quarta-feira',
-  4: 'Quinta-feira',
-  5: 'Sexta-feira',
-  6: 'Sábado',
 }
 
 const dayNamesShort = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
@@ -121,19 +108,19 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
   return (
     <div className="rounded-lg border bg-white">
       {/* Header do calendário */}
-      <div className="flex items-center justify-between border-b p-4">
-        <h3 className="text-lg font-semibold">{format(currentViewDate, 'MMMM yyyy', { locale: ptBR })}</h3>
+      <div className="flex items-center justify-between border-b p-3">
+        <h3 className="text-base font-semibold">{format(currentViewDate, 'MMMM yyyy', { locale: ptBR })}</h3>
         <div className="flex items-center gap-2">
           {isMultipleMonths && (
             <>
               <Button variant="ghost" size="sm" onClick={navigatePrevious} disabled={!canNavigatePrevious}>
-                <ChevronLeft className="h-4 w-4" />
+                <ChevronLeft className="h-3 w-3" />
               </Button>
-              <div className="text-muted-foreground px-2 text-sm">
+              <div className="text-muted-foreground px-2 text-xs">
                 {currentMonthIndex + 1} de {monthsInPeriod.length}
               </div>
               <Button variant="ghost" size="sm" onClick={navigateNext} disabled={!canNavigateNext}>
-                <ChevronRight className="h-4 w-4" />
+                <ChevronRight className="h-3 w-3" />
               </Button>
             </>
           )}
@@ -143,7 +130,7 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
       {/* Dias da semana */}
       <div className="grid grid-cols-7 border-b">
         {dayNamesShort.map(day => (
-          <div key={day} className="text-muted-foreground p-2 text-center text-sm font-medium">
+          <div key={day} className="text-muted-foreground p-1 text-center text-xs font-medium">
             {day}
           </div>
         ))}
@@ -156,16 +143,38 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
           const isAttendance = isAttendanceDay(day)
           const sessions = getSessionsForDay(day)
 
+          // Obter horários se for dia de atendimento
+          const dayOfWeek = day.getDay()
+          const weekDaySession = formData.weekDaySessions.find(session => weekDayToNumber[session.day] === dayOfWeek)
+          const startTime = weekDaySession?.startTime
+          const endTime = weekDaySession?.endTime
+
           return (
             <div
               key={index}
-              className={`aspect-square border-r border-b p-1 last:border-r-0 ${!isCurrentMonth ? 'bg-muted/30 text-muted-foreground' : ''} ${isAttendance ? 'border-blue-200 bg-blue-50' : ''} `}>
+              className={`h-20 border-r border-b p-1 last:border-r-0 ${!isCurrentMonth ? 'bg-muted/30 text-muted-foreground' : ''} ${
+                isAttendance
+                  ? 'bg-primary/20 border-primary/90 text-black'
+                  : isCurrentMonth
+                    ? 'bg-white hover:bg-gray-50'
+                    : ''
+              } `}>
               <div className="flex h-full flex-col">
-                <div className="text-center text-sm font-medium">{format(day, 'd')}</div>
+                <div className={`text-center text-base font-medium`}>{format(day, 'd')}</div>
                 {isAttendance && (
-                  <div className="flex flex-1 flex-col items-center justify-center gap-1">
-                    <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                    {sessions > 0 && <div className="text-xs font-medium text-blue-700">{sessions}</div>}
+                  <div className="flex flex-1 flex-col items-center justify-center gap-0.5">
+                    {sessions > 0 && (
+                      <div className="bg-primary rounded px-1 text-xs font-bold text-white">
+                        {sessions} {sessions > 1 ? 'sessões' : 'sessão'}
+                      </div>
+                    )}
+                    {startTime && endTime && (
+                      <div className="mt-2 flex items-center justify-center gap-1">
+                        <div className="text-xs font-medium">{startTime}</div>
+                        <span className="text-xs font-medium">-</span>
+                        <div className="text-xs font-medium">{endTime}</div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -176,7 +185,7 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
 
       {/* Indicador de múltiplos meses */}
       {isMultipleMonths && (
-        <div className="text-muted-foreground border-t p-2 text-center text-xs">
+        <div className="text-muted-foreground border-t p-1 text-center text-xs">
           Período abrange {monthsInPeriod.length} mês{monthsInPeriod.length > 1 ? 'es' : ''}. Use as setas para navegar.
         </div>
       )}
@@ -263,56 +272,8 @@ export function SpreadsheetCalendar({ formData, onClose }: SpreadsheetCalendarPr
           </div>
         </div>
 
-        {/* Lista de atendimentos */}
-        <div>
-          <h4 className="mb-2 flex items-center gap-2 font-medium">
-            <Clock className="h-4 w-4" />
-            Cronograma de Atendimentos
-          </h4>
-          <ScrollArea className="h-64 w-full rounded-md border p-4">
-            <div className="space-y-2">
-              {attendanceDates.map((date, index) => {
-                const dayOfWeek = date.getDay()
-                const weekDaySession = formData.weekDaySessions.find(
-                  session => weekDayToNumber[session.day] === dayOfWeek,
-                )
-                const startTime = weekDaySession?.startTime || '08:00'
-                const endTime = weekDaySession?.endTime || '17:00'
-                const sessions = weekDaySession?.sessions || 1
-
-                return (
-                  <div
-                    key={index}
-                    className="bg-muted/30 hover:bg-muted/50 flex items-center justify-between rounded-lg p-3 transition-colors">
-                    <div className="flex items-center gap-3">
-                      <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                      <div>
-                        <div className="font-medium">
-                          {dayNames[dayOfWeek]}, {format(date, 'dd/MM/yyyy', { locale: ptBR })}
-                        </div>
-                        <div className="text-muted-foreground text-sm">
-                          {startTime} - {endTime}
-                        </div>
-                      </div>
-                    </div>
-                    <Badge variant="secondary">
-                      {sessions} sessão{sessions > 1 ? 'ões' : ''}
-                    </Badge>
-                  </div>
-                )
-              })}
-            </div>
-          </ScrollArea>
-        </div>
-
         {/* Calendário visual simplificado */}
-        <div>
-          <h4 className="mb-2 flex items-center gap-2 font-medium">
-            <MapPin className="h-4 w-4" />
-            Visualização do Calendário
-          </h4>
-          <SimpleCalendar attendanceDates={attendanceDates} formData={formData} />
-        </div>
+        <SimpleCalendar attendanceDates={attendanceDates} formData={formData} />
       </CardContent>
     </Card>
   )

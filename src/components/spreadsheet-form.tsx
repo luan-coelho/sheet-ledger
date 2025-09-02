@@ -768,26 +768,6 @@ export function SpreadsheetForm() {
                 <span className="sm:hidden">Calendário</span>
               </Button>
 
-              <Button type="submit" className="w-full sm:flex-1" disabled={isLoading || isCheckingFiles}>
-                {generateSpreadsheet.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <FileText className="mr-2 h-4 w-4" />
-                )}
-                <span className="hidden sm:inline">
-                  {generateSpreadsheet.isPending
-                    ? isMultipleMonths
-                      ? 'Gerando planilhas...'
-                      : 'Gerando planilha...'
-                    : isMultipleMonths
-                      ? 'Gerar planilhas (ZIP)'
-                      : 'Gerar planilha'}
-                </span>
-                <span className="sm:hidden">
-                  {generateSpreadsheet.isPending ? 'Gerando...' : isMultipleMonths ? 'Gerar ZIP' : 'Gerar'}
-                </span>
-              </Button>
-
               <Button
                 type="button"
                 variant="secondary"
@@ -818,6 +798,28 @@ export function SpreadsheetForm() {
                 </span>
                 <span className="sm:hidden">
                   {isCheckingFiles ? 'Verificando...' : generateDriveSpreadsheet.isPending ? 'Drive...' : 'Drive'}
+                </span>
+              </Button>
+            </div>
+
+            <div className="flex justify-center">
+              <Button type="submit" className="sm:flex-1" disabled={isLoading || isCheckingFiles}>
+                {generateSpreadsheet.isPending ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="mr-2 h-4 w-4" />
+                )}
+                <span className="hidden sm:inline">
+                  {generateSpreadsheet.isPending
+                    ? isMultipleMonths
+                      ? 'Gerando planilhas...'
+                      : 'Gerando planilha...'
+                    : isMultipleMonths
+                      ? 'Gerar planilhas (ZIP)'
+                      : 'Gerar planilha'}
+                </span>
+                <span className="sm:hidden">
+                  {generateSpreadsheet.isPending ? 'Gerando...' : isMultipleMonths ? 'Gerar ZIP' : 'Gerar'}
                 </span>
               </Button>
             </div>
