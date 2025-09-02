@@ -156,7 +156,7 @@ export class PreviewUtils {
     const endDate = new Date(year, month + 1, 0)
 
     // Cria um mapa para busca rápida de sessões por dia
-    const sessionsMap = new Map<WeekDays, { sessions: number; startTime: string; endTime: string }>()
+    const sessionsMap = new Map<WeekDays, { sessions: number; startTime?: string; endTime?: string }>()
     weekDaySessions.forEach(({ day, sessions, startTime, endTime }) => {
       sessionsMap.set(day, { sessions, startTime, endTime })
     })
@@ -223,7 +223,7 @@ export class PreviewUtils {
     const sessionDates: SessionDate[] = []
 
     // Cria um mapa para busca rápida de sessões por dia
-    const sessionsMap = new Map<WeekDays, { sessions: number; startTime: string; endTime: string }>()
+    const sessionsMap = new Map<WeekDays, { sessions: number; startTime?: string; endTime?: string }>()
     weekDaySessions.forEach(({ day, sessions, startTime, endTime }) => {
       sessionsMap.set(day, { sessions, startTime, endTime })
     })

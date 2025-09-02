@@ -33,8 +33,8 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
       // Remove the day
       newSelectedDays = value.filter(item => item.day !== day)
     } else {
-      // Add the day with default 4 sessions and default times
-      newSelectedDays = [...value, { day, sessions: 4, startTime: '08:00', endTime: '17:00' }]
+      // Add the day with default 4 sessions and no default times
+      newSelectedDays = [...value, { day, sessions: 4 }]
     }
 
     onChange?.(newSelectedDays)
@@ -127,14 +127,14 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
                       </div>
                       <div className="flex items-center gap-2">
                         <TimePickerSelector
-                          value={startTime}
+                          value={startTime || ''}
                           onChange={time => handleStartTimeChange(day, time)}
                           placeholder="Início"
                           className="h-7 w-16 flex-1 text-xs"
                         />
                         <span>-</span>
                         <TimePickerSelector
-                          value={endTime}
+                          value={endTime || ''}
                           onChange={time => handleEndTimeChange(day, time)}
                           placeholder="Fim"
                           className="h-7 w-16 flex-1 text-xs"
@@ -164,17 +164,17 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
                     </div>
 
                     <div className="flex items-center gap-2 md:flex-row">
-                      <Label className="text-muted-foreground hidden text-xs lg:block">Horários:</Label>
+                      <Label className="text-muted-foreground hidden text-xs lg:block">Horários (opcional):</Label>
                       <div className="space-x-2">
                         <TimePickerSelector
-                          value={startTime}
+                          value={startTime || ''}
                           onChange={time => handleStartTimeChange(day, time)}
                           placeholder="Início"
                           className="h-7 w-16 text-xs"
                         />
                         <span>-</span>
                         <TimePickerSelector
-                          value={endTime}
+                          value={endTime || ''}
                           onChange={time => handleEndTimeChange(day, time)}
                           placeholder="Fim"
                           className="h-7 w-16 text-xs"

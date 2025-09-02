@@ -19,7 +19,7 @@ export interface TransformedFormData {
     cnpj: string
     address: string
   }
-  weekDaySessions: Array<{ day: WeekDays; sessions: number; startTime: string; endTime: string }>
+  weekDaySessions: Array<{ day: WeekDays; sessions: number; startTime?: string; endTime?: string }>
   startDate: string
   endDate: string
   startTime: string

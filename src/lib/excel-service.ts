@@ -157,11 +157,11 @@ export class ExcelService {
         // Data no formato DD/MM/YYYY
         worksheet.getCell(`B${row}`).value = formatDateBrazilian(record.date)
 
-        // Horário de início (usa o horário específico do dia se disponível)
-        worksheet.getCell(`C${row}`).value = record.startTime || data.startTime || ''
+        // Horário de início (usa apenas o horário específico do dia, se disponível)
+        worksheet.getCell(`C${row}`).value = record.startTime || ''
 
-        // Horário de fim (usa o horário específico do dia se disponível)
-        worksheet.getCell(`D${row}`).value = record.endTime || data.endTime || ''
+        // Horário de fim (usa apenas o horário específico do dia, se disponível)
+        worksheet.getCell(`D${row}`).value = record.endTime || ''
 
         // Sessões por dia (agora na coluna E)
         worksheet.getCell(`E${row}`).value = record.sessions
@@ -261,7 +261,7 @@ export class ExcelService {
     const endDate = new Date(year, month + 1, 0)
 
     // Cria um mapa para busca rápida de sessões por dia
-    const sessionsMap = new Map<WeekDays, { sessions: number; startTime: string; endTime: string }>()
+    const sessionsMap = new Map<WeekDays, { sessions: number; startTime?: string; endTime?: string }>()
     weekDaySessions.forEach(({ day, sessions, startTime, endTime }) => {
       sessionsMap.set(day, { sessions, startTime, endTime })
     })
@@ -308,7 +308,7 @@ export class ExcelService {
     const records: SessionRecord[] = []
 
     // Cria um mapa de dias da semana para busca mais rápida
-    const weekDaySessionMap = new Map<WeekDays, { sessions: number; startTime: string; endTime: string }>()
+    const weekDaySessionMap = new Map<WeekDays, { sessions: number; startTime?: string; endTime?: string }>()
     weekDaySessions.forEach(ws => {
       weekDaySessionMap.set(ws.day, { sessions: ws.sessions, startTime: ws.startTime, endTime: ws.endTime })
     })

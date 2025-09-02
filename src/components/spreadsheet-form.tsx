@@ -114,7 +114,7 @@ export function SpreadsheetForm() {
       therapyId: '',
       cardNumber: '',
       guideNumber: '',
-      weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4, startTime: '08:00', endTime: '17:00' }],
+      weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }],
       startDate: formatDateISO(firstDayOfMonth),
       endDate: formatDateISO(lastDayOfMonth),
     },
@@ -188,15 +188,25 @@ export function SpreadsheetForm() {
     // Calcular horário mais cedo e mais tarde dos dias selecionados
     let earliestTime = '23:59'
     let latestTime = '00:00'
+    let hasValidTimes = false
 
     values.weekDaySessions.forEach(session => {
-      if (session.startTime < earliestTime) {
-        earliestTime = session.startTime
-      }
-      if (session.endTime > latestTime) {
-        latestTime = session.endTime
+      if (session.startTime && session.endTime) {
+        hasValidTimes = true
+        if (session.startTime < earliestTime) {
+          earliestTime = session.startTime
+        }
+        if (session.endTime > latestTime) {
+          latestTime = session.endTime
+        }
       }
     })
+
+    // Se nenhum horário foi definido, use horários padrão
+    if (!hasValidTimes) {
+      earliestTime = '08:00'
+      latestTime = '17:00'
+    }
 
     return {
       professional: professional?.name || '',
@@ -641,7 +651,8 @@ export function SpreadsheetForm() {
                     Dias da semana, sessões e horários
                   </FormLabel>
                   <FormDescription className="text-center text-xs sm:text-sm">
-                    Selecione os dias de atendimento, configure a quantidade de sessões e os horários por dia
+                    Selecione os dias de atendimento, configure a quantidade de sessões e opcionalmente os horários por
+                    dia
                   </FormDescription>
                   <FormControl>
                     <WeekdaySessionSelector value={field.value} onChange={field.onChange} />
@@ -654,7 +665,7 @@ export function SpreadsheetForm() {
             {/* Horários globais - aplicar a todos os dias */}
             <div className="bg-muted/30 rounded-lg border p-3">
               <div className="mb-3 text-center">
-                <h3 className="text-sm font-medium">Aplicar horário a todos os dias</h3>
+                <h3 className="text-sm font-medium">Aplicar horário a todos os dias (opcional)</h3>
                 <p className="text-muted-foreground mt-1 text-xs">
                   Configure um horário para aplicar automaticamente a todos os dias selecionados
                 </p>

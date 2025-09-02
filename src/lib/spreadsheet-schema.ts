@@ -29,8 +29,8 @@ export const meses = [
 export type WeekdaySession = {
   day: WeekDays
   sessions: number
-  startTime: string
-  endTime: string
+  startTime?: string
+  endTime?: string
 }
 
 export const spreadsheetFormSchema = z
@@ -52,31 +52,51 @@ export const spreadsheetFormSchema = z
           sessions: z.number().min(1, 'Mínimo 1 sessão').max(10, 'Máximo 10 sessões'),
           startTime: z
             .string()
-            .min(1, 'Horário de início é obrigatório')
-            .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de horário inválido (HH:MM)'),
+            .optional()
+            .refine(
+              value => !value || /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value),
+              'Formato de horário inválido (HH:MM)',
+            ),
           endTime: z
             .string()
-            .min(1, 'Horário fim é obrigatório')
-            .regex(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/, 'Formato de horário inválido (HH:MM)'),
+            .optional()
+            .refine(
+              value => !value || /^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/.test(value),
+              'Formato de horário inválido (HH:MM)',
+            ),
         }),
       )
       .min(1, 'Selecione pelo menos um dia da semana')
       .refine(
         weekDaySessions => {
           return weekDaySessions.every(session => {
-            if (!session.startTime || !session.endTime) return true
+            // Se ambos os horários estão definidos, valida se o horário fim é posterior ao início
+            if (session.startTime && session.endTime) {
+              const [startHour, startMinute] = session.startTime.split(':').map(Number)
+              const [endHour, endMinute] = session.endTime.split(':').map(Number)
 
-            const [startHour, startMinute] = session.startTime.split(':').map(Number)
-            const [endHour, endMinute] = session.endTime.split(':').map(Number)
+              const startTimeInMinutes = startHour * 60 + startMinute
+              const endTimeInMinutes = endHour * 60 + endMinute
 
-            const startTimeInMinutes = startHour * 60 + startMinute
-            const endTimeInMinutes = endHour * 60 + endMinute
+              return startTimeInMinutes < endTimeInMinutes
+            }
 
-            return startTimeInMinutes < endTimeInMinutes
+            // Se apenas um horário está definido, não é válido
+            if (session.startTime && !session.endTime) {
+              return false
+            }
+
+            if (!session.startTime && session.endTime) {
+              return false
+            }
+
+            // Ambos definidos ou ambos indefinidos é válido
+            return true
           })
         },
         {
-          message: 'Horário fim deve ser posterior ao horário de início para todos os dias',
+          message:
+            'Se informar horários, ambos início e fim devem ser preenchidos e o fim deve ser posterior ao início',
         },
       ),
     startDate: z.string().min(1, 'Data de início é obrigatória'),
