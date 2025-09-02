@@ -504,7 +504,6 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
                     {/* Primeira página */}
                     <Button
                       variant="outline"
-                      size="sm"
                       onClick={() => {
                         const newPagination = { ...pagination, pageIndex: 0 }
                         setPagination(newPagination)
@@ -518,7 +517,6 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
                     {/* Página anterior */}
                     <Button
                       variant="outline"
-                      size="sm"
                       onClick={() => {
                         const newPagination = { ...pagination, pageIndex: pagination.pageIndex - 1 }
                         setPagination(newPagination)
@@ -540,7 +538,6 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
                           ) : (
                             <Button
                               variant={pagination.pageIndex + 1 === page ? 'default' : 'outline'}
-                              size="sm"
                               onClick={() => {
                                 const newPagination = { ...pagination, pageIndex: (page as number) - 1 }
                                 setPagination(newPagination)
@@ -557,7 +554,6 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
                     {/* Próxima página */}
                     <Button
                       variant="outline"
-                      size="sm"
                       onClick={() => {
                         const newPagination = { ...pagination, pageIndex: pagination.pageIndex + 1 }
                         setPagination(newPagination)
@@ -571,7 +567,6 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
                     {/* Última página */}
                     <Button
                       variant="outline"
-                      size="sm"
                       onClick={() => {
                         const newPagination = { ...pagination, pageIndex: table.getPageCount() - 1 }
                         setPagination(newPagination)

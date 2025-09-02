@@ -1,10 +1,11 @@
 'use client'
 
-import { Loader2, MoreHorizontal, Pencil, Plus, Search, Trash2, X } from 'lucide-react'
-import { useState } from 'react'
+import { Loader2, Plus } from 'lucide-react'
+import { Suspense, useState } from 'react'
 
 import { HealthPlan } from '@/app/db/schemas/health-plan-schema'
 
+import { createColumns, DataTable } from '@/components/data-tables/health-plans'
 import { HealthPlanForm } from '@/components/health-plan-form'
 import {
   AlertDialog,
@@ -17,79 +18,18 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import {
-  Pagination,
-  PaginationContent,
-  PaginationEllipsis,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from '@/components/ui/pagination'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { useDeleteHealthPlan, useHealthPlans } from '@/hooks/use-health-plans'
 
-export default function PlanosSaudePage() {
+function PlanosSaudePageContent() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingHealthPlan, setEditingHealthPlan] = useState<HealthPlan | undefined>()
   const [deletingHealthPlan, setDeletingHealthPlan] = useState<HealthPlan | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const [searchFilter, setSearchFilter] = useState('')
-  const itemsPerPage = 10
 
   const { data: healthPlans, isLoading, error } = useHealthPlans()
   const deleteMutation = useDeleteHealthPlan()
-
-  // Filtrar planos de saúde por nome
-  const filteredHealthPlans =
-    healthPlans?.filter(healthPlan => healthPlan.name.toLowerCase().includes(searchFilter.toLowerCase())) || []
-
-  // Calcular paginação dos planos de saúde filtrados
-  const totalPages = Math.ceil(filteredHealthPlans.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const paginatedHealthPlans = filteredHealthPlans.slice(startIndex, endIndex)
-
-  // Gerar páginas para navegação
-  const getPageNumbers = () => {
-    const pages = []
-    const maxVisiblePages = 5
-
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i)
-      }
-    } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) {
-          pages.push(i)
-        }
-        pages.push('ellipsis')
-        pages.push(totalPages)
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1)
-        pages.push('ellipsis')
-        for (let i = totalPages - 3; i <= totalPages; i++) {
-          pages.push(i)
-        }
-      } else {
-        pages.push(1)
-        pages.push('ellipsis')
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-          pages.push(i)
-        }
-        pages.push('ellipsis')
-        pages.push(totalPages)
-      }
-    }
-
-    return pages
-  }
 
   const handleEdit = (healthPlan: HealthPlan) => {
     setEditingHealthPlan(healthPlan)
@@ -101,13 +41,6 @@ export default function PlanosSaudePage() {
       try {
         await deleteMutation.mutateAsync(deletingHealthPlan.id)
         setDeletingHealthPlan(null)
-
-        // Ajustar página atual se necessário
-        const newTotalItems = filteredHealthPlans.length - 1
-        const newTotalPages = Math.ceil(newTotalItems / itemsPerPage)
-        if (currentPage > newTotalPages && newTotalPages > 0) {
-          setCurrentPage(newTotalPages)
-        }
       } catch (error) {
         console.error('Erro ao excluir plano de saúde:', error)
       }
@@ -124,29 +57,11 @@ export default function PlanosSaudePage() {
     setEditingHealthPlan(undefined)
   }
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page)
-  }
-
-  const handleSearchChange = (value: string) => {
-    setSearchFilter(value)
-    setCurrentPage(1) // Resetar para primeira página ao filtrar
-  }
-
-  const clearSearch = () => {
-    setSearchFilter('')
-    setCurrentPage(1)
-  }
-
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(date))
-  }
+  // Criar as colunas com as ações
+  const columns = createColumns({
+    onEdit: handleEdit,
+    onDelete: setDeletingHealthPlan,
+  })
 
   if (error) {
     return (
@@ -179,168 +94,16 @@ export default function PlanosSaudePage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Planos de Saúde</CardTitle>
-          <CardDescription>
-            {searchFilter ? (
-              <>
-                {filteredHealthPlans.length} plano(s) de saúde encontrado(s) de {healthPlans?.length || 0} total
-                {filteredHealthPlans.length > itemsPerPage && (
-                  <span>
-                    {' '}
-                    - Página {currentPage} de {totalPages}
-                  </span>
-                )}
-              </>
-            ) : (
-              <>
-                {healthPlans?.length || 0} plano(s) de saúde cadastrado(s)
-                {healthPlans && healthPlans.length > itemsPerPage && (
-                  <span>
-                    {' '}
-                    - Página {currentPage} de {totalPages}
-                  </span>
-                )}
-              </>
-            )}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {/* Campo de filtro */}
-          <div className="mb-6 flex items-center space-x-2">
-            <div className="relative max-w-sm flex-1">
-              <Search className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-              <Input
-                placeholder="Buscar por nome..."
-                value={searchFilter}
-                onChange={e => handleSearchChange(e.target.value)}
-                className="pr-10 pl-10"
-              />
-              {searchFilter && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearSearch}
-                  className="hover:bg-muted absolute top-1/2 right-1 h-6 w-6 -translate-y-1/2 transform p-0">
-                  <X className="h-3 w-3" />
-                  <span className="sr-only">Limpar busca</span>
-                </Button>
-              )}
-            </div>
-          </div>
-
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin" />
-              <span className="ml-2">Carregando planos de saúde...</span>
-            </div>
-          ) : filteredHealthPlans.length > 0 ? (
-            <>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Criado em</TableHead>
-                    <TableHead>Atualizado em</TableHead>
-                    <TableHead className="w-[70px]">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedHealthPlans.map(healthPlan => (
-                    <TableRow key={healthPlan.id}>
-                      <TableCell className="font-medium">{healthPlan.name}</TableCell>
-                      <TableCell>{formatDate(healthPlan.createdAt)}</TableCell>
-                      <TableCell>{formatDate(healthPlan.updatedAt)}</TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Abrir menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleEdit(healthPlan)}>
-                              <Pencil className="mr-2 h-4 w-4" />
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => setDeletingHealthPlan(healthPlan)}
-                              className="text-destructive">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Excluir
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-
-              {totalPages > 1 && (
-                <div className="mt-6 flex justify-center">
-                  <Pagination>
-                    <PaginationContent>
-                      <PaginationItem>
-                        <PaginationPrevious
-                          onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                          className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                      </PaginationItem>
-
-                      {getPageNumbers().map((page, index) => (
-                        <PaginationItem key={index}>
-                          {page === 'ellipsis' ? (
-                            <PaginationEllipsis />
-                          ) : (
-                            <PaginationLink
-                              onClick={() => handlePageChange(page as number)}
-                              isActive={currentPage === page}
-                              className="cursor-pointer">
-                              {page}
-                            </PaginationLink>
-                          )}
-                        </PaginationItem>
-                      ))}
-
-                      <PaginationItem>
-                        <PaginationNext
-                          onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                          className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                        />
-                      </PaginationItem>
-                    </PaginationContent>
-                  </Pagination>
-                </div>
-              )}
-            </>
-          ) : (
-            <div className="py-8 text-center">
-              {searchFilter ? (
-                <div>
-                  <p className="text-muted-foreground mb-4">
-                    Nenhum plano de saúde encontrado com o nome &quot;{searchFilter}&quot;.
-                  </p>
-                  <Button variant="outline" onClick={clearSearch}>
-                    <X className="mr-2 h-4 w-4" />
-                    Limpar Filtro
-                  </Button>
-                </div>
-              ) : (
-                <div>
-                  <p className="text-muted-foreground mb-4">Nenhum plano de saúde cadastrado ainda.</p>
-                  <Button onClick={handleNewHealthPlan}>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Cadastrar Primeiro Plano de Saúde
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Carregando planos de saúde...</span>
+        </div>
+      ) : healthPlans && healthPlans.length === 0 ? (
+        <div className="text-muted-foreground py-8 text-center">Nenhum plano de saúde cadastrado.</div>
+      ) : (
+        <DataTable columns={columns} data={healthPlans || []} />
+      )}
 
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
         <DialogContent className="sm:max-w-[425px]">
@@ -379,5 +142,31 @@ export default function PlanosSaudePage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  )
+}
+
+export default function PlanosSaudePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Planos de Saúde</h1>
+              <p className="text-muted-foreground">Gerencie os planos de saúde do sistema</p>
+            </div>
+          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-2">Carregando...</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }>
+      <PlanosSaudePageContent />
+    </Suspense>
   )
 }

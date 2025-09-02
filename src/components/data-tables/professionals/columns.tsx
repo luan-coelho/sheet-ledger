@@ -145,7 +145,7 @@ export function createColumns(
         return cellValue === value
       },
     },
-    {
+    /* {
       accessorKey: 'createdAt',
       header: ({ column }) => {
         return (
@@ -182,8 +182,7 @@ export function createColumns(
           rowDate.getDate() === filterDate.getDate()
         )
       },
-    },
-    {
+    } */ /* {
       accessorKey: 'updatedAt',
       header: ({ column }) => {
         return (
@@ -220,7 +219,7 @@ export function createColumns(
           rowDate.getDate() === filterDate.getDate()
         )
       },
-    },
+    } */
     {
       id: 'actions',
       cell: ({ row }) => {

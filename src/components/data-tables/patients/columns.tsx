@@ -179,7 +179,7 @@ export function createColumns(
         return cellValue.toLowerCase().includes(value.toLowerCase())
       },
     },
-    {
+    /* {
       accessorKey: 'createdAt',
       header: ({ column }) => {
         return (
@@ -216,7 +216,7 @@ export function createColumns(
           rowDate.getDate() === filterDate.getDate()
         )
       },
-    },
+    }, */
     {
       id: 'actions',
       cell: ({ row }) => {

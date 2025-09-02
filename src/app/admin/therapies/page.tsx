@@ -1,10 +1,11 @@
 'use client'
 
-import { Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { Loader2, Plus } from 'lucide-react'
+import { Suspense, useState } from 'react'
 
 import { Therapy } from '@/app/db/schemas/therapy-schema'
 
+import { createColumns, DataTable } from '@/components/data-tables/therapies'
 import { TherapyForm } from '@/components/therapy-form'
 import {
   AlertDialog,
@@ -16,16 +17,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { useDeleteTherapy, useTherapies } from '@/hooks/use-therapies'
 
-export default function TerapiasPage() {
+function TerapiasPageContent() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTherapy, setEditingTherapy] = useState<Therapy | undefined>()
   const [deletingTherapy, setDeletingTherapy] = useState<Therapy | null>(null)
@@ -59,15 +57,11 @@ export default function TerapiasPage() {
     setEditingTherapy(undefined)
   }
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(date))
-  }
+  // Criar as colunas com as ações
+  const columns = createColumns({
+    onEdit: handleEdit,
+    onDelete: setDeletingTherapy,
+  })
 
   if (error) {
     return (
@@ -100,74 +94,16 @@ export default function TerapiasPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Terapias</CardTitle>
-          <CardDescription>{therapies?.length || 0} terapia(s) cadastrada(s)</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin" />
-              <span className="ml-2">Carregando terapias...</span>
-            </div>
-          ) : therapies && therapies.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead>Criado em</TableHead>
-                  <TableHead>Atualizado em</TableHead>
-                  <TableHead className="w-[70px]">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {therapies.map(therapy => (
-                  <TableRow key={therapy.id}>
-                    <TableCell className="font-medium">{therapy.name}</TableCell>
-                    <TableCell>
-                      <Badge variant={therapy.active ? 'default' : 'secondary'}>
-                        {therapy.active ? 'Ativa' : 'Inativa'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{formatDate(therapy.createdAt)}</TableCell>
-                    <TableCell>{formatDate(therapy.updatedAt)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(therapy)}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setDeletingTherapy(therapy)} className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="py-8 text-center">
-              <p className="text-muted-foreground mb-4">Nenhuma terapia cadastrada ainda.</p>
-              <Button onClick={handleNewTherapy}>
-                <Plus className="mr-2 h-4 w-4" />
-                Cadastrar Primeira Terapia
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Carregando terapias...</span>
+        </div>
+      ) : therapies && therapies.length === 0 ? (
+        <div className="text-muted-foreground py-8 text-center">Nenhuma terapia cadastrada.</div>
+      ) : (
+        <DataTable columns={columns} data={therapies || []} />
+      )}
 
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
         <DialogContent className="sm:max-w-[425px]">
@@ -204,5 +140,31 @@ export default function TerapiasPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  )
+}
+
+export default function TerapiasPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Terapias</h1>
+              <p className="text-muted-foreground">Gerencie as terapias do sistema</p>
+            </div>
+          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-2">Carregando...</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }>
+      <TerapiasPageContent />
+    </Suspense>
   )
 }
