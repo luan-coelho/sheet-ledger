@@ -263,7 +263,7 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
       if (!config.enableUrlSorting) return
 
       const params = new URLSearchParams(searchParams.toString())
-      
+
       if (newSorting.length > 0) {
         const sort = newSorting[0]
         params.set('sortBy', sort.id)
@@ -316,11 +316,11 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
     // Só atualizar se houver diferença para evitar loops
     const currentSort = sorting[0]
     const newSort = newSorting[0]
-    
+
     if (
-      (currentSort?.id !== newSort?.id) || 
-      (currentSort?.desc !== newSort?.desc) ||
-      (sorting.length !== newSorting.length)
+      currentSort?.id !== newSort?.id ||
+      currentSort?.desc !== newSort?.desc ||
+      sorting.length !== newSorting.length
     ) {
       setSorting(newSorting)
     }
@@ -329,7 +329,7 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
   const table = useReactTable({
     data,
     columns,
-    onSortingChange: (updater) => {
+    onSortingChange: updater => {
       const newSorting = typeof updater === 'function' ? updater(sorting) : updater
       setSorting(newSorting)
       updateURLSorting(newSorting)
