@@ -108,24 +108,30 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
   return (
     <div className="bg-background rounded-lg border">
       {/* Header do calendário */}
-      <div className="flex items-center justify-between border-b px-4 py-2">
-        <h3 className="flex items-center gap-2 text-base font-medium">
-          <Calendar className="h-4 w-4" />
-          {format(currentViewDate, 'MMMM', { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())}
-        </h3>
-        <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center border-b px-4 py-2">
+        <div className="flex items-center gap-3">
           {isMultipleMonths && (
-            <>
-              <Button variant="ghost" size="sm" onClick={navigatePrevious} disabled={!canNavigatePrevious}>
-                <ChevronLeft className="h-3 w-3" />
-              </Button>
-              <div className="text-muted-foreground px-2 text-xs">
-                {currentMonthIndex + 1} de {monthsInPeriod.length}
-              </div>
-              <Button variant="ghost" size="sm" onClick={navigateNext} disabled={!canNavigateNext}>
-                <ChevronRight className="h-3 w-3" />
-              </Button>
-            </>
+            <Button
+              className="cursor-pointer"
+              variant="outline"
+              size="sm"
+              onClick={navigatePrevious}
+              disabled={!canNavigatePrevious}>
+              <ChevronLeft className="h-3 w-3" />
+            </Button>
+          )}
+          <h3 className="font-base font-medium">
+            {format(currentViewDate, 'MMMM', { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())}
+          </h3>
+          {isMultipleMonths && (
+            <Button
+              className="cursor-pointer"
+              variant="outline"
+              size="sm"
+              onClick={navigateNext}
+              disabled={!canNavigateNext}>
+              <ChevronRight className="h-3 w-3" />
+            </Button>
           )}
         </div>
       </div>
@@ -247,7 +253,7 @@ export function SpreadsheetCalendar({ formData, onClose }: SpreadsheetCalendarPr
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="flex items-center gap-2">Calendário de Atendimentos</CardTitle>
         {onClose && (
-          <Button variant="ghost" size="sm" onClick={onClose}>
+          <Button className="cursor-pointer" variant="ghost" size="sm" onClick={onClose}>
             <X className="h-4 w-4" />
           </Button>
         )}
