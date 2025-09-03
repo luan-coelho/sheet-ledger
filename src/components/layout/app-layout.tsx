@@ -20,9 +20,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             <div className="p-6">{children}</div>
           </div>
         </main>
-        <div className="fixed right-0 bottom-0 left-0 z-40 md:left-[var(--sidebar-width)] md:peer-data-[state=collapsed]:left-[var(--sidebar-width-icon)]">
-          <AppFooter />
-        </div>
+        <AppFooter />
       </SidebarInset>
     </SidebarProvider>
   )
