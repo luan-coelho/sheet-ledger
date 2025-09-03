@@ -1,11 +1,12 @@
 'use client'
 
-import { Loader2, MoreHorizontal, Pencil, Plus, Trash2 } from 'lucide-react'
-import { useState } from 'react'
+import { Loader2, Plus } from 'lucide-react'
+import { Suspense, useState } from 'react'
 
 import { Company } from '@/app/db/schemas/company-schema'
 
 import { CompanyForm } from '@/components/company-form'
+import { createColumns, DataTable } from '@/components/data-tables/companies'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,14 +18,12 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 
 import { useCompanies, useDeleteCompany } from '@/hooks/use-companies'
 
-export default function EmpresasPage() {
+function EmpresasPageContent() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingCompany, setEditingCompany] = useState<Company | undefined>()
   const [deletingCompany, setDeletingCompany] = useState<Company | null>(null)
@@ -58,15 +57,11 @@ export default function EmpresasPage() {
     setEditingCompany(undefined)
   }
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    }).format(new Date(date))
-  }
+  // Criar as colunas com as ações
+  const columns = createColumns({
+    onEdit: handleEdit,
+    onDelete: setDeletingCompany,
+  })
 
   if (error) {
     return (
@@ -99,72 +94,16 @@ export default function EmpresasPage() {
         </Button>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Empresas</CardTitle>
-          <CardDescription>{companies?.length || 0} empresa(s) cadastrada(s)</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {isLoading ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin" />
-              <span className="ml-2">Carregando empresas...</span>
-            </div>
-          ) : companies && companies.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Endereço</TableHead>
-                  <TableHead>Criado em</TableHead>
-                  <TableHead>Atualizado em</TableHead>
-                  <TableHead className="w-[70px]">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {companies.map(company => (
-                  <TableRow key={company.id}>
-                    <TableCell className="font-medium">{company.name}</TableCell>
-                    <TableCell className="max-w-[300px] truncate" title={company.address}>
-                      {company.address}
-                    </TableCell>
-                    <TableCell>{formatDate(company.createdAt)}</TableCell>
-                    <TableCell>{formatDate(company.updatedAt)}</TableCell>
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEdit(company)}>
-                            <Pencil className="mr-2 h-4 w-4" />
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => setDeletingCompany(company)} className="text-destructive">
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Excluir
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="py-8 text-center">
-              <p className="text-muted-foreground mb-4">Nenhuma empresa cadastrada ainda.</p>
-              <Button onClick={handleNewCompany}>
-                <Plus className="mr-2 h-4 w-4" />
-                Cadastrar Primeira Empresa
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-8">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <span className="ml-2">Carregando empresas...</span>
+        </div>
+      ) : companies && companies.length === 0 ? (
+        <div className="text-muted-foreground py-8 text-center">Nenhuma empresa cadastrada.</div>
+      ) : (
+        <DataTable columns={columns} data={companies || []} />
+      )}
 
       <Dialog open={isModalOpen} onOpenChange={handleModalClose}>
         <DialogContent
@@ -205,5 +144,31 @@ export default function EmpresasPage() {
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  )
+}
+
+export default function EmpresasPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Empresas</h1>
+              <p className="text-muted-foreground">Gerencie as empresas do sistema</p>
+            </div>
+          </div>
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-8 w-8 animate-spin" />
+                <span className="ml-2">Carregando...</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      }>
+      <EmpresasPageContent />
+    </Suspense>
   )
 }
