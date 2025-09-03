@@ -12,7 +12,7 @@ import {
   startOfWeek,
 } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Calendar, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useMemo, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
@@ -106,10 +106,13 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
   }
 
   return (
-    <div className="rounded-lg border bg-white">
+    <div className="bg-background rounded-lg border">
       {/* Header do calendário */}
-      <div className="flex items-center justify-between border-b p-3">
-        <h3 className="text-base font-semibold">{format(currentViewDate, 'MMMM yyyy', { locale: ptBR })}</h3>
+      <div className="flex items-center justify-between border-b px-4 py-2">
+        <h3 className="flex items-center gap-2 text-base font-medium">
+          <Calendar className="h-4 w-4" />
+          {format(currentViewDate, 'MMMM', { locale: ptBR }).replace(/^\w/, c => c.toUpperCase())}
+        </h3>
         <div className="flex items-center gap-2">
           {isMultipleMonths && (
             <>
@@ -130,7 +133,7 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
       {/* Dias da semana */}
       <div className="grid grid-cols-7 border-b">
         {dayNamesShort.map(day => (
-          <div key={day} className="text-muted-foreground p-1 text-center text-xs font-medium">
+          <div key={day} className="text-muted-foreground p-2 text-center text-xs font-medium">
             {day}
           </div>
         ))}
@@ -152,15 +155,15 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
           return (
             <div
               key={index}
-              className={`h-20 border-r border-b p-1 last:border-r-0 ${!isCurrentMonth ? 'bg-muted/30 text-muted-foreground' : ''} ${
+              className={`h-20 border-r border-b p-1 last:border-r-0 ${!isCurrentMonth ? 'bg-muted dark:bg-muted/30 text-muted-foreground' : ''} ${
                 isAttendance
-                  ? 'bg-primary/20 border-primary/90 text-black'
+                  ? 'bg-primary/20 border-primary/30 text-foreground'
                   : isCurrentMonth
-                    ? 'bg-white hover:bg-gray-50'
+                    ? 'bg-background hover:bg-background/50'
                     : ''
               } `}>
               <div className="flex h-full flex-col">
-                <div className={`text-center text-base font-medium`}>{format(day, 'd')}</div>
+                <div className={`text-center text-lg font-medium`}>{format(day, 'd')}</div>
                 {isAttendance && (
                   <div className="flex flex-1 flex-col items-center justify-center gap-0.5">
                     {sessions > 0 && (
@@ -169,10 +172,10 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
                       </div>
                     )}
                     {startTime && endTime && (
-                      <div className="mt-2 flex items-center justify-center gap-1">
-                        <div className="text-xs font-medium">{startTime}</div>
-                        <span className="text-xs font-medium">-</span>
-                        <div className="text-xs font-medium">{endTime}</div>
+                      <div className="text-foreground mt-2 flex items-center justify-center gap-1">
+                        <div className="text-xs">{startTime}</div>
+                        <span className="text-xs">-</span>
+                        <div className="text-xs">{endTime}</div>
                       </div>
                     )}
                   </div>
@@ -185,7 +188,7 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
 
       {/* Indicador de múltiplos meses */}
       {isMultipleMonths && (
-        <div className="text-muted-foreground border-t p-1 text-center text-xs">
+        <div className="text-muted-foreground p-3 text-center text-sm">
           Período abrange {monthsInPeriod.length} mês{monthsInPeriod.length > 1 ? 'es' : ''}. Use as setas para navegar.
         </div>
       )}
@@ -241,14 +244,11 @@ export function SpreadsheetCalendar({ formData, onClose }: SpreadsheetCalendarPr
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
-          Calendário de Atendimentos
-        </CardTitle>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle className="flex items-center gap-2">Calendário de Atendimentos</CardTitle>
         {onClose && (
           <Button variant="ghost" size="sm" onClick={onClose}>
-            ✕
+            <X className="h-4 w-4" />
           </Button>
         )}
       </CardHeader>

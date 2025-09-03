@@ -22,7 +22,8 @@ export default {
   secret: process.env.AUTH_SECRET,
   session: {
     strategy: 'jwt',
-    maxAge: 24 * 60 * 60, // 1 dia
+    // maxAge: 24 * 60 * 60, // 1 dia
+    maxAge: 24 * 60 * 60 * 7, // 1 semana
   },
   pages: {
     signIn: routes.frontend.auth.signIn,

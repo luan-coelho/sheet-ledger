@@ -1,4 +1,5 @@
 import { SpreadsheetForm } from '@/components/spreadsheet-form'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 import { auth } from '@/lib/auth'
 
@@ -14,7 +15,14 @@ export default async function SheetsPage() {
         <h1 className="text-3xl font-bold tracking-tight">Gerador de Frequência</h1>
       </div>
 
-      <SpreadsheetForm />
+      <Card>
+        <CardHeader className="h-14">
+          <CardTitle>Preencha os dados para gerar a planilha de atendimento.</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <SpreadsheetForm />
+        </CardContent>
+      </Card>
     </div>
   )
 }

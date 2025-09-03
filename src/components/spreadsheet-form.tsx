@@ -2,7 +2,7 @@
 
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Calendar, Cloud, Eye, FileText, Loader2 } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
@@ -401,546 +401,541 @@ export function SpreadsheetForm() {
   }, [driveGenerationResult])
 
   return (
-    <Card className="w-full">
-      <CardHeader>
-        <CardTitle>Preencha os dados para gerar a planilha de atendimento.</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Todos os campos em um grid único para preenchimento 100% das linhas */}
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 xl:grid-cols-6">
-              <FormField
-                control={form.control}
-                name="companyId"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Empresa</FormLabel>
-                    <FormControl>
-                      <CompanySelector
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        placeholder="Selecione uma empresa..."
-                        showValidationIcon
-                        error={form.formState.errors.companyId}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="professionalId"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Profissional</FormLabel>
-                    <FormControl>
-                      <ProfessionalSelector
-                        value={field.value}
-                        onValueChange={handleProfessionalChange}
-                        placeholder="Selecione um profissional..."
-                        showValidationIcon
-                        error={form.formState.errors.professionalId}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="licenseNumber"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Nº conselho</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nº conselho do profissional"
-                        {...field}
-                        showValidationIcon
-                        error={form.formState.errors.licenseNumber}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="therapyId"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Terapia</FormLabel>
-                    <FormControl>
-                      <TherapySelector
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        placeholder="Selecione uma terapia..."
-                        showValidationIcon
-                        error={form.formState.errors.therapyId}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="authorizedSession"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Sessão autorizada (opcional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Tipo de sessão autorizada"
-                        {...field}
-                        showValidationIcon
-                        error={form.formState.errors.authorizedSession}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="patientId"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Paciente</FormLabel>
-                    <FormControl>
-                      <PatientSelector
-                        value={field.value}
-                        onValueChange={handlePatientChange}
-                        placeholder="Selecione um paciente..."
-                        showValidationIcon
-                        error={form.formState.errors.patientId}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="guardian"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Responsável</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nome do responsável"
-                        {...field}
-                        showValidationIcon
-                        error={form.formState.errors.guardian}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="healthPlanId"
-                render={({ field }) => (
-                  <FormItem className="sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Plano de saúde</FormLabel>
-                    <FormControl>
-                      <HealthPlanSelector
-                        value={field.value}
-                        onValueChange={field.onChange}
-                        placeholder="Selecione um plano de saúde..."
-                        showValidationIcon
-                        error={form.formState.errors.healthPlanId}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="cardNumber"
-                render={({ field }) => (
-                  <FormItem className="col-span-1 sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Nº carteirinha (opcional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nº da carteirinha"
-                        {...field}
-                        showValidationIcon
-                        error={form.formState.errors.cardNumber}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="guideNumber"
-                render={({ field }) => (
-                  <FormItem className="col-span-1 sm:col-span-2 xl:col-span-2">
-                    <FormLabel>Guia Nº (opcional)</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Nº da guia"
-                        {...field}
-                        showValidationIcon
-                        error={form.formState.errors.guideNumber}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="startDate"
-                render={({ field }) => (
-                  <FormItem className="col-span-1 sm:col-span-1 md:col-span-2 lg:col-span-1">
-                    <FormLabel>Data de início</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        className="w-full"
-                        date={field.value ? new Date(field.value + 'T00:00:00') : undefined}
-                        onSelect={date => {
-                          const newStartDate = date ? formatDateToLocal(date) : ''
-                          field.onChange(newStartDate)
-
-                          // Se a data fim já estiver selecionada e for anterior ou igual à nova data início,
-                          // limpa a data fim para forçar o usuário a selecionar uma nova
-                          const currentEndDate = form.getValues('endDate')
-                          if (currentEndDate && date && new Date(currentEndDate + 'T00:00:00') <= date) {
-                            form.setValue('endDate', '')
-                          }
-                        }}
-                        placeholder="Selecione a data de início"
-                        format="dd/MM/yyyy"
-                        showValidationIcon
-                        error={form.formState.errors.startDate}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="endDate"
-                render={({ field }) => (
-                  <FormItem className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-1">
-                    <FormLabel>Data fim</FormLabel>
-                    <FormControl>
-                      <DatePicker
-                        className="w-full"
-                        date={field.value ? new Date(field.value + 'T00:00:00') : undefined}
-                        onSelect={date => field.onChange(date ? formatDateToLocal(date) : '')}
-                        placeholder="Selecione a data fim"
-                        fromDate={getMinEndDate(startDate)}
-                        format="dd/MM/yyyy"
-                        showValidationIcon
-                        error={form.formState.errors.endDate}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
-            <Separator />
-
-            {/* Dias da semana e sessões */}
+    <React.Fragment>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+          {/* Todos os campos em um grid único para preenchimento 100% das linhas */}
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-4 xl:grid-cols-6">
             <FormField
               control={form.control}
-              name="weekDaySessions"
+              name="companyId"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="block text-center sm:flex sm:justify-center">
-                    Dias da semana, sessões e horários
-                  </FormLabel>
-                  <FormDescription className="text-center text-xs sm:text-sm">
-                    Selecione os dias de atendimento, configure a quantidade de sessões e opcionalmente os horários por
-                    dia
-                  </FormDescription>
+                <FormItem className="sm:col-span-2 xl:col-span-2">
+                  <FormLabel>Empresa</FormLabel>
                   <FormControl>
-                    <WeekdaySessionSelector value={field.value} onChange={field.onChange} />
+                    <CompanySelector
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Selecione uma empresa..."
+                      showValidationIcon
+                      error={form.formState.errors.companyId}
+                    />
                   </FormControl>
-                  <FormMessage className="text-center" />
+                  <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Horários globais - aplicar a todos os dias */}
-            <div className="bg-muted/30 rounded-lg border p-3">
-              <div className="mb-3 text-center">
-                <h3 className="text-sm font-medium">Aplicar horário a todos os dias (opcional)</h3>
-                <p className="text-muted-foreground mt-1 text-xs">
-                  Configure um horário para aplicar automaticamente a todos os dias selecionados
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-3 sm:items-center sm:justify-center md:flex-row">
-                <div className="flex flex-row items-center justify-center gap-3 sm:flex-row">
-                  <div className="flex flex-col items-center gap-2 md:flex-row">
-                    <label className="text-xs font-medium whitespace-nowrap">Início:</label>
-                    <TimePickerSelector
-                      value={globalStartTime}
-                      onChange={setGlobalStartTime}
-                      placeholder="--:--"
-                      className="w-24"
+            <FormField
+              control={form.control}
+              name="professionalId"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2 xl:col-span-2">
+                  <FormLabel>Profissional</FormLabel>
+                  <FormControl>
+                    <ProfessionalSelector
+                      value={field.value}
+                      onValueChange={handleProfessionalChange}
+                      placeholder="Selecione um profissional..."
+                      showValidationIcon
+                      error={form.formState.errors.professionalId}
                     />
-                  </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                  <div className="flex flex-col items-center gap-2 md:flex-row">
-                    <label className="text-xs font-medium whitespace-nowrap">Fim:</label>
-                    <TimePickerSelector
-                      value={globalEndTime}
-                      onChange={setGlobalEndTime}
-                      placeholder="--:--"
-                      className="w-24"
+            <FormField
+              control={form.control}
+              name="licenseNumber"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2 xl:col-span-2">
+                  <FormLabel>Nº conselho</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Nº conselho do profissional"
+                      {...field}
+                      showValidationIcon
+                      error={form.formState.errors.licenseNumber}
                     />
-                  </div>
-                </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={applyGlobalTimes}
-                  className="shrink-0 sm:ml-2">
-                  Aplicar a todos
-                </Button>
-              </div>
+            <FormField
+              control={form.control}
+              name="therapyId"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2 xl:col-span-2">
+                  <FormLabel>Terapia</FormLabel>
+                  <FormControl>
+                    <TherapySelector
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Selecione uma terapia..."
+                      showValidationIcon
+                      error={form.formState.errors.therapyId}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="authorizedSession"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2 xl:col-span-2">
+                  <FormLabel>Sessão autorizada (opcional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Tipo de sessão autorizada"
+                      {...field}
+                      showValidationIcon
+                      error={form.formState.errors.authorizedSession}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="patientId"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2 xl:col-span-2">
+                  <FormLabel>Paciente</FormLabel>
+                  <FormControl>
+                    <PatientSelector
+                      value={field.value}
+                      onValueChange={handlePatientChange}
+                      placeholder="Selecione um paciente..."
+                      showValidationIcon
+                      error={form.formState.errors.patientId}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="guardian"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2 xl:col-span-2">
+                  <FormLabel>Responsável</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Nome do responsável"
+                      {...field}
+                      showValidationIcon
+                      error={form.formState.errors.guardian}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="healthPlanId"
+              render={({ field }) => (
+                <FormItem className="sm:col-span-2 xl:col-span-2">
+                  <FormLabel>Plano de saúde</FormLabel>
+                  <FormControl>
+                    <HealthPlanSelector
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      placeholder="Selecione um plano de saúde..."
+                      showValidationIcon
+                      error={form.formState.errors.healthPlanId}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="cardNumber"
+              render={({ field }) => (
+                <FormItem className="col-span-1 sm:col-span-2 xl:col-span-2">
+                  <FormLabel>Nº carteirinha (opcional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Nº da carteirinha"
+                      {...field}
+                      showValidationIcon
+                      error={form.formState.errors.cardNumber}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="guideNumber"
+              render={({ field }) => (
+                <FormItem className="col-span-1 sm:col-span-2 xl:col-span-2">
+                  <FormLabel>Guia Nº (opcional)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Nº da guia"
+                      {...field}
+                      showValidationIcon
+                      error={form.formState.errors.guideNumber}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="startDate"
+              render={({ field }) => (
+                <FormItem className="col-span-1 sm:col-span-1 md:col-span-2 lg:col-span-1">
+                  <FormLabel>Data de início</FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      className="w-full"
+                      date={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                      onSelect={date => {
+                        const newStartDate = date ? formatDateToLocal(date) : ''
+                        field.onChange(newStartDate)
+
+                        // Se a data fim já estiver selecionada e for anterior ou igual à nova data início,
+                        // limpa a data fim para forçar o usuário a selecionar uma nova
+                        const currentEndDate = form.getValues('endDate')
+                        if (currentEndDate && date && new Date(currentEndDate + 'T00:00:00') <= date) {
+                          form.setValue('endDate', '')
+                        }
+                      }}
+                      placeholder="Selecione a data de início"
+                      format="dd/MM/yyyy"
+                      showValidationIcon
+                      error={form.formState.errors.startDate}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="endDate"
+              render={({ field }) => (
+                <FormItem className="col-span-1 sm:col-span-2 md:col-span-2 lg:col-span-1">
+                  <FormLabel>Data fim</FormLabel>
+                  <FormControl>
+                    <DatePicker
+                      className="w-full"
+                      date={field.value ? new Date(field.value + 'T00:00:00') : undefined}
+                      onSelect={date => field.onChange(date ? formatDateToLocal(date) : '')}
+                      placeholder="Selecione a data fim"
+                      fromDate={getMinEndDate(startDate)}
+                      format="dd/MM/yyyy"
+                      showValidationIcon
+                      error={form.formState.errors.endDate}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <Separator />
+
+          {/* Dias da semana e sessões */}
+          <FormField
+            control={form.control}
+            name="weekDaySessions"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="block text-center sm:flex sm:justify-center">
+                  Dias da semana, sessões e horários
+                </FormLabel>
+                <FormDescription className="text-center text-xs sm:text-sm">
+                  Selecione os dias de atendimento, configure a quantidade de sessões e opcionalmente os horários por
+                  dia
+                </FormDescription>
+                <FormControl>
+                  <WeekdaySessionSelector value={field.value} onChange={field.onChange} />
+                </FormControl>
+                <FormMessage className="text-center" />
+              </FormItem>
+            )}
+          />
+
+          {/* Horários globais - aplicar a todos os dias */}
+          <div className="bg-muted/30 rounded-lg border p-3">
+            <div className="mb-3 text-center">
+              <h3 className="text-sm font-medium">Aplicar horário a todos os dias (opcional)</h3>
+              <p className="text-muted-foreground mt-1 text-xs">
+                Configure um horário para aplicar automaticamente a todos os dias selecionados
+              </p>
             </div>
 
-            {/* Mensagens de erro */}
-            {error && (
-              <Alert variant="destructive">
-                <AlertDescription>{error.message}</AlertDescription>
-              </Alert>
-            )}
+            <div className="flex flex-col gap-3 sm:items-center sm:justify-center md:flex-row">
+              <div className="flex flex-row items-center justify-center gap-3 sm:flex-row">
+                <div className="flex flex-col items-center gap-2 md:flex-row">
+                  <label className="text-xs font-medium whitespace-nowrap">Início:</label>
+                  <TimePickerSelector
+                    value={globalStartTime}
+                    onChange={setGlobalStartTime}
+                    placeholder="--:--"
+                    className="w-24"
+                  />
+                </div>
 
-            {/* Aviso sobre múltiplos meses */}
-            {isMultipleMonths && (
-              <Alert>
-                <AlertDescription>
-                  <strong>Múltiplos meses detectados:</strong> Será gerado um arquivo ZIP contendo uma planilha completa
-                  para cada mês no período selecionado (cada planilha conterá todas as datas do respectivo mês).
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* Botões de ação */}
-            <div className="flex flex-col gap-3 sm:flex-row">
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full sm:flex-1"
-                onClick={handlePreview}
-                disabled={isLoading || isCheckingFiles}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eye className="mr-2 h-4 w-4" />}
-                <span className="hidden sm:inline">Visualizar Prévia</span>
-                <span className="sm:hidden">Prévia</span>
-              </Button>
-
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full sm:flex-1"
-                onClick={handleShowCalendar}
-                disabled={isLoading || isCheckingFiles}>
-                {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Calendar className="mr-2 h-4 w-4" />}
-                <span className="hidden sm:inline">Ver Calendário</span>
-                <span className="sm:hidden">Calendário</span>
-              </Button>
+                <div className="flex flex-col items-center gap-2 md:flex-row">
+                  <label className="text-xs font-medium whitespace-nowrap">Fim:</label>
+                  <TimePickerSelector
+                    value={globalEndTime}
+                    onChange={setGlobalEndTime}
+                    placeholder="--:--"
+                    className="w-24"
+                  />
+                </div>
+              </div>
 
               <Button
                 type="button"
                 variant="secondary"
-                className="w-full sm:flex-1"
-                onClick={async () => {
-                  const isFormValid = await form.trigger()
-                  if (isFormValid) {
-                    handleGenerateDriveWithCheck(form.getValues())
-                  }
-                }}
-                disabled={isLoading || isCheckingFiles || !driveStatus?.isConfigured}
-                title={
-                  !driveStatus?.isConfigured
-                    ? 'Configure o Google Drive primeiro nas configurações'
-                    : 'Gerar planilhas organizadas por mês no Google Drive'
-                }>
-                {isCheckingFiles || generateDriveSpreadsheet.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Cloud className="mr-2 h-4 w-4" />
-                )}
-                <span className="hidden sm:inline">
-                  {isCheckingFiles
-                    ? 'Verificando arquivos...'
-                    : generateDriveSpreadsheet.isPending
-                      ? 'Gerando no Drive...'
-                      : 'Gerar no Google Drive'}
-                </span>
-                <span className="sm:hidden">
-                  {isCheckingFiles ? 'Verificando...' : generateDriveSpreadsheet.isPending ? 'Drive...' : 'Drive'}
-                </span>
+                size="sm"
+                onClick={applyGlobalTimes}
+                className="shrink-0 sm:ml-2">
+                Aplicar a todos
               </Button>
             </div>
+          </div>
 
-            <div className="flex justify-center">
-              <Button type="submit" className="sm:flex-1" disabled={isLoading || isCheckingFiles}>
-                {generateSpreadsheet.isPending ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <FileText className="mr-2 h-4 w-4" />
-                )}
-                <span className="hidden sm:inline">
-                  {generateSpreadsheet.isPending
-                    ? isMultipleMonths
-                      ? 'Gerando planilhas...'
-                      : 'Gerando planilha...'
-                    : isMultipleMonths
-                      ? 'Gerar planilhas (ZIP)'
-                      : 'Gerar planilha'}
-                </span>
-                <span className="sm:hidden">
-                  {generateSpreadsheet.isPending ? 'Gerando...' : isMultipleMonths ? 'Gerar ZIP' : 'Gerar'}
-                </span>
-              </Button>
-            </div>
-          </form>
-        </Form>
+          {/* Mensagens de erro */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error.message}</AlertDescription>
+            </Alert>
+          )}
 
-        {/* Resultado da geração no Google Drive */}
-        {driveGenerationResult && (
-          <div ref={driveResultRef} className="mt-6">
-            <Alert className="border-green-200 bg-green-50">
-              <Cloud className="h-4 w-4 text-green-600" />
+          {/* Aviso sobre múltiplos meses */}
+          {isMultipleMonths && (
+            <Alert>
               <AlertDescription>
-                <div className="space-y-3">
-                  <p className="font-medium text-green-800">{driveGenerationResult.message}</p>
-
-                  {driveGenerationResult.files.length === 1 ? (
-                    <div className="space-y-2">
-                      <p className="text-sm text-green-700">Arquivo gerado:</p>
-                      <a
-                        href={`https://drive.google.com/file/d/${driveGenerationResult.files[0].id}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 underline hover:text-blue-800">
-                        <FileText className="h-4 w-4" />
-                        {driveGenerationResult.files[0].name}
-                      </a>
-                    </div>
-                  ) : (
-                    <div className="space-y-2">
-                      <p className="text-sm text-green-700">
-                        {driveGenerationResult.files.length} arquivos gerados na pasta do paciente:
-                      </p>
-                      <div className="space-y-1">
-                        {driveGenerationResult.files.map((file, index) => (
-                          <a
-                            key={index}
-                            href={`https://drive.google.com/file/d/${file.id}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mr-4 inline-flex items-center gap-2 text-sm text-blue-600 underline hover:text-blue-800">
-                            <FileText className="h-4 w-4" />
-                            {file.name}
-                          </a>
-                        ))}
-                      </div>
-                      <div className="pt-2">
-                        <a
-                          href={`https://drive.google.com/drive/search?q=${encodeURIComponent(driveGenerationResult.patientFolder)}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-sm font-medium text-green-600 hover:text-green-800">
-                          <Cloud className="h-4 w-4" />
-                          Ver pasta do paciente no Google Drive
-                        </a>
-                      </div>
-                    </div>
-                  )}
-
-                  <button
-                    onClick={() => setDriveGenerationResult(null)}
-                    className="text-xs text-gray-500 underline hover:text-gray-700">
-                    Fechar
-                  </button>
-                </div>
+                <strong>Múltiplos meses detectados:</strong> Será gerado um arquivo ZIP contendo uma planilha completa
+                para cada mês no período selecionado (cada planilha conterá todas as datas do respectivo mês).
               </AlertDescription>
             </Alert>
-          </div>
-        )}
+          )}
 
-        {/* Preview */}
-        {showPreview && (
-          <div ref={previewRef} className="mt-6">
-            <SpreadsheetPreview formData={formValues} onClose={() => setShowPreview(false)} />
-          </div>
-        )}
+          {/* Botões de ação */}
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:flex-1"
+              onClick={handlePreview}
+              disabled={isLoading || isCheckingFiles}>
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eye className="mr-2 h-4 w-4" />}
+              <span className="hidden sm:inline">Visualizar Prévia</span>
+              <span className="sm:hidden">Prévia</span>
+            </Button>
 
-        {/* Calendar */}
-        {showCalendar && (
-          <div ref={calendarRef} className="mt-6">
-            <SpreadsheetCalendar formData={formValues} onClose={() => setShowCalendar(false)} />
-          </div>
-        )}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:flex-1"
+              onClick={handleShowCalendar}
+              disabled={isLoading || isCheckingFiles}>
+              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Calendar className="mr-2 h-4 w-4" />}
+              <span className="hidden sm:inline">Ver Calendário</span>
+              <span className="sm:hidden">Calendário</span>
+            </Button>
 
-        {/* Dialog de confirmação para sobrescrever arquivos */}
-        <AlertDialog open={showOverwriteDialog} onOpenChange={setShowOverwriteDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Arquivos Existentes Encontrados</AlertDialogTitle>
-              <AlertDialogDescription>
-                Foram encontrados arquivos existentes no Google Drive para este paciente no período selecionado:
-                <div className="mt-3 space-y-2">
-                  {existingFilesInfo?.existingFiles.map((file, index) => (
-                    <div key={index} className="border-primary/80 rounded border p-2">
-                      <span className="text-sm font-medium">{file.name}</span>
-                      <div className="text-xs text-gray-600">
-                        Última modificação:{' '}
-                        {new Date(file.modifiedTime).toLocaleString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })}
-                      </div>
+            <Button
+              type="button"
+              variant="secondary"
+              className="w-full sm:flex-1"
+              onClick={async () => {
+                const isFormValid = await form.trigger()
+                if (isFormValid) {
+                  handleGenerateDriveWithCheck(form.getValues())
+                }
+              }}
+              disabled={isLoading || isCheckingFiles || !driveStatus?.isConfigured}
+              title={
+                !driveStatus?.isConfigured
+                  ? 'Configure o Google Drive primeiro nas configurações'
+                  : 'Gerar planilhas organizadas por mês no Google Drive'
+              }>
+              {isCheckingFiles || generateDriveSpreadsheet.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Cloud className="mr-2 h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">
+                {isCheckingFiles
+                  ? 'Verificando arquivos...'
+                  : generateDriveSpreadsheet.isPending
+                    ? 'Gerando no Drive...'
+                    : 'Gerar no Google Drive'}
+              </span>
+              <span className="sm:hidden">
+                {isCheckingFiles ? 'Verificando...' : generateDriveSpreadsheet.isPending ? 'Drive...' : 'Drive'}
+              </span>
+            </Button>
+          </div>
+
+          <div className="flex justify-center">
+            <Button type="submit" className="sm:flex-1" disabled={isLoading || isCheckingFiles}>
+              {generateSpreadsheet.isPending ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <FileText className="mr-2 h-4 w-4" />
+              )}
+              <span className="hidden sm:inline">
+                {generateSpreadsheet.isPending
+                  ? isMultipleMonths
+                    ? 'Gerando planilhas...'
+                    : 'Gerando planilha...'
+                  : isMultipleMonths
+                    ? 'Gerar planilhas (ZIP)'
+                    : 'Gerar planilha'}
+              </span>
+              <span className="sm:hidden">
+                {generateSpreadsheet.isPending ? 'Gerando...' : isMultipleMonths ? 'Gerar ZIP' : 'Gerar'}
+              </span>
+            </Button>
+          </div>
+        </form>
+      </Form>
+
+      {/* Resultado da geração no Google Drive */}
+      {driveGenerationResult && (
+        <div ref={driveResultRef} className="mt-6">
+          <Alert className="border-green-200 bg-green-50">
+            <Cloud className="h-4 w-4 text-green-600" />
+            <AlertDescription>
+              <div className="space-y-3">
+                <p className="font-medium text-green-800">{driveGenerationResult.message}</p>
+
+                {driveGenerationResult.files.length === 1 ? (
+                  <div className="space-y-2">
+                    <p className="text-sm text-green-700">Arquivo gerado:</p>
+                    <a
+                      href={`https://drive.google.com/file/d/${driveGenerationResult.files[0].id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 underline hover:text-blue-800">
+                      <FileText className="h-4 w-4" />
+                      {driveGenerationResult.files[0].name}
+                    </a>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <p className="text-sm text-green-700">
+                      {driveGenerationResult.files.length} arquivos gerados na pasta do paciente:
+                    </p>
+                    <div className="space-y-1">
+                      {driveGenerationResult.files.map((file, index) => (
+                        <a
+                          key={index}
+                          href={`https://drive.google.com/file/d/${file.id}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="mr-4 inline-flex items-center gap-2 text-sm text-blue-600 underline hover:text-blue-800">
+                          <FileText className="h-4 w-4" />
+                          {file.name}
+                        </a>
+                      ))}
                     </div>
-                  ))}
-                </div>
-                <p className="mt-3 text-sm">
-                  Deseja continuar e sobrescrever os arquivos existentes? Esta ação não pode ser desfeita.
-                </p>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel onClick={handleCancelOverwrite}>Cancelar</AlertDialogCancel>
-              <AlertDialogAction onClick={handleConfirmOverwrite} className="bg-orange-600 hover:bg-orange-700">
-                Sim, Sobrescrever
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </CardContent>
-    </Card>
+                    <div className="pt-2">
+                      <a
+                        href={`https://drive.google.com/drive/search?q=${encodeURIComponent(driveGenerationResult.patientFolder)}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm font-medium text-green-600 hover:text-green-800">
+                        <Cloud className="h-4 w-4" />
+                        Ver pasta do paciente no Google Drive
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                <button
+                  onClick={() => setDriveGenerationResult(null)}
+                  className="text-xs text-gray-500 underline hover:text-gray-700">
+                  Fechar
+                </button>
+              </div>
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
+
+      {/* Preview */}
+      {showPreview && (
+        <div ref={previewRef} className="mt-6">
+          <SpreadsheetPreview formData={formValues} onClose={() => setShowPreview(false)} />
+        </div>
+      )}
+
+      {/* Calendar */}
+      {showCalendar && (
+        <div ref={calendarRef} className="mt-6">
+          <SpreadsheetCalendar formData={formValues} onClose={() => setShowCalendar(false)} />
+        </div>
+      )}
+
+      {/* Dialog de confirmação para sobrescrever arquivos */}
+      <AlertDialog open={showOverwriteDialog} onOpenChange={setShowOverwriteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Arquivos Existentes Encontrados</AlertDialogTitle>
+            <AlertDialogDescription>
+              Foram encontrados arquivos existentes no Google Drive para este paciente no período selecionado:
+              <div className="mt-3 space-y-2">
+                {existingFilesInfo?.existingFiles.map((file, index) => (
+                  <div key={index} className="border-primary/80 rounded border p-2">
+                    <span className="text-sm font-medium">{file.name}</span>
+                    <div className="text-xs text-gray-600">
+                      Última modificação:{' '}
+                      {new Date(file.modifiedTime).toLocaleString('pt-BR', {
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <p className="mt-3 text-sm">
+                Deseja continuar e sobrescrever os arquivos existentes? Esta ação não pode ser desfeita.
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={handleCancelOverwrite}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleConfirmOverwrite} className="bg-orange-600 hover:bg-orange-700">
+              Sim, Sobrescrever
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </React.Fragment>
   )
 }
