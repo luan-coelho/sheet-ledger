@@ -185,7 +185,7 @@ describe('ExcelService', () => {
 
       expect(mockWorksheet.getCell).toHaveBeenCalledWith('C54')
       // Verifica se o valor contém o formato esperado: SEG(2), TER(3), SEX(4)
-      expect(mockCells['C54'].value).toMatch(/SEG\(2\), TER\(3\), SEX\(4\)/)
+      expect(mockCells['C54'].value).toBe('SEG(2), TER(3), SEX(4)')
     })
 
     it('deve gerar competência correta para período de um mês', async () => {
@@ -291,6 +291,15 @@ describe('ExcelService', () => {
         expect(mockWorksheet.getCell).toHaveBeenCalledWith(`E${row}`)
         expect(mockWorksheet.getCell).toHaveBeenCalledWith(`F${row}`)
       }
+
+      // Verifica que células não preenchidas ficaram como null após limpeza
+      // Como temos dados apenas para segunda e quarta-feira no período, linha 16 deve estar null
+      expect(mockCells['A16'].value).toBeNull()
+      expect(mockCells['B16'].value).toBeNull()
+      expect(mockCells['C16'].value).toBeNull()
+      expect(mockCells['D16'].value).toBeNull()
+      expect(mockCells['E16'].value).toBeNull()
+      expect(mockCells['F16'].value).toBeNull()
     })
   })
 
@@ -320,6 +329,10 @@ describe('ExcelService', () => {
       // Deve ter apenas um registro (segunda-feira)
       expect(mockCells['A14'].value).toBe(1) // Primeiro registro
       expect(mockCells['B14'].value).toBe('01/09/2025') // Data do primeiro registro
+      expect(mockCells['C14'].value).toBe('08:00') // Horário início
+      expect(mockCells['D14'].value).toBe('17:00') // Horário fim
+      expect(mockCells['E14'].value).toBe(4) // Sessões
+      expect(mockCells['F14'].value).toBe('Atendido') // Status
       expect(mockCells['A15'].value).toBeNull() // Não deve ter segundo registro
     })
 
@@ -350,6 +363,8 @@ describe('ExcelService', () => {
       // Deve usar o horário específico do dia (08:00/17:00) em vez do padrão (10:00/19:00)
       expect(mockWorksheet.getCell).toHaveBeenCalledWith('C14') // Start time
       expect(mockWorksheet.getCell).toHaveBeenCalledWith('D14') // End time
+      expect(mockCells['C14'].value).toBe('08:00') // Horário específico
+      expect(mockCells['D14'].value).toBe('17:00') // Horário específico
     })
   })
 })
