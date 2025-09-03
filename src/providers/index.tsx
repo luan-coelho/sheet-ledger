@@ -1,5 +1,6 @@
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Analytics } from '@vercel/analytics/next'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { Toaster } from 'sonner'
 
 import { QueryProvider } from './query-provider'
@@ -20,6 +21,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
           <QueryProvider>
             {children}
             <Analytics />
+            <SpeedInsights />
             <ReactQueryDevtools initialIsOpen={false} />
             <Toaster
               expand
