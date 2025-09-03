@@ -18,7 +18,6 @@ import {
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -42,13 +41,9 @@ import { useTherapies } from '@/hooks/use-therapies'
 import { formatDateISO, getFirstDayOfMonth, getLastDayOfMonth, getNowInBrazil } from '@/lib/date-utils'
 import { spreadsheetFormSchema, WeekDays, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 
-import { CompanySelector } from './company-selector'
-import { HealthPlanSelector } from './health-plan-selector'
-import { PatientSelector } from './patient-selector'
-import { ProfessionalSelector } from './professional-selector'
 import { SpreadsheetCalendar } from './spreadsheet-calendar'
 import { SpreadsheetPreview } from './spreadsheet-preview'
-import { TherapySelector } from './therapy-selector'
+import { Combobox } from './ui/combobox'
 import { Separator } from './ui/separator'
 import { WeekdaySessionSelector } from './weekday-session-selector'
 
@@ -413,7 +408,8 @@ export function SpreadsheetForm() {
                 <FormItem className="sm:col-span-2 xl:col-span-2">
                   <FormLabel>Empresa</FormLabel>
                   <FormControl>
-                    <CompanySelector
+                    <Combobox
+                      options={companies?.map(company => ({ value: company.id, label: company.name })) || []}
                       value={field.value}
                       onValueChange={field.onChange}
                       placeholder="Selecione uma empresa..."
@@ -433,7 +429,10 @@ export function SpreadsheetForm() {
                 <FormItem className="sm:col-span-2 xl:col-span-2">
                   <FormLabel>Profissional</FormLabel>
                   <FormControl>
-                    <ProfessionalSelector
+                    <Combobox
+                      options={
+                        professionals?.map(professional => ({ value: professional.id, label: professional.name })) || []
+                      }
                       value={field.value}
                       onValueChange={handleProfessionalChange}
                       placeholder="Selecione um profissional..."
@@ -472,7 +471,8 @@ export function SpreadsheetForm() {
                 <FormItem className="sm:col-span-2 xl:col-span-2">
                   <FormLabel>Terapia</FormLabel>
                   <FormControl>
-                    <TherapySelector
+                    <Combobox
+                      options={therapies?.map(therapy => ({ value: therapy.id, label: therapy.name })) || []}
                       value={field.value}
                       onValueChange={field.onChange}
                       placeholder="Selecione uma terapia..."
@@ -511,7 +511,8 @@ export function SpreadsheetForm() {
                 <FormItem className="sm:col-span-2 xl:col-span-2">
                   <FormLabel>Paciente</FormLabel>
                   <FormControl>
-                    <PatientSelector
+                    <Combobox
+                      options={patients?.map(patient => ({ value: patient.id, label: patient.name })) || []}
                       value={field.value}
                       onValueChange={handlePatientChange}
                       placeholder="Selecione um paciente..."
@@ -550,7 +551,8 @@ export function SpreadsheetForm() {
                 <FormItem className="sm:col-span-2 xl:col-span-2">
                   <FormLabel>Plano de saúde</FormLabel>
                   <FormControl>
-                    <HealthPlanSelector
+                    <Combobox
+                      options={healthPlans?.map(healthPlan => ({ value: healthPlan.id, label: healthPlan.name })) || []}
                       value={field.value}
                       onValueChange={field.onChange}
                       placeholder="Selecione um plano de saúde..."
