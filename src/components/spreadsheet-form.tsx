@@ -1,9 +1,7 @@
 'use client'
 
-import { zodResolver } from '@hookform/resolvers/zod'
 import { Calendar, Cloud, Eye, FileText, Loader2 } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -28,18 +26,22 @@ import { useGoogleDriveConfigStatus } from '@/hooks/use-google-drive-config'
 import { useHealthPlans } from '@/hooks/use-health-plans'
 import { usePatients } from '@/hooks/use-patients'
 import { useProfessionals } from '@/hooks/use-professionals'
+import { useGlobalTimeHandler, usePatientHandler, useProfessionalHandler } from '@/hooks/use-spreadsheet-form-handlers'
+import { useFormLoadingStates, useSpreadsheetFormSetup } from '@/hooks/use-spreadsheet-form-setup'
 import {
   useCheckExistingFiles,
   useGenerateDriveSpreadsheet,
   useGenerateSpreadsheet,
   type CheckExistingFilesResponse,
   type GenerateDriveSpreadsheetResponse,
-  type TransformedFormData,
 } from '@/hooks/use-spreadsheet-mutations'
 import { useTherapies } from '@/hooks/use-therapies'
 
-import { formatDateISO, getFirstDayOfMonth, getLastDayOfMonth, getNowInBrazil } from '@/lib/date-utils'
-import { spreadsheetFormSchema, WeekDays, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
+import { createComboBoxOptions } from '@/lib/combobox-helpers'
+import { formatDateToLocal, getMinEndDate, isMultipleMonths } from '@/lib/date-utils'
+import { transformFormDataToApi } from '@/lib/form-transformers'
+import { scrollToElement } from '@/lib/scroll-utils'
+import type { SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 
 import { SpreadsheetCalendar } from './spreadsheet-calendar'
 import { SpreadsheetPreview } from './spreadsheet-preview'
@@ -87,38 +89,15 @@ export function SpreadsheetForm() {
   const generateDriveSpreadsheet = useGenerateDriveSpreadsheet()
   const checkExistingFiles = useCheckExistingFiles()
 
-  // Helper para converter Date para string local (YYYY-MM-DD)
-  const formatDateToLocal = (date: Date) => {
-    const year = date.getFullYear()
-    const month = String(date.getMonth() + 1).padStart(2, '0')
-    const day = String(date.getDate()).padStart(2, '0')
-    return `${year}-${month}-${day}`
-  }
+  // Setup do formulário
+  const { form } = useSpreadsheetFormSetup()
 
-  // Obter datas atuais para valores padrão
-  const today = getNowInBrazil()
-  const firstDayOfMonth = getFirstDayOfMonth(today.getFullYear(), today.getMonth())
-  const lastDayOfMonth = getLastDayOfMonth(today.getFullYear(), today.getMonth())
-
-  const form = useForm<SpreadsheetFormValues>({
-    mode: 'onChange',
-    resolver: zodResolver(spreadsheetFormSchema),
-    defaultValues: {
-      professionalId: '',
-      licenseNumber: '',
-      authorizedSession: '',
-      patientId: '',
-      guardian: '',
-      companyId: '',
-      healthPlanId: '',
-      therapyId: '',
-      cardNumber: '',
-      guideNumber: '',
-      weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }],
-      startDate: formatDateISO(firstDayOfMonth),
-      endDate: formatDateISO(lastDayOfMonth),
-    },
-  })
+  // Estados de loading e error
+  const { isLoading, isCheckingFiles, error } = useFormLoadingStates(
+    generateSpreadsheet,
+    generateDriveSpreadsheet,
+    checkExistingFiles,
+  )
 
   // Watch form values para preview e validação
   const formValues = form.watch()
@@ -126,163 +105,18 @@ export function SpreadsheetForm() {
   const endDate = form.watch('endDate')
 
   // Verificar se o período abrange múltiplos meses
-  const isMultipleMonths = (() => {
-    if (!startDate || !endDate) return false
-    const startDateObj = new Date(startDate + 'T00:00:00')
-    const endDateObj = new Date(endDate + 'T00:00:00')
-    return startDateObj.getMonth() !== endDateObj.getMonth() || startDateObj.getFullYear() !== endDateObj.getFullYear()
-  })()
+  const isMultipleMonthsPeriod = isMultipleMonths(startDate, endDate)
 
-  // Helper para obter o dia seguinte à data de início
-  const getMinEndDate = (startDate: string | undefined) => {
-    if (!startDate) return undefined
-    const date = new Date(startDate + 'T00:00:00')
-    date.setDate(date.getDate() + 1)
-    return date
-  }
-
-  // Função para preencher automaticamente campos do profissional
-  const handleProfessionalChange = (professionalId: string | undefined) => {
-    // Primeiro atualiza o professionalId
-    form.setValue('professionalId', professionalId || '')
-
-    if (!professionalId || !professionals) return
-
-    // Busca o profissional selecionado
-    const selectedProfessional = professionals.find(p => p.id === professionalId)
-
-    if (selectedProfessional) {
-      // Preenche automaticamente os campos relacionados ao profissional
-      form.setValue('licenseNumber', selectedProfessional.councilNumber || '')
-      form.setValue('therapyId', selectedProfessional.therapyId || '')
-    }
-  }
-
-  // Função para preencher automaticamente campos do paciente
-  const handlePatientChange = (patientId: string | undefined) => {
-    // Primeiro atualiza o patientId
-    form.setValue('patientId', patientId || '')
-
-    if (!patientId || !patients) return
-
-    // Busca o paciente selecionado
-    const selectedPatient = patients.find(p => p.id === patientId)
-
-    if (selectedPatient) {
-      // Preenche automaticamente os campos relacionados ao paciente
-      form.setValue('guardian', selectedPatient.guardian || '')
-      form.setValue('healthPlanId', selectedPatient.healthPlanId || '')
-      form.setValue('cardNumber', selectedPatient.cardNumber || '')
-      form.setValue('guideNumber', selectedPatient.guideNumber || '')
-    }
-  }
-
-  // Função para transformar dados do formulário para API
-  function transformFormDataToApi(values: SpreadsheetFormValues): TransformedFormData {
-    const professional = professionals?.find(p => p.id === values.professionalId)
-    const patient = patients?.find(p => p.id === values.patientId)
-    const company = companies?.find(c => c.id === values.companyId)
-    const healthPlan = healthPlans?.find(h => h.id === values.healthPlanId)
-    const therapy = therapies?.find(t => t.id === values.therapyId)
-
-    // Calcular horário mais cedo e mais tarde dos dias selecionados
-    let earliestTime = '23:59'
-    let latestTime = '00:00'
-    let hasValidTimes = false
-
-    values.weekDaySessions.forEach(session => {
-      if (session.startTime && session.endTime) {
-        hasValidTimes = true
-        if (session.startTime < earliestTime) {
-          earliestTime = session.startTime
-        }
-        if (session.endTime > latestTime) {
-          latestTime = session.endTime
-        }
-      }
-    })
-
-    // Se nenhum horário foi definido, use horários padrão
-    if (!hasValidTimes) {
-      earliestTime = '08:00'
-      latestTime = '17:00'
-    }
-
-    return {
-      professional: professional?.name || '',
-      licenseNumber: values.licenseNumber,
-      authorizedSession: values.authorizedSession || undefined,
-      patientName: patient?.name || '',
-      responsible: values.guardian,
-      healthPlan: healthPlan?.name || '',
-      therapy: therapy?.name || '',
-      cardNumber: values.cardNumber || undefined,
-      guideNumber: values.guideNumber || undefined,
-      company: company?.name || '',
-      companyData: company
-        ? {
-            name: company.name,
-            cnpj: company.cnpj,
-            address: company.address,
-          }
-        : undefined,
-      weekDaySessions: values.weekDaySessions,
-      startDate: values.startDate,
-      endDate: values.endDate,
-      startTime: earliestTime,
-      endTime: latestTime,
-    }
-  }
-
-  function applyGlobalTimes() {
-    if (!globalStartTime || !globalEndTime) {
-      toast.error('Preencha ambos os horários globais (início e fim) antes de aplicar')
-      return
-    }
-
-    // Validar se horário fim é posterior ao início
-    const [startHour, startMinute] = globalStartTime.split(':').map(Number)
-    const [endHour, endMinute] = globalEndTime.split(':').map(Number)
-    const startTimeInMinutes = startHour * 60 + startMinute
-    const endTimeInMinutes = endHour * 60 + endMinute
-
-    if (startTimeInMinutes >= endTimeInMinutes) {
-      toast.error('Horário fim deve ser posterior ao horário de início')
-      return
-    }
-
-    const currentWeekDaySessions = form.getValues('weekDaySessions')
-
-    if (currentWeekDaySessions.length === 0) {
-      toast.error('Selecione pelo menos um dia da semana antes de aplicar os horários')
-      return
-    }
-
-    // Aplicar os horários globais a todos os dias selecionados
-    const updatedWeekDaySessions = currentWeekDaySessions.map(session => ({
-      ...session,
-      startTime: globalStartTime,
-      endTime: globalEndTime,
-    }))
-
-    form.setValue('weekDaySessions', updatedWeekDaySessions)
-    toast.success(`Horários aplicados a ${currentWeekDaySessions.length} dia(s) selecionado(s)`)
-  }
+  // Hooks para handlers de formulário
+  const { handleProfessionalChange } = useProfessionalHandler(form, professionals)
+  const { handlePatientChange } = usePatientHandler(form, patients)
+  const { applyGlobalTimes } = useGlobalTimeHandler(form)
 
   async function handlePreview() {
     const isFormValid = await form.trigger()
     if (isFormValid) {
       setShowPreview(true)
-      // Scroll automático para a prévia após um pequeno delay
-      setTimeout(() => {
-        if (previewRef.current) {
-          previewRef.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'nearest',
-          })
-        }
-      }, 100)
+      scrollToElement(previewRef)
     }
   }
 
@@ -290,21 +124,18 @@ export function SpreadsheetForm() {
     const isFormValid = await form.trigger()
     if (isFormValid) {
       setShowCalendar(true)
-      // Scroll automático para o calendário após um pequeno delay
-      setTimeout(() => {
-        if (calendarRef.current) {
-          calendarRef.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'nearest',
-          })
-        }
-      }, 100)
+      scrollToElement(calendarRef)
     }
   }
 
   function handleSubmit(values: SpreadsheetFormValues) {
-    const transformedData = transformFormDataToApi(values)
+    const transformedData = transformFormDataToApi(values, {
+      professionals,
+      patients,
+      companies,
+      healthPlans,
+      therapies,
+    })
     generateSpreadsheet.mutate(transformedData)
   }
 
@@ -336,7 +167,13 @@ export function SpreadsheetForm() {
         setShowOverwriteDialog(true)
       } else {
         // Gerar diretamente se não há arquivos existentes
-        const transformedData = transformFormDataToApi(values)
+        const transformedData = transformFormDataToApi(values, {
+          professionals,
+          patients,
+          companies,
+          healthPlans,
+          therapies,
+        })
         generateDriveSpreadsheet.mutate(transformedData, {
           onSuccess: result => {
             setDriveGenerationResult(result)
@@ -345,7 +182,13 @@ export function SpreadsheetForm() {
       }
     } catch (error) {
       // Se houver erro na verificação, continuar com geração normal
-      const transformedData = transformFormDataToApi(values)
+      const transformedData = transformFormDataToApi(values, {
+        professionals,
+        patients,
+        companies,
+        healthPlans,
+        therapies,
+      })
       generateDriveSpreadsheet.mutate(transformedData, {
         onSuccess: result => {
           setDriveGenerationResult(result)
@@ -358,7 +201,13 @@ export function SpreadsheetForm() {
   function handleConfirmOverwrite() {
     if (!existingFilesInfo) return
 
-    const transformedData = transformFormDataToApi(existingFilesInfo.formData)
+    const transformedData = transformFormDataToApi(existingFilesInfo.formData, {
+      professionals,
+      patients,
+      companies,
+      healthPlans,
+      therapies,
+    })
     generateDriveSpreadsheet.mutate(transformedData, {
       onSuccess: result => {
         setDriveGenerationResult(result)
@@ -374,24 +223,10 @@ export function SpreadsheetForm() {
     setExistingFilesInfo(null)
   }
 
-  // Estados de loading e error
-  const isLoading = generateSpreadsheet.isPending || generateDriveSpreadsheet.isPending
-  const isCheckingFiles = checkExistingFiles.isPending
-  const error = generateSpreadsheet.error || generateDriveSpreadsheet.error || checkExistingFiles.error
-
   // Scroll automático para o card de resultado quando ele aparecer
   useEffect(() => {
-    if (driveGenerationResult && driveResultRef.current) {
-      // Delay pequeno para garantir que o DOM foi atualizado
-      setTimeout(() => {
-        if (driveResultRef.current) {
-          driveResultRef.current.scrollIntoView({
-            behavior: 'smooth',
-            block: 'center',
-            inline: 'nearest',
-          })
-        }
-      }, 100)
+    if (driveGenerationResult) {
+      scrollToElement(driveResultRef)
     }
   }, [driveGenerationResult])
 
@@ -409,7 +244,10 @@ export function SpreadsheetForm() {
                   <FormLabel>Empresa</FormLabel>
                   <FormControl>
                     <Combobox
-                      options={companies?.map(company => ({ value: company.id, label: company.name })) || []}
+                      options={createComboBoxOptions(companies, entity => ({
+                        value: entity.id,
+                        label: entity.name,
+                      }))}
                       value={field.value}
                       onValueChange={field.onChange}
                       placeholder="Selecione uma empresa..."
@@ -430,9 +268,10 @@ export function SpreadsheetForm() {
                   <FormLabel>Profissional</FormLabel>
                   <FormControl>
                     <Combobox
-                      options={
-                        professionals?.map(professional => ({ value: professional.id, label: professional.name })) || []
-                      }
+                      options={createComboBoxOptions(professionals, entity => ({
+                        value: entity.id,
+                        label: entity.name,
+                      }))}
                       value={field.value}
                       onValueChange={handleProfessionalChange}
                       placeholder="Selecione um profissional..."
@@ -472,7 +311,10 @@ export function SpreadsheetForm() {
                   <FormLabel>Terapia</FormLabel>
                   <FormControl>
                     <Combobox
-                      options={therapies?.map(therapy => ({ value: therapy.id, label: therapy.name })) || []}
+                      options={createComboBoxOptions(therapies, entity => ({
+                        value: entity.id,
+                        label: entity.name,
+                      }))}
                       value={field.value}
                       onValueChange={field.onChange}
                       placeholder="Selecione uma terapia..."
@@ -512,7 +354,10 @@ export function SpreadsheetForm() {
                   <FormLabel>Paciente</FormLabel>
                   <FormControl>
                     <Combobox
-                      options={patients?.map(patient => ({ value: patient.id, label: patient.name })) || []}
+                      options={createComboBoxOptions(patients, entity => ({
+                        value: entity.id,
+                        label: entity.name,
+                      }))}
                       value={field.value}
                       onValueChange={handlePatientChange}
                       placeholder="Selecione um paciente..."
@@ -552,7 +397,10 @@ export function SpreadsheetForm() {
                   <FormLabel>Plano de saúde</FormLabel>
                   <FormControl>
                     <Combobox
-                      options={healthPlans?.map(healthPlan => ({ value: healthPlan.id, label: healthPlan.name })) || []}
+                      options={createComboBoxOptions(healthPlans, entity => ({
+                        value: entity.id,
+                        label: entity.name,
+                      }))}
                       value={field.value}
                       onValueChange={field.onChange}
                       placeholder="Selecione um plano de saúde..."
@@ -718,7 +566,7 @@ export function SpreadsheetForm() {
                 type="button"
                 variant="secondary"
                 size="sm"
-                onClick={applyGlobalTimes}
+                onClick={() => applyGlobalTimes(globalStartTime, globalEndTime)}
                 className="shrink-0 sm:ml-2">
                 Aplicar a todos
               </Button>
@@ -733,7 +581,7 @@ export function SpreadsheetForm() {
           )}
 
           {/* Aviso sobre múltiplos meses */}
-          {isMultipleMonths && (
+          {isMultipleMonthsPeriod && (
             <Alert>
               <AlertDescription>
                 <strong>Múltiplos meses detectados:</strong> Será gerado um arquivo ZIP contendo uma planilha completa
@@ -809,15 +657,15 @@ export function SpreadsheetForm() {
               )}
               <span className="hidden sm:inline">
                 {generateSpreadsheet.isPending
-                  ? isMultipleMonths
+                  ? isMultipleMonthsPeriod
                     ? 'Gerando planilhas...'
                     : 'Gerando planilha...'
-                  : isMultipleMonths
+                  : isMultipleMonthsPeriod
                     ? 'Gerar planilhas (ZIP)'
                     : 'Gerar planilha'}
               </span>
               <span className="sm:hidden">
-                {generateSpreadsheet.isPending ? 'Gerando...' : isMultipleMonths ? 'Gerar ZIP' : 'Gerar'}
+                {generateSpreadsheet.isPending ? 'Gerando...' : isMultipleMonthsPeriod ? 'Gerar ZIP' : 'Gerar'}
               </span>
             </Button>
           </div>

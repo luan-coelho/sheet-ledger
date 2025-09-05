@@ -112,3 +112,40 @@ export function getMonthNameInPortuguese(monthIndex: number): string {
   ]
   return months[monthIndex] || 'janeiro'
 }
+
+/**
+ * Converte um objeto Date para string local no formato YYYY-MM-DD
+ * @param date Data a ser convertida
+ * @returns String no formato YYYY-MM-DD
+ */
+export function formatDateToLocal(date: Date): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+/**
+ * Obtém a data mínima para fim (um dia após a data de início)
+ * @param startDate String de data no formato YYYY-MM-DD
+ * @returns Date object do dia seguinte ou undefined se não há data de início
+ */
+export function getMinEndDate(startDate: string | undefined): Date | undefined {
+  if (!startDate) return undefined
+  const date = new Date(startDate + 'T00:00:00')
+  date.setDate(date.getDate() + 1)
+  return date
+}
+
+/**
+ * Verifica se um período abrange múltiplos meses
+ * @param startDate String de data de início no formato YYYY-MM-DD
+ * @param endDate String de data de fim no formato YYYY-MM-DD
+ * @returns true se o período abrange múltiplos meses
+ */
+export function isMultipleMonths(startDate: string | undefined, endDate: string | undefined): boolean {
+  if (!startDate || !endDate) return false
+  const startDateObj = new Date(startDate + 'T00:00:00')
+  const endDateObj = new Date(endDate + 'T00:00:00')
+  return startDateObj.getMonth() !== endDateObj.getMonth() || startDateObj.getFullYear() !== endDateObj.getFullYear()
+}
