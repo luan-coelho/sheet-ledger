@@ -3,7 +3,6 @@
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { TimePickerSelector } from '@/components/ui/time-picker'
 
 import { WeekDays, WeekdaySession } from '@/lib/spreadsheet-schema'
 import { cn } from '@/lib/utils'
@@ -15,6 +14,32 @@ export type WeekdaySessionSelectorProps = {
 }
 
 export function WeekdaySessionSelector({ className, value = [], onChange }: WeekdaySessionSelectorProps) {
+  function formatTimeInput(value: string): string {
+    // Remove tudo que não é número
+    const numbers = value.replace(/\D/g, '')
+
+    // Aplica a máscara 00:00
+    if (numbers.length === 0) return ''
+    if (numbers.length <= 2) return numbers
+    return `${numbers.slice(0, 2)}:${numbers.slice(2, 4)}`
+  }
+
+  function handleTimeInputChange(day: WeekDays, value: string, type: 'start' | 'end') {
+    const formatted = formatTimeInput(value)
+
+    // Valida o horário
+    if (formatted.length === 5) {
+      const [hours, minutes] = formatted.split(':').map(Number)
+      if (hours > 23 || minutes > 59) return
+    }
+
+    if (type === 'start') {
+      handleStartTimeChange(day, formatted)
+    } else {
+      handleEndTimeChange(day, formatted)
+    }
+  }
+
   const weekdayItems = [
     { key: WeekDays.MONDAY, label: 'SEG', fullName: 'Segunda' },
     { key: WeekDays.TUESDAY, label: 'TER', fullName: 'Terça' },
@@ -126,18 +151,22 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
                         />
                       </div>
                       <div className="flex items-center gap-2">
-                        <TimePickerSelector
+                        <Input
+                          type="text"
                           value={startTime || ''}
-                          onChange={time => handleStartTimeChange(day, time)}
-                          placeholder="Início"
-                          className="h-7 w-16 flex-1 text-xs"
+                          onChange={e => handleTimeInputChange(day, e.target.value, 'start')}
+                          placeholder="00:00"
+                          maxLength={5}
+                          className="h-7 w-16 flex-1 text-center text-xs"
                         />
                         <span>-</span>
-                        <TimePickerSelector
+                        <Input
+                          type="text"
                           value={endTime || ''}
-                          onChange={time => handleEndTimeChange(day, time)}
-                          placeholder="Fim"
-                          className="h-7 w-16 flex-1 text-xs"
+                          onChange={e => handleTimeInputChange(day, e.target.value, 'end')}
+                          placeholder="00:00"
+                          maxLength={5}
+                          className="h-7 w-16 flex-1 text-center text-xs"
                         />
                       </div>
                     </div>
@@ -165,19 +194,23 @@ export function WeekdaySessionSelector({ className, value = [], onChange }: Week
 
                     <div className="flex items-center gap-2 md:flex-row">
                       <Label className="text-muted-foreground hidden text-xs lg:block">Horários (opcional):</Label>
-                      <div className="space-x-2">
-                        <TimePickerSelector
+                      <div className="flex items-center gap-2">
+                        <Input
+                          type="text"
                           value={startTime || ''}
-                          onChange={time => handleStartTimeChange(day, time)}
-                          placeholder="Início"
-                          className="h-7 w-16 text-xs"
+                          onChange={e => handleTimeInputChange(day, e.target.value, 'start')}
+                          placeholder="00:00"
+                          maxLength={5}
+                          className="h-7 w-16 text-center text-xs"
                         />
                         <span>-</span>
-                        <TimePickerSelector
+                        <Input
+                          type="text"
                           value={endTime || ''}
-                          onChange={time => handleEndTimeChange(day, time)}
-                          placeholder="Fim"
-                          className="h-7 w-16 text-xs"
+                          onChange={e => handleTimeInputChange(day, e.target.value, 'end')}
+                          placeholder="00:00"
+                          maxLength={5}
+                          className="h-7 w-16 text-center text-xs"
                         />
                       </div>
                     </div>
