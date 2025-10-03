@@ -1,8 +1,7 @@
 'use client'
 
-import { Calendar, Cloud, Eye, FileText, Loader2 } from 'lucide-react'
+import { Cloud, FileText, Loader2 } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
-import { toast } from 'sonner'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
@@ -19,10 +18,8 @@ import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { TimePickerSelector } from '@/components/ui/time-picker'
 
 import { useCompanies } from '@/hooks/use-companies'
-import { useGoogleDriveConfigStatus } from '@/hooks/use-google-drive-config'
 import { useHealthPlans } from '@/hooks/use-health-plans'
 import { usePatients } from '@/hooks/use-patients'
 import { useProfessionals } from '@/hooks/use-professionals'
@@ -81,9 +78,6 @@ export function SpreadsheetForm() {
   const { data: healthPlans } = useHealthPlans()
   const { data: therapies } = useTherapies()
 
-  // Hooks para Google Drive
-  const { data: driveStatus } = useGoogleDriveConfigStatus()
-
   // Mutations
   const generateSpreadsheet = useGenerateSpreadsheet()
   const generateDriveSpreadsheet = useGenerateDriveSpreadsheet()
@@ -112,11 +106,29 @@ export function SpreadsheetForm() {
   const { handlePatientChange } = usePatientHandler(form, patients)
   const { applyGlobalTimes } = useGlobalTimeHandler(form)
 
-  async function handlePreview() {
-    const isFormValid = await form.trigger()
-    if (isFormValid) {
-      setShowPreview(true)
-      scrollToElement(previewRef)
+  function formatTimeInput(value: string): string {
+    // Remove tudo que não é número
+    const numbers = value.replace(/\D/g, '')
+
+    // Aplica a máscara 00:00
+    if (numbers.length === 0) return ''
+    if (numbers.length <= 2) return numbers
+    return `${numbers.slice(0, 2)}:${numbers.slice(2, 4)}`
+  }
+
+  function handleGlobalTimeInputChange(value: string, type: 'start' | 'end') {
+    const formatted = formatTimeInput(value)
+
+    // Valida o horário
+    if (formatted.length === 5) {
+      const [hours, minutes] = formatted.split(':').map(Number)
+      if (hours > 23 || minutes > 59) return
+    }
+
+    if (type === 'start') {
+      setGlobalStartTime(formatted)
+    } else {
+      setGlobalEndTime(formatted)
     }
   }
 
@@ -137,65 +149,6 @@ export function SpreadsheetForm() {
       therapies,
     })
     generateSpreadsheet.mutate(transformedData)
-  }
-
-  async function handleGenerateDriveWithCheck(values: SpreadsheetFormValues) {
-    // Limpar resultado anterior
-    setDriveGenerationResult(null)
-
-    const patient = patients?.find(p => p.id === values.patientId)
-
-    if (!patient) {
-      form.setError('patientId', { message: 'Paciente não encontrado' })
-      return
-    }
-
-    // Verificar se existem arquivos no Google Drive
-    try {
-      const result = await checkExistingFiles.mutateAsync({
-        patientName: patient.name,
-        startDate: values.startDate,
-        endDate: values.endDate,
-      })
-
-      if (result.hasExistingFiles) {
-        // Mostrar dialog de confirmação
-        setExistingFilesInfo({
-          existingFiles: result.existingFiles,
-          formData: values,
-        })
-        setShowOverwriteDialog(true)
-      } else {
-        // Gerar diretamente se não há arquivos existentes
-        const transformedData = transformFormDataToApi(values, {
-          professionals,
-          patients,
-          companies,
-          healthPlans,
-          therapies,
-        })
-        generateDriveSpreadsheet.mutate(transformedData, {
-          onSuccess: result => {
-            setDriveGenerationResult(result)
-          },
-        })
-      }
-    } catch (error) {
-      // Se houver erro na verificação, continuar com geração normal
-      const transformedData = transformFormDataToApi(values, {
-        professionals,
-        patients,
-        companies,
-        healthPlans,
-        therapies,
-      })
-      generateDriveSpreadsheet.mutate(transformedData, {
-        onSuccess: result => {
-          setDriveGenerationResult(result)
-        },
-      })
-      toast.error(error instanceof Error ? error.message : 'Erro ao verificar arquivos existentes')
-    }
   }
 
   function handleConfirmOverwrite() {
@@ -541,23 +494,23 @@ export function SpreadsheetForm() {
 
             <div className="flex flex-col gap-3 sm:items-center sm:justify-center md:flex-row">
               <div className="flex flex-row items-center justify-center gap-3 sm:flex-row">
-                <div className="flex flex-col items-center gap-2 md:flex-row">
-                  <label className="text-xs font-medium whitespace-nowrap">Início:</label>
-                  <TimePickerSelector
-                    value={globalStartTime}
-                    onChange={setGlobalStartTime}
-                    placeholder="--:--"
-                    className="w-24"
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="text"
+                    value={globalStartTime || ''}
+                    onChange={e => handleGlobalTimeInputChange(e.target.value, 'start')}
+                    placeholder="00:00"
+                    maxLength={5}
+                    className="h-7 w-16 text-center text-xs"
                   />
-                </div>
-
-                <div className="flex flex-col items-center gap-2 md:flex-row">
-                  <label className="text-xs font-medium whitespace-nowrap">Fim:</label>
-                  <TimePickerSelector
-                    value={globalEndTime}
-                    onChange={setGlobalEndTime}
-                    placeholder="--:--"
-                    className="w-24"
+                  <span>-</span>
+                  <Input
+                    type="text"
+                    value={globalEndTime || ''}
+                    onChange={e => handleGlobalTimeInputChange(e.target.value, 'end')}
+                    placeholder="00:00"
+                    maxLength={5}
+                    className="h-7 w-16 text-center text-xs"
                   />
                 </div>
               </div>
@@ -589,64 +542,6 @@ export function SpreadsheetForm() {
               </AlertDescription>
             </Alert>
           )}
-
-          {/* Botões de ação */}
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full sm:flex-1"
-              onClick={handlePreview}
-              disabled={isLoading || isCheckingFiles}>
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eye className="mr-2 h-4 w-4" />}
-              <span className="hidden sm:inline">Visualizar Prévia</span>
-              <span className="sm:hidden">Prévia</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full sm:flex-1"
-              onClick={handleShowCalendar}
-              disabled={isLoading || isCheckingFiles}>
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Calendar className="mr-2 h-4 w-4" />}
-              <span className="hidden sm:inline">Ver Calendário</span>
-              <span className="sm:hidden">Calendário</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full sm:flex-1"
-              onClick={async () => {
-                const isFormValid = await form.trigger()
-                if (isFormValid) {
-                  handleGenerateDriveWithCheck(form.getValues())
-                }
-              }}
-              disabled={isLoading || isCheckingFiles || !driveStatus?.isConfigured}
-              title={
-                !driveStatus?.isConfigured
-                  ? 'Configure o Google Drive primeiro nas configurações'
-                  : 'Gerar planilhas organizadas por mês no Google Drive'
-              }>
-              {isCheckingFiles || generateDriveSpreadsheet.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Cloud className="mr-2 h-4 w-4" />
-              )}
-              <span className="hidden sm:inline">
-                {isCheckingFiles
-                  ? 'Verificando arquivos...'
-                  : generateDriveSpreadsheet.isPending
-                    ? 'Gerando no Drive...'
-                    : 'Gerar no Google Drive'}
-              </span>
-              <span className="sm:hidden">
-                {isCheckingFiles ? 'Verificando...' : generateDriveSpreadsheet.isPending ? 'Drive...' : 'Drive'}
-              </span>
-            </Button>
-          </div>
 
           <div className="flex justify-center">
             <Button type="submit" className="sm:flex-1" disabled={isLoading || isCheckingFiles}>

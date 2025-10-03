@@ -1,7 +1,7 @@
 {
   "servers": {
     "server-sequential-thinking": {
-      "command": "npx",
+      "command": "/home/luan/.nvm/versions/node/v22.19.0/bin/npx",
       "args": [
         "-y",
         "@smithery/cli@latest",
@@ -12,7 +12,7 @@
       ]
     },
     "memory": {
-      "command": "npx",
+      "command": "/home/luan/.nvm/versions/node/v22.19.0/bin/npx",
       "args": ["-y", "@modelcontextprotocol/server-memory"]
     },
     "context7": {
