@@ -1,4 +1,4 @@
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 
 import { WeekDays } from '@/lib/spreadsheet-schema'
 
@@ -95,60 +95,6 @@ export function useGenerateSpreadsheet() {
       downloadLink.click()
       window.URL.revokeObjectURL(downloadUrl)
       document.body.removeChild(downloadLink)
-    },
-  })
-}
-
-// Hook para gerar planilha no Google Drive
-export function useGenerateDriveSpreadsheet() {
-  const queryClient = useQueryClient()
-
-  return useMutation<GenerateDriveSpreadsheetResponse, Error, TransformedFormData>({
-    mutationFn: async data => {
-      const response = await fetch('/api/generate-spreadsheet-drive', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Erro ao gerar planilha no Google Drive')
-      }
-
-      return response.json()
-    },
-    onSuccess: () => {
-      // Invalidar queries relacionadas ao Google Drive se necessário
-      queryClient.invalidateQueries({ queryKey: ['google-drive'] })
-    },
-  })
-}
-
-// Hook para verificar arquivos existentes no Google Drive
-export function useCheckExistingFiles() {
-  return useMutation<CheckExistingFilesResponse, Error, CheckExistingFilesParams>({
-    mutationFn: async ({ patientName, startDate, endDate }) => {
-      const response = await fetch('/api/google-drive/check-existing-files', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          patientName,
-          startDate,
-          endDate,
-        }),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Erro ao verificar arquivos existentes')
-      }
-
-      return response.json()
     },
   })
 }

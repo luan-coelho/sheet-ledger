@@ -1,19 +1,9 @@
 'use client'
 
-import { Cloud, FileText, Loader2 } from 'lucide-react'
-import React, { useEffect, useRef, useState } from 'react'
+import { FileText, Loader2 } from 'lucide-react'
+import React, { useState } from 'react'
 
 import { Alert, AlertDescription } from '@/components/ui/alert'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
@@ -25,51 +15,23 @@ import { usePatients } from '@/hooks/use-patients'
 import { useProfessionals } from '@/hooks/use-professionals'
 import { useGlobalTimeHandler, usePatientHandler, useProfessionalHandler } from '@/hooks/use-spreadsheet-form-handlers'
 import { useFormLoadingStates, useSpreadsheetFormSetup } from '@/hooks/use-spreadsheet-form-setup'
-import {
-  useCheckExistingFiles,
-  useGenerateDriveSpreadsheet,
-  useGenerateSpreadsheet,
-  type CheckExistingFilesResponse,
-  type GenerateDriveSpreadsheetResponse,
-} from '@/hooks/use-spreadsheet-mutations'
+import { useGenerateSpreadsheet } from '@/hooks/use-spreadsheet-mutations'
 import { useTherapies } from '@/hooks/use-therapies'
 
 import { createComboBoxOptions } from '@/lib/combobox-helpers'
 import { formatDateToLocal, getMinEndDate, isMultipleMonths } from '@/lib/date-utils'
 import { transformFormDataToApi } from '@/lib/form-transformers'
-import { scrollToElement } from '@/lib/scroll-utils'
-import type { SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
+import { type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 
 import { SpreadsheetCalendar } from './spreadsheet-calendar'
-import { SpreadsheetPreview } from './spreadsheet-preview'
 import { Combobox } from './ui/combobox'
 import { Separator } from './ui/separator'
 import { WeekdaySessionSelector } from './weekday-session-selector'
 
-interface ExistingFilesInfo {
-  existingFiles: CheckExistingFilesResponse['existingFiles']
-  formData: SpreadsheetFormValues
-}
-
 export function SpreadsheetForm() {
-  const [showPreview, setShowPreview] = useState(false)
-  const [showCalendar, setShowCalendar] = useState(false)
-  const [showOverwriteDialog, setShowOverwriteDialog] = useState(false)
-  const [existingFilesInfo, setExistingFilesInfo] = useState<ExistingFilesInfo | null>(null)
-  const [driveGenerationResult, setDriveGenerationResult] = useState<GenerateDriveSpreadsheetResponse | null>(null)
-
   // Estado local para os horários globais (não fazem parte do formulário)
   const [globalStartTime, setGlobalStartTime] = useState('')
   const [globalEndTime, setGlobalEndTime] = useState('')
-
-  // Ref para o card de resultado do Google Drive
-  const driveResultRef = useRef<HTMLDivElement>(null)
-
-  // Ref para o card de prévia
-  const previewRef = useRef<HTMLDivElement>(null)
-
-  // Ref para o card do calendário
-  const calendarRef = useRef<HTMLDivElement>(null)
 
   // Hooks para buscar dados das entidades
   const { data: professionals } = useProfessionals()
@@ -80,18 +42,12 @@ export function SpreadsheetForm() {
 
   // Mutations
   const generateSpreadsheet = useGenerateSpreadsheet()
-  const generateDriveSpreadsheet = useGenerateDriveSpreadsheet()
-  const checkExistingFiles = useCheckExistingFiles()
 
   // Setup do formulário
   const { form } = useSpreadsheetFormSetup()
 
   // Estados de loading e error
-  const { isLoading, isCheckingFiles, error } = useFormLoadingStates(
-    generateSpreadsheet,
-    generateDriveSpreadsheet,
-    checkExistingFiles,
-  )
+  const { isLoading, error } = useFormLoadingStates(generateSpreadsheet)
 
   // Watch form values para preview e validação
   const formValues = form.watch()
@@ -132,14 +88,6 @@ export function SpreadsheetForm() {
     }
   }
 
-  async function handleShowCalendar() {
-    const isFormValid = await form.trigger()
-    if (isFormValid) {
-      setShowCalendar(true)
-      scrollToElement(calendarRef)
-    }
-  }
-
   function handleSubmit(values: SpreadsheetFormValues) {
     const transformedData = transformFormDataToApi(values, {
       professionals,
@@ -150,38 +98,6 @@ export function SpreadsheetForm() {
     })
     generateSpreadsheet.mutate(transformedData)
   }
-
-  function handleConfirmOverwrite() {
-    if (!existingFilesInfo) return
-
-    const transformedData = transformFormDataToApi(existingFilesInfo.formData, {
-      professionals,
-      patients,
-      companies,
-      healthPlans,
-      therapies,
-    })
-    generateDriveSpreadsheet.mutate(transformedData, {
-      onSuccess: result => {
-        setDriveGenerationResult(result)
-      },
-    })
-
-    setShowOverwriteDialog(false)
-    setExistingFilesInfo(null)
-  }
-
-  function handleCancelOverwrite() {
-    setShowOverwriteDialog(false)
-    setExistingFilesInfo(null)
-  }
-
-  // Scroll automático para o card de resultado quando ele aparecer
-  useEffect(() => {
-    if (driveGenerationResult) {
-      scrollToElement(driveResultRef)
-    }
-  }, [driveGenerationResult])
 
   return (
     <React.Fragment>
@@ -543,8 +459,10 @@ export function SpreadsheetForm() {
             </Alert>
           )}
 
+          <SpreadsheetCalendar formData={formValues} />
+
           <div className="flex justify-center">
-            <Button type="submit" className="sm:flex-1" disabled={isLoading || isCheckingFiles}>
+            <Button type="submit" className="sm:flex-1" disabled={isLoading}>
               {generateSpreadsheet.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
@@ -566,121 +484,6 @@ export function SpreadsheetForm() {
           </div>
         </form>
       </Form>
-
-      {/* Resultado da geração no Google Drive */}
-      {driveGenerationResult && (
-        <div ref={driveResultRef} className="mt-6">
-          <Alert className="border-green-200 bg-green-50">
-            <Cloud className="h-4 w-4 text-green-600" />
-            <AlertDescription>
-              <div className="space-y-3">
-                <p className="font-medium text-green-800">{driveGenerationResult.message}</p>
-
-                {driveGenerationResult.files.length === 1 ? (
-                  <div className="space-y-2">
-                    <p className="text-sm text-green-700">Arquivo gerado:</p>
-                    <a
-                      href={`https://drive.google.com/file/d/${driveGenerationResult.files[0].id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 underline hover:text-blue-800">
-                      <FileText className="h-4 w-4" />
-                      {driveGenerationResult.files[0].name}
-                    </a>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-sm text-green-700">
-                      {driveGenerationResult.files.length} arquivos gerados na pasta do paciente:
-                    </p>
-                    <div className="space-y-1">
-                      {driveGenerationResult.files.map((file, index) => (
-                        <a
-                          key={index}
-                          href={`https://drive.google.com/file/d/${file.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mr-4 inline-flex items-center gap-2 text-sm text-blue-600 underline hover:text-blue-800">
-                          <FileText className="h-4 w-4" />
-                          {file.name}
-                        </a>
-                      ))}
-                    </div>
-                    <div className="pt-2">
-                      <a
-                        href={`https://drive.google.com/drive/search?q=${encodeURIComponent(driveGenerationResult.patientFolder)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-green-600 hover:text-green-800">
-                        <Cloud className="h-4 w-4" />
-                        Ver pasta do paciente no Google Drive
-                      </a>
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setDriveGenerationResult(null)}
-                  className="text-xs text-gray-500 underline hover:text-gray-700">
-                  Fechar
-                </button>
-              </div>
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
-
-      {/* Preview */}
-      {showPreview && (
-        <div ref={previewRef} className="mt-6">
-          <SpreadsheetPreview formData={formValues} onClose={() => setShowPreview(false)} />
-        </div>
-      )}
-
-      {/* Calendar */}
-      {showCalendar && (
-        <div ref={calendarRef} className="mt-6">
-          <SpreadsheetCalendar formData={formValues} onClose={() => setShowCalendar(false)} />
-        </div>
-      )}
-
-      {/* Dialog de confirmação para sobrescrever arquivos */}
-      <AlertDialog open={showOverwriteDialog} onOpenChange={setShowOverwriteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Arquivos Existentes Encontrados</AlertDialogTitle>
-            <AlertDialogDescription>
-              Foram encontrados arquivos existentes no Google Drive para este paciente no período selecionado:
-              <div className="mt-3 space-y-2">
-                {existingFilesInfo?.existingFiles.map((file, index) => (
-                  <div key={index} className="border-primary/80 rounded border p-2">
-                    <span className="text-sm font-medium">{file.name}</span>
-                    <div className="text-xs text-gray-600">
-                      Última modificação:{' '}
-                      {new Date(file.modifiedTime).toLocaleString('pt-BR', {
-                        day: '2-digit',
-                        month: '2-digit',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              <p className="mt-3 text-sm">
-                Deseja continuar e sobrescrever os arquivos existentes? Esta ação não pode ser desfeita.
-              </p>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={handleCancelOverwrite}>Cancelar</AlertDialogCancel>
-            <AlertDialogAction onClick={handleConfirmOverwrite} className="bg-orange-600 hover:bg-orange-700">
-              Sim, Sobrescrever
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </React.Fragment>
   )
 }

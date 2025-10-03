@@ -1,7 +1,7 @@
 'use client'
 
 import IconeEstimulos from '@/images/icone-estimulos.png'
-import { Building2, Cloud, CreditCard, FileText, Settings, Shield, Users } from 'lucide-react'
+import { Building2, CreditCard, FileText, Settings, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 
@@ -55,11 +55,6 @@ const items = [
     title: 'Terapias',
     url: routes.frontend.admin.therapies.index,
     icon: Users,
-  },
-  {
-    title: 'Google Drive',
-    url: routes.frontend.admin.googleDrive.index,
-    icon: Cloud,
   },
 ]
 

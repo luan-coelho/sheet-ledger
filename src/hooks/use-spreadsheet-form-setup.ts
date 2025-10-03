@@ -39,14 +39,9 @@ export function useSpreadsheetFormSetup() {
 /**
  * Hook para gerenciar os estados de loading e error do formulário
  */
-export function useFormLoadingStates(
-  generateSpreadsheet: { isPending: boolean; error: Error | null },
-  generateDriveSpreadsheet: { isPending: boolean; error: Error | null },
-  checkExistingFiles: { isPending: boolean; error: Error | null },
-) {
-  const isLoading = generateSpreadsheet.isPending || generateDriveSpreadsheet.isPending
-  const isCheckingFiles = checkExistingFiles.isPending
-  const error = generateSpreadsheet.error || generateDriveSpreadsheet.error || checkExistingFiles.error
+export function useFormLoadingStates(generateSpreadsheet: { isPending: boolean; error: Error | null }) {
+  const isLoading = generateSpreadsheet.isPending
+  const error = generateSpreadsheet.error
 
-  return { isLoading, isCheckingFiles, error }
+  return { isLoading, error }
 }

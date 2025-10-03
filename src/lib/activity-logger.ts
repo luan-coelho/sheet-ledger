@@ -102,11 +102,6 @@ export class ActivityLogger {
     })
   }
 
-  // Registrar conexão com Google Drive
-  async logGoogleDriveConnected(userId: string) {
-    await logActivity(userId, ActivityActions.GOOGLE_DRIVE_CONNECTED, 'Conectou conta com Google Drive', {})
-  }
-
   // Registrar criação de paciente
   async logPatientCreated(userId: string, patientName: string) {
     await logActivity(userId, ActivityActions.PATIENT_CREATED, `Criou o paciente ${patientName}`, { patientName })

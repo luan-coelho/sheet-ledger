@@ -33,6 +33,22 @@ export type WeekdaySession = {
   endTime?: string
 }
 
+// Nova estrutura para configuração de agendamento avançado
+export type SessionTime = {
+  startTime: string
+  endTime: string
+}
+
+export type ScheduleException = {
+  date: string // formato: "YYYY-MM-DD"
+  sessions: SessionTime[]
+}
+
+export type AdvancedScheduleConfig = {
+  enabled: boolean
+  exceptions?: ScheduleException[]
+}
+
 export const spreadsheetFormSchema = z
   .object({
     professionalId: z.string().uuid('Selecione um profissional'),
@@ -101,6 +117,25 @@ export const spreadsheetFormSchema = z
       ),
     startDate: z.string().min(1, 'Data de início é obrigatória'),
     endDate: z.string().min(1, 'Data fim é obrigatória'),
+    // Nova configuração avançada de agendamento (opcional)
+    advancedSchedule: z
+      .object({
+        enabled: z.boolean(),
+        exceptions: z
+          .array(
+            z.object({
+              date: z.string(),
+              sessions: z.array(
+                z.object({
+                  startTime: z.string(),
+                  endTime: z.string(),
+                }),
+              ),
+            }),
+          )
+          .optional(),
+      })
+      .optional(),
   })
   .refine(
     data => {
