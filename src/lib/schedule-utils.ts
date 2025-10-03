@@ -5,6 +5,8 @@ export type SessionScheduleRecord = {
   sessions: number
   startTime?: string
   endTime?: string
+  source: 'default' | 'override'
+  overrideIndex?: number
 }
 
 function getWeekDayFromJSDay(jsDay: number): WeekDays {
@@ -48,7 +50,7 @@ function buildOverridesMap(
 ): Map<string, SessionScheduleRecord[]> {
   const map = new Map<string, SessionScheduleRecord[]>()
 
-  overrides.forEach(override => {
+  overrides.forEach((override, overrideIndex) => {
     const startDate = new Date(override.startDate + 'T00:00:00')
     const endDate = new Date((override.endDate ?? override.startDate) + 'T00:00:00')
 
@@ -64,6 +66,8 @@ function buildOverridesMap(
         sessions,
         startTime: override.startTime,
         endTime: override.endTime,
+        source: 'override',
+        overrideIndex,
       }
 
       const existing = map.get(key) ?? []
@@ -119,6 +123,8 @@ export function generateSessionSchedule(
           sessions: entry.sessions,
           startTime: entry.startTime,
           endTime: entry.endTime,
+          source: 'override',
+          overrideIndex: entry.overrideIndex,
         })
       })
     } else {
@@ -131,6 +137,7 @@ export function generateSessionSchedule(
           sessions: defaultSession.sessions,
           startTime: defaultSession.startTime,
           endTime: defaultSession.endTime,
+          source: 'default',
         })
       }
     }

@@ -42,7 +42,6 @@ import { transformFormDataToApi } from '@/lib/form-transformers'
 import { scrollToElement } from '@/lib/scroll-utils'
 import type { SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 
-import { DateOverridesEditor } from './date-overrides-editor'
 import { SpreadsheetCalendar } from './spreadsheet-calendar'
 import { SpreadsheetPreview } from './spreadsheet-preview'
 import { Combobox } from './ui/combobox'
@@ -64,12 +63,6 @@ export function SpreadsheetForm() {
   // Estado local para os horários globais (não fazem parte do formulário)
   const [globalStartTime, setGlobalStartTime] = useState('')
   const [globalEndTime, setGlobalEndTime] = useState('')
-
-  // Ref para o card de resultado do Google Drive
-  const driveResultRef = useRef<HTMLDivElement>(null)
-
-  // Ref para o card de prévia
-  const previewRef = useRef<HTMLDivElement>(null)
 
   // Ref para o card do calendário
   const calendarRef = useRef<HTMLDivElement>(null)
@@ -103,6 +96,7 @@ export function SpreadsheetForm() {
   const formValues = form.watch()
   const startDate = form.watch('startDate')
   const endDate = form.watch('endDate')
+  const dateOverrides = (form.watch('dateOverrides') ?? []) as SpreadsheetFormValues['dateOverrides']
 
   // Verificar se o período abrange múltiplos meses
   const isMultipleMonthsPeriod = isMultipleMonths(startDate, endDate)
@@ -111,6 +105,14 @@ export function SpreadsheetForm() {
   const { handleProfessionalChange } = useProfessionalHandler(form, professionals)
   const { handlePatientChange } = usePatientHandler(form, patients)
   const { applyGlobalTimes } = useGlobalTimeHandler(form)
+
+  const handleDateOverridesChange = (value: SpreadsheetFormValues['dateOverrides']) => {
+    form.setValue('dateOverrides', value, {
+      shouldDirty: true,
+      shouldTouch: true,
+      shouldValidate: true,
+    })
+  }
 
   function formatTimeInput(value: string): string {
     const numbersOnly = value.replace(/\D/g, '')
@@ -136,14 +138,6 @@ export function SpreadsheetForm() {
       setGlobalStartTime(formatted)
     } else {
       setGlobalEndTime(formatted)
-    }
-  }
-
-  async function handlePreview() {
-    const isFormValid = await form.trigger()
-    if (isFormValid) {
-      setShowPreview(true)
-      scrollToElement(previewRef)
     }
   }
 
@@ -249,13 +243,6 @@ export function SpreadsheetForm() {
     setShowOverwriteDialog(false)
     setExistingFilesInfo(null)
   }
-
-  // Scroll automático para o card de resultado quando ele aparecer
-  useEffect(() => {
-    if (driveGenerationResult) {
-      scrollToElement(driveResultRef)
-    }
-  }, [driveGenerationResult])
 
   return (
     <React.Fragment>
@@ -603,24 +590,6 @@ export function SpreadsheetForm() {
             </div>
           </div>
 
-          <FormField
-            control={form.control}
-            name="dateOverrides"
-            render={({ field }) => (
-              <FormItem>
-                <FormControl>
-                  <DateOverridesEditor
-                    value={field.value}
-                    onChange={field.onChange}
-                    periodStart={startDate}
-                    periodEnd={endDate}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
           {/* Mensagens de erro */}
           {error && (
             <Alert variant="destructive">
@@ -644,17 +613,6 @@ export function SpreadsheetForm() {
               type="button"
               variant="outline"
               className="w-full sm:flex-1"
-              onClick={handlePreview}
-              disabled={isLoading || isCheckingFiles}>
-              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Eye className="mr-2 h-4 w-4" />}
-              <span className="hidden sm:inline">Visualizar Prévia</span>
-              <span className="sm:hidden">Prévia</span>
-            </Button>
-
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full sm:flex-1"
               onClick={handleShowCalendar}
               disabled={isLoading || isCheckingFiles}>
               {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Calendar className="mr-2 h-4 w-4" />}
@@ -662,41 +620,6 @@ export function SpreadsheetForm() {
               <span className="sm:hidden">Calendário</span>
             </Button>
 
-            <Button
-              type="button"
-              variant="secondary"
-              className="w-full sm:flex-1"
-              onClick={async () => {
-                const isFormValid = await form.trigger()
-                if (isFormValid) {
-                  handleGenerateDriveWithCheck(form.getValues())
-                }
-              }}
-              disabled={isLoading || isCheckingFiles || !driveStatus?.isConfigured}
-              title={
-                !driveStatus?.isConfigured
-                  ? 'Configure o Google Drive primeiro nas configurações'
-                  : 'Gerar planilhas organizadas por mês no Google Drive'
-              }>
-              {isCheckingFiles || generateDriveSpreadsheet.isPending ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Cloud className="mr-2 h-4 w-4" />
-              )}
-              <span className="hidden sm:inline">
-                {isCheckingFiles
-                  ? 'Verificando arquivos...'
-                  : generateDriveSpreadsheet.isPending
-                    ? 'Gerando no Drive...'
-                    : 'Gerar no Google Drive'}
-              </span>
-              <span className="sm:hidden">
-                {isCheckingFiles ? 'Verificando...' : generateDriveSpreadsheet.isPending ? 'Drive...' : 'Drive'}
-              </span>
-            </Button>
-          </div>
-
-          <div className="flex justify-center">
             <Button type="submit" className="sm:flex-1" disabled={isLoading || isCheckingFiles}>
               {generateSpreadsheet.isPending ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -720,80 +643,15 @@ export function SpreadsheetForm() {
         </form>
       </Form>
 
-      {/* Resultado da geração no Google Drive */}
-      {driveGenerationResult && (
-        <div ref={driveResultRef} className="mt-6">
-          <Alert className="border-green-200 bg-green-50">
-            <Cloud className="h-4 w-4 text-green-600" />
-            <AlertDescription>
-              <div className="space-y-3">
-                <p className="font-medium text-green-800">{driveGenerationResult.message}</p>
-
-                {driveGenerationResult.files.length === 1 ? (
-                  <div className="space-y-2">
-                    <p className="text-sm text-green-700">Arquivo gerado:</p>
-                    <a
-                      href={`https://drive.google.com/file/d/${driveGenerationResult.files[0].id}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 underline hover:text-blue-800">
-                      <FileText className="h-4 w-4" />
-                      {driveGenerationResult.files[0].name}
-                    </a>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    <p className="text-sm text-green-700">
-                      {driveGenerationResult.files.length} arquivos gerados na pasta do paciente:
-                    </p>
-                    <div className="space-y-1">
-                      {driveGenerationResult.files.map((file, index) => (
-                        <a
-                          key={index}
-                          href={`https://drive.google.com/file/d/${file.id}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="mr-4 inline-flex items-center gap-2 text-sm text-blue-600 underline hover:text-blue-800">
-                          <FileText className="h-4 w-4" />
-                          {file.name}
-                        </a>
-                      ))}
-                    </div>
-                    <div className="pt-2">
-                      <a
-                        href={`https://drive.google.com/drive/search?q=${encodeURIComponent(driveGenerationResult.patientFolder)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-sm font-medium text-green-600 hover:text-green-800">
-                        <Cloud className="h-4 w-4" />
-                        Ver pasta do paciente no Google Drive
-                      </a>
-                    </div>
-                  </div>
-                )}
-
-                <button
-                  onClick={() => setDriveGenerationResult(null)}
-                  className="text-xs text-gray-500 underline hover:text-gray-700">
-                  Fechar
-                </button>
-              </div>
-            </AlertDescription>
-          </Alert>
-        </div>
-      )}
-
-      {/* Preview */}
-      {showPreview && (
-        <div ref={previewRef} className="mt-6">
-          <SpreadsheetPreview formData={formValues} onClose={() => setShowPreview(false)} />
-        </div>
-      )}
-
       {/* Calendar */}
       {showCalendar && (
         <div ref={calendarRef} className="mt-6">
-          <SpreadsheetCalendar formData={formValues} onClose={() => setShowCalendar(false)} />
+          <SpreadsheetCalendar
+            formData={formValues}
+            dateOverrides={dateOverrides}
+            onChangeOverrides={handleDateOverridesChange}
+            onClose={() => setShowCalendar(false)}
+          />
         </div>
       )}
 
