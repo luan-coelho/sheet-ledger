@@ -33,7 +33,8 @@ export function transformFormDataToApi(
   const therapy = therapies?.find(t => t.id === values.therapyId)
 
   // Calcular horário mais cedo e mais tarde dos dias selecionados
-  const { earliestTime, latestTime } = calculateTimeRange(values.weekDaySessions)
+  const dateOverrides = values.dateOverrides ?? []
+  const { earliestTime, latestTime } = calculateTimeRange(values.weekDaySessions, dateOverrides)
 
   return {
     professional: professional?.name || '',
@@ -58,6 +59,7 @@ export function transformFormDataToApi(
     endDate: values.endDate,
     startTime: earliestTime,
     endTime: latestTime,
+    dateOverrides,
   }
 }
 
@@ -66,31 +68,38 @@ export function transformFormDataToApi(
  * @param weekDaySessions Sessões da semana
  * @returns Objeto com earliestTime e latestTime
  */
-function calculateTimeRange(weekDaySessions: SpreadsheetFormValues['weekDaySessions']): {
+function calculateTimeRange(
+  weekDaySessions: SpreadsheetFormValues['weekDaySessions'],
+  dateOverrides: NonNullable<SpreadsheetFormValues['dateOverrides']>,
+): {
   earliestTime: string
   latestTime: string
 } {
-  let earliestTime = '23:59'
-  let latestTime = '00:00'
-  let hasValidTimes = false
+  let earliestTime: string | null = null
+  let latestTime: string | null = null
 
-  weekDaySessions.forEach(session => {
-    if (session.startTime && session.endTime) {
-      hasValidTimes = true
-      if (session.startTime < earliestTime) {
-        earliestTime = session.startTime
-      }
-      if (session.endTime > latestTime) {
-        latestTime = session.endTime
-      }
+  const considerTimeRange = (startTime?: string, endTime?: string) => {
+    if (!startTime || !endTime) return
+
+    if (!earliestTime || startTime < earliestTime) {
+      earliestTime = startTime
     }
-  })
 
-  // Se nenhum horário foi definido, use horários padrão
-  if (!hasValidTimes) {
-    earliestTime = '08:00'
-    latestTime = '17:00'
+    if (!latestTime || endTime > latestTime) {
+      latestTime = endTime
+    }
   }
 
-  return { earliestTime, latestTime }
+  weekDaySessions.forEach(session => {
+    considerTimeRange(session.startTime, session.endTime)
+  })
+
+  dateOverrides.forEach(override => {
+    considerTimeRange(override.startTime, override.endTime)
+  })
+
+  return {
+    earliestTime: earliestTime ?? '08:00',
+    latestTime: latestTime ?? '17:00',
+  }
 }

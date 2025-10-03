@@ -184,6 +184,7 @@ export async function POST(request: NextRequest) {
         endDate: monthInfo.endDate.toISOString().split('T')[0],
         startTime: startTime,
         endTime: endTime,
+        dateOverrides: body.dateOverrides,
         companyData,
       })
 

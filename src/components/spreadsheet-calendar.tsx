@@ -18,6 +18,7 @@ import { useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
+import { generateSessionSchedule, groupSessionScheduleByDate, type SessionScheduleRecord } from '@/lib/schedule-utils'
 import { WeekDays, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 
 interface SpreadsheetCalendarProps {
@@ -38,8 +39,21 @@ const weekDayToNumber: Record<WeekDays, number> = {
 
 const dayNamesShort = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb']
 
+const formatDateKey = (date: Date): string => {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 // Componente de calendário simplificado
-function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]; formData: SpreadsheetFormValues }) {
+function SimpleCalendar({
+  scheduleByDate,
+  formData,
+}: {
+  scheduleByDate: Map<string, SessionScheduleRecord[]>
+  formData: SpreadsheetFormValues
+}) {
   const startDate = useMemo(() => {
     if (formData.startDate) {
       return new Date(formData.startDate + 'T00:00:00')
@@ -80,11 +94,18 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
 
   const calendarDays = eachDayOfInterval({ start: calendarStart, end: calendarEnd })
 
-  const isAttendanceDay = (date: Date) => {
-    return attendanceDates.some(attendanceDate => isSameDay(date, attendanceDate))
+  const isAttendanceDay = (date: Date) => scheduleByDate.has(formatDateKey(date))
+
+  const getEntriesForDay = (date: Date): SessionScheduleRecord[] => {
+    return scheduleByDate.get(formatDateKey(date)) ?? []
   }
 
   const getSessionsForDay = (date: Date) => {
+    const entries = getEntriesForDay(date)
+    if (entries.length > 0) {
+      return entries.reduce((total, entry) => total + entry.sessions, 0)
+    }
+
     const dayOfWeek = date.getDay()
     const weekDaySession = formData.weekDaySessions.find(session => weekDayToNumber[session.day] === dayOfWeek)
     return weekDaySession?.sessions || 0
@@ -151,6 +172,7 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
           const isCurrentMonth = isSameMonth(day, currentViewDate)
           const isAttendance = isAttendanceDay(day)
           const sessions = getSessionsForDay(day)
+          const entriesForDay = getEntriesForDay(day)
 
           // Obter horários se for dia de atendimento
           const dayOfWeek = day.getDay()
@@ -177,13 +199,31 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
                         {sessions} {sessions > 1 ? 'sessões' : 'sessão'}
                       </div>
                     )}
-                    {startTime && endTime && (
-                      <div className="text-foreground mt-2 flex items-center justify-center gap-1">
-                        <div className="text-xs">{startTime}</div>
-                        <span className="text-xs">-</span>
-                        <div className="text-xs">{endTime}</div>
-                      </div>
-                    )}
+                    <div className="mt-2 flex flex-col items-center gap-1">
+                      {(entriesForDay.length > 0
+                        ? entriesForDay
+                        : weekDaySession
+                          ? [
+                              {
+                                startTime: weekDaySession.startTime,
+                                endTime: weekDaySession.endTime,
+                              },
+                            ]
+                          : []
+                      ).map((entry, entryIndex) => (
+                        <div key={entryIndex} className="text-foreground flex items-center gap-1 text-xs">
+                          {entry?.startTime && entry?.endTime ? (
+                            <>
+                              <span>{entry.startTime}</span>
+                              <span>-</span>
+                              <span>{entry.endTime}</span>
+                            </>
+                          ) : (
+                            <span>-</span>
+                          )}
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
@@ -203,32 +243,32 @@ function SimpleCalendar({ attendanceDates, formData }: { attendanceDates: Date[]
 }
 
 export function SpreadsheetCalendar({ formData, onClose }: SpreadsheetCalendarProps) {
-  // Calcular as datas de atendimento baseadas no formulário
-  const attendanceDates = useMemo(() => {
-    if (!formData.startDate || !formData.endDate || formData.weekDaySessions.length === 0) {
-      return []
+  // Gerar os registros completos de atendimento (dias e horários)
+  const scheduleEntries = useMemo(() => {
+    if (!formData.startDate || !formData.endDate) {
+      return [] as SessionScheduleRecord[]
     }
 
     const startDate = new Date(formData.startDate + 'T00:00:00')
     const endDate = new Date(formData.endDate + 'T00:00:00')
 
-    // Obter todos os dias no período
-    const allDates = eachDayOfInterval({ start: startDate, end: endDate })
+    return generateSessionSchedule(startDate, endDate, {
+      weekDaySessions: formData.weekDaySessions,
+      dateOverrides: formData.dateOverrides,
+    })
+  }, [formData.startDate, formData.endDate, formData.weekDaySessions, formData.dateOverrides])
 
-    // Obter os dias da semana selecionados
-    const selectedWeekDays = new Set(formData.weekDaySessions.map(session => weekDayToNumber[session.day]))
+  const scheduleByDate = useMemo(() => groupSessionScheduleByDate(scheduleEntries), [scheduleEntries])
 
-    // Filtrar apenas os dias que estão nos dias da semana selecionados
-    return allDates.filter(date => selectedWeekDays.has(date.getDay()))
-  }, [formData.startDate, formData.endDate, formData.weekDaySessions])
+  const attendanceDates = useMemo(() => {
+    return Array.from(scheduleByDate.values())
+      .map(entries => entries[0]?.date)
+      .filter((date): date is Date => Boolean(date))
+  }, [scheduleByDate])
 
   const totalSessions = useMemo(() => {
-    return attendanceDates.reduce((total, date) => {
-      const dayOfWeek = date.getDay()
-      const weekDaySession = formData.weekDaySessions.find(session => weekDayToNumber[session.day] === dayOfWeek)
-      return total + (weekDaySession?.sessions || 1)
-    }, 0)
-  }, [attendanceDates, formData.weekDaySessions])
+    return scheduleEntries.reduce((total, entry) => total + entry.sessions, 0)
+  }, [scheduleEntries])
 
   if (!formData.startDate || !formData.endDate) {
     return (
@@ -279,7 +319,7 @@ export function SpreadsheetCalendar({ formData, onClose }: SpreadsheetCalendarPr
         </div>
 
         {/* Calendário visual simplificado */}
-        <SimpleCalendar attendanceDates={attendanceDates} formData={formData} />
+        <SimpleCalendar scheduleByDate={scheduleByDate} formData={formData} />
       </CardContent>
     </Card>
   )

@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { useForm } from 'react-hook-form'
+import { Resolver, useForm } from 'react-hook-form'
 
 import { formatDateISO, getFirstDayOfMonth, getLastDayOfMonth, getNowInBrazil } from '@/lib/date-utils'
 import { spreadsheetFormSchema, WeekDays, type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
@@ -13,9 +13,9 @@ export function useSpreadsheetFormSetup() {
   const firstDayOfMonth = getFirstDayOfMonth(today.getFullYear(), today.getMonth())
   const lastDayOfMonth = getLastDayOfMonth(today.getFullYear(), today.getMonth())
 
-  const form = useForm<SpreadsheetFormValues>({
+  const form = useForm<SpreadsheetFormValues, unknown, SpreadsheetFormValues>({
     mode: 'onChange',
-    resolver: zodResolver(spreadsheetFormSchema),
+    resolver: zodResolver(spreadsheetFormSchema) as Resolver<SpreadsheetFormValues, unknown, SpreadsheetFormValues>,
     defaultValues: {
       professionalId: '',
       licenseNumber: '',
@@ -30,6 +30,7 @@ export function useSpreadsheetFormSetup() {
       weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }],
       startDate: formatDateISO(firstDayOfMonth),
       endDate: formatDateISO(lastDayOfMonth),
+      dateOverrides: [],
     },
   })
 

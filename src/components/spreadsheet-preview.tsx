@@ -50,7 +50,12 @@ export function SpreadsheetPreview({ formData, onClose }: SpreadsheetPreviewProp
     // Use new date range format
     const startDate = new Date(formData.startDate)
     const endDate = new Date(formData.endDate)
-    sessionDates = PreviewUtils.generateSessionDatesWithSessionsForPeriod(startDate, endDate, formData.weekDaySessions)
+    sessionDates = PreviewUtils.generateSessionDatesWithSessionsForPeriod(
+      startDate,
+      endDate,
+      formData.weekDaySessions,
+      formData.dateOverrides,
+    )
 
     // Format period string
     const startMonth = startDate.toLocaleDateString('pt-BR', { month: 'long' })

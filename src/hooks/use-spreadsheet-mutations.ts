@@ -24,6 +24,13 @@ export interface TransformedFormData {
   endDate: string
   startTime: string
   endTime: string
+  dateOverrides?: Array<{
+    startDate: string
+    endDate?: string
+    startTime: string
+    endTime: string
+    sessions?: number
+  }>
 }
 
 export interface GenerateSpreadsheetResponse {

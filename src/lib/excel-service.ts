@@ -3,7 +3,8 @@ import path from 'path'
 import ExcelJS from 'exceljs'
 
 import { createBrazilianDate, formatDateBrazilian, getMonthNameInPortuguese } from './date-utils'
-import { meses, WeekDays, WeekdaySession } from './spreadsheet-schema'
+import { generateSessionSchedule } from './schedule-utils'
+import { DateOverride, meses, WeekDays, WeekdaySession } from './spreadsheet-schema'
 import { formatCNPJ } from './utils'
 
 type SessionRecord = {
@@ -37,6 +38,7 @@ export class ExcelService {
     endDate?: string
     startTime?: string
     endTime?: string
+    dateOverrides?: DateOverride[]
     companyData?: {
       name: string
       cnpj: string
@@ -112,7 +114,12 @@ export class ExcelService {
         competencyText = `${startMonth.toUpperCase()}/${startYear} - ${endMonth.toUpperCase()}/${endYear}`
       }
 
-      records = this.generateRecordsForPeriodWithSessions(startDateObj, endDateObj, data.weekDaySessions)
+      records = this.generateRecordsForPeriodWithSessions(
+        startDateObj,
+        endDateObj,
+        data.weekDaySessions,
+        data.dateOverrides,
+      )
     } else if (data.competency) {
       // Manter compatibilidade com o formato antigo
       const monthIndex = parseInt(data.competency.month)
@@ -121,7 +128,12 @@ export class ExcelService {
 
       const competencyMonth = parseInt(data.competency.month)
       const competencyYear = parseInt(data.competency.year)
-      records = this.generateRecordsForMonthWithSessions(competencyYear, competencyMonth, data.weekDaySessions)
+      records = this.generateRecordsForMonthWithSessions(
+        competencyYear,
+        competencyMonth,
+        data.weekDaySessions,
+        data.dateOverrides,
+      )
     } else {
       throw new Error('É necessário informar a data de início e fim ou a competência')
     }
@@ -199,23 +211,6 @@ export class ExcelService {
   }
 
   /**
-   * Obtém o dia da semana pelo seu índice numérico
-   */
-  private static getDayByIndex(index: number): WeekDays {
-    const days = [
-      WeekDays.MONDAY,
-      WeekDays.TUESDAY,
-      WeekDays.WEDNESDAY,
-      WeekDays.THURSDAY,
-      WeekDays.FRIDAY,
-      WeekDays.SATURDAY,
-      WeekDays.SUNDAY,
-    ]
-
-    return days[index]
-  }
-
-  /**
    * Formata intervalo de dias da semana com sessões para exibição
    * @param weekDaySessions Array de configuração de sessões por dia da semana
    * @returns String formatada como "SEG(4), TER(4), QUA(4)"
@@ -255,42 +250,12 @@ export class ExcelService {
     year: number,
     month: number,
     weekDaySessions: WeekdaySession[],
+    dateOverrides?: DateOverride[],
   ): SessionRecord[] {
-    const sessionRecords: SessionRecord[] = []
     const startDate = new Date(year, month, 1)
     const endDate = new Date(year, month + 1, 0)
 
-    // Cria um mapa para busca rápida de sessões por dia
-    const sessionsMap = new Map<WeekDays, { sessions: number; startTime?: string; endTime?: string }>()
-    weekDaySessions.forEach(({ day, sessions, startTime, endTime }) => {
-      sessionsMap.set(day, { sessions, startTime, endTime })
-    })
-
-    // Garante que temos o ano correto para a competência
-    const currentYear = new Date().getFullYear()
-
-    // Se o ano solicitado for muito no futuro (mais de 10 anos), ajusta para o ano atual
-    if (year < currentYear - 10 || year > currentYear + 10) {
-      year = currentYear
-    }
-
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      // Converte dia JS (0 = Domingo) para nosso enum de dia
-      const jsDay = d.getDay() // 0 = Domingo, 1 = Segunda, etc.
-      const ourDay = this.getWeekDayFromJSDay(jsDay)
-
-      if (sessionsMap.has(ourDay)) {
-        const sessionData = sessionsMap.get(ourDay)!
-        sessionRecords.push({
-          date: new Date(d),
-          sessions: sessionData.sessions,
-          startTime: sessionData.startTime,
-          endTime: sessionData.endTime,
-        })
-      }
-    }
-
-    return sessionRecords
+    return this.generateSessionRecords(startDate, endDate, weekDaySessions, dateOverrides)
   }
 
   /**
@@ -304,62 +269,27 @@ export class ExcelService {
     startDate: Date,
     endDate: Date,
     weekDaySessions: WeekdaySession[],
+    dateOverrides?: DateOverride[],
   ): SessionRecord[] {
-    const records: SessionRecord[] = []
-
-    // Cria um mapa de dias da semana para busca mais rápida
-    const weekDaySessionMap = new Map<WeekDays, { sessions: number; startTime?: string; endTime?: string }>()
-    weekDaySessions.forEach(ws => {
-      weekDaySessionMap.set(ws.day, { sessions: ws.sessions, startTime: ws.startTime, endTime: ws.endTime })
-    })
-
-    // Itera através de cada dia no período
-    const currentDate = new Date(startDate)
-    while (currentDate <= endDate) {
-      const jsDay = currentDate.getDay()
-      const weekDay = this.getWeekDayFromJSDay(jsDay)
-
-      // Verifica se este dia da semana está selecionado
-      if (weekDaySessionMap.has(weekDay)) {
-        const sessionData = weekDaySessionMap.get(weekDay)!
-        records.push({
-          date: new Date(currentDate),
-          sessions: sessionData.sessions,
-          startTime: sessionData.startTime,
-          endTime: sessionData.endTime,
-        })
-      }
-
-      // Move para o próximo dia
-      currentDate.setDate(currentDate.getDate() + 1)
-    }
-
-    return records
+    return this.generateSessionRecords(startDate, endDate, weekDaySessions, dateOverrides)
   }
 
-  /**
-   * Converte índice de dia JS para enum WeekDays
-   * @param jsDay Índice de dia JS (0 = Domingo, 1 = Segunda, etc.)
-   * @returns Valor do enum WeekDays
-   */
-  private static getWeekDayFromJSDay(jsDay: number): WeekDays {
-    switch (jsDay) {
-      case 1:
-        return WeekDays.MONDAY
-      case 2:
-        return WeekDays.TUESDAY
-      case 3:
-        return WeekDays.WEDNESDAY
-      case 4:
-        return WeekDays.THURSDAY
-      case 5:
-        return WeekDays.FRIDAY
-      case 6:
-        return WeekDays.SATURDAY
-      case 0:
-        return WeekDays.SUNDAY
-      default:
-        return WeekDays.MONDAY
-    }
+  private static generateSessionRecords(
+    startDate: Date,
+    endDate: Date,
+    weekDaySessions: WeekdaySession[],
+    dateOverrides?: DateOverride[],
+  ): SessionRecord[] {
+    const entries = generateSessionSchedule(startDate, endDate, {
+      weekDaySessions,
+      dateOverrides,
+    })
+
+    return entries.map(entry => ({
+      date: entry.date,
+      sessions: entry.sessions,
+      startTime: entry.startTime,
+      endTime: entry.endTime,
+    }))
   }
 }

@@ -19,7 +19,6 @@ import { Button } from '@/components/ui/button'
 import { DatePicker } from '@/components/ui/date-picker'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { TimePickerSelector } from '@/components/ui/time-picker'
 
 import { useCompanies } from '@/hooks/use-companies'
 import { useGoogleDriveConfigStatus } from '@/hooks/use-google-drive-config'
@@ -43,6 +42,7 @@ import { transformFormDataToApi } from '@/lib/form-transformers'
 import { scrollToElement } from '@/lib/scroll-utils'
 import type { SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 
+import { DateOverridesEditor } from './date-overrides-editor'
 import { SpreadsheetCalendar } from './spreadsheet-calendar'
 import { SpreadsheetPreview } from './spreadsheet-preview'
 import { Combobox } from './ui/combobox'
@@ -111,6 +111,33 @@ export function SpreadsheetForm() {
   const { handleProfessionalChange } = useProfessionalHandler(form, professionals)
   const { handlePatientChange } = usePatientHandler(form, patients)
   const { applyGlobalTimes } = useGlobalTimeHandler(form)
+
+  function formatTimeInput(value: string): string {
+    const numbersOnly = value.replace(/\D/g, '')
+
+    if (numbersOnly.length === 0) return ''
+    if (numbersOnly.length <= 2) return numbersOnly
+
+    return `${numbersOnly.slice(0, 2)}:${numbersOnly.slice(2, 4)}`
+  }
+
+  function handleTimeInputChange(value: string, type: 'start' | 'end') {
+    const formatted = formatTimeInput(value)
+
+    if (formatted.length === 5) {
+      const [hours, minutes] = formatted.split(':').map(Number)
+
+      if (hours > 23 || minutes > 59) {
+        return
+      }
+    }
+
+    if (type === 'start') {
+      setGlobalStartTime(formatted)
+    } else {
+      setGlobalEndTime(formatted)
+    }
+  }
 
   async function handlePreview() {
     const isFormValid = await form.trigger()
@@ -535,30 +562,33 @@ export function SpreadsheetForm() {
             <div className="mb-3 text-center">
               <h3 className="text-sm font-medium">Aplicar horário a todos os dias (opcional)</h3>
               <p className="text-muted-foreground mt-1 text-xs">
-                Configure um horário para aplicar automaticamente a todos os dias selecionados
+                Informe um horário para aplicar a todos os dias selecionados
               </p>
             </div>
 
             <div className="flex flex-col gap-3 sm:items-center sm:justify-center md:flex-row">
               <div className="flex flex-row items-center justify-center gap-3 sm:flex-row">
                 <div className="flex flex-col items-center gap-2 md:flex-row">
-                  <label className="text-xs font-medium whitespace-nowrap">Início:</label>
-                  <TimePickerSelector
-                    value={globalStartTime}
-                    onChange={setGlobalStartTime}
-                    placeholder="--:--"
-                    className="w-24"
-                  />
-                </div>
-
-                <div className="flex flex-col items-center gap-2 md:flex-row">
-                  <label className="text-xs font-medium whitespace-nowrap">Fim:</label>
-                  <TimePickerSelector
-                    value={globalEndTime}
-                    onChange={setGlobalEndTime}
-                    placeholder="--:--"
-                    className="w-24"
-                  />
+                  <label className="text-xs font-medium whitespace-nowrap">Horário:</label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="text"
+                      value={globalStartTime || ''}
+                      onChange={e => handleTimeInputChange(e.target.value, 'start')}
+                      placeholder="00:00"
+                      maxLength={5}
+                      className="h-7 w-16 text-center text-xs"
+                    />
+                    <span>-</span>
+                    <Input
+                      type="text"
+                      value={globalEndTime || ''}
+                      onChange={e => handleTimeInputChange(e.target.value, 'end')}
+                      placeholder="00:00"
+                      maxLength={5}
+                      className="h-7 w-16 text-center text-xs"
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -572,6 +602,24 @@ export function SpreadsheetForm() {
               </Button>
             </div>
           </div>
+
+          <FormField
+            control={form.control}
+            name="dateOverrides"
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <DateOverridesEditor
+                    value={field.value}
+                    onChange={field.onChange}
+                    periodStart={startDate}
+                    periodEnd={endDate}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           {/* Mensagens de erro */}
           {error && (
