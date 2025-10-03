@@ -1,7 +1,5 @@
 'use client'
 
-import { Bell } from 'lucide-react'
-
 import { UserMenu } from '@/components/auth/user-menu'
 import { ThemeToggle } from '@/components/layout/theme-toggle'
 import { Button } from '@/components/ui/button'
