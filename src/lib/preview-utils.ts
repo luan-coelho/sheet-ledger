@@ -1,11 +1,7 @@
-import { meses, WeekDays, WeekdaySession } from './spreadsheet-schema'
+import { generateSessionSchedule, type SessionScheduleRecord } from './schedule-utils'
+import { meses, WeekDays, WeekdaySession, type DateOverride } from './spreadsheet-schema'
 
-export type SessionDate = {
-  date: Date
-  sessions: number
-  startTime?: string
-  endTime?: string
-}
+export type SessionDate = SessionScheduleRecord
 
 /**
  * Funções utilitárias para gerar dados de preview
@@ -150,60 +146,15 @@ export class PreviewUtils {
     year: number,
     month: number,
     weekDaySessions: WeekdaySession[],
+    dateOverrides?: DateOverride[],
   ): SessionDate[] {
-    const sessionDates: SessionDate[] = []
     const startDate = new Date(year, month, 1)
     const endDate = new Date(year, month + 1, 0)
 
-    // Cria um mapa para busca rápida de sessões por dia
-    const sessionsMap = new Map<WeekDays, { sessions: number; startTime?: string; endTime?: string }>()
-    weekDaySessions.forEach(({ day, sessions, startTime, endTime }) => {
-      sessionsMap.set(day, { sessions, startTime, endTime })
+    return generateSessionSchedule(startDate, endDate, {
+      weekDaySessions,
+      dateOverrides,
     })
-
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      // Converte o dia da semana JS para o enum WeekDays
-      const jsDay = d.getDay() // 0 = Domingo, 1 = Segunda, etc.
-      const ourDay = this.getWeekDayFromJSDay(jsDay)
-
-      if (sessionsMap.has(ourDay)) {
-        const sessionData = sessionsMap.get(ourDay)!
-        sessionDates.push({
-          date: new Date(d),
-          sessions: sessionData.sessions,
-          startTime: sessionData.startTime,
-          endTime: sessionData.endTime,
-        })
-      }
-    }
-
-    return sessionDates
-  }
-
-  /**
-   * Converte o índice do dia da semana JS para o enum WeekDays
-   * @param jsDay Índice do dia da semana JS (0 = Domingo, 1 = Segunda, etc.)
-   * @returns Valor do enum WeekDays
-   */
-  private static getWeekDayFromJSDay(jsDay: number): WeekDays {
-    switch (jsDay) {
-      case 1:
-        return WeekDays.MONDAY
-      case 2:
-        return WeekDays.TUESDAY
-      case 3:
-        return WeekDays.WEDNESDAY
-      case 4:
-        return WeekDays.THURSDAY
-      case 5:
-        return WeekDays.FRIDAY
-      case 6:
-        return WeekDays.SATURDAY
-      case 0:
-        return WeekDays.SUNDAY
-      default:
-        return WeekDays.MONDAY
-    }
   }
 
   /**
@@ -219,37 +170,12 @@ export class PreviewUtils {
     startDate: Date,
     endDate: Date,
     weekDaySessions: WeekdaySession[],
+    dateOverrides?: DateOverride[],
   ): SessionDate[] {
-    const sessionDates: SessionDate[] = []
-
-    // Cria um mapa para busca rápida de sessões por dia
-    const sessionsMap = new Map<WeekDays, { sessions: number; startTime?: string; endTime?: string }>()
-    weekDaySessions.forEach(({ day, sessions, startTime, endTime }) => {
-      sessionsMap.set(day, { sessions, startTime, endTime })
+    return generateSessionSchedule(startDate, endDate, {
+      weekDaySessions,
+      dateOverrides,
     })
-
-    // Itera através de cada dia no período
-    const currentDate = new Date(startDate)
-    while (currentDate <= endDate) {
-      const jsDay = currentDate.getDay()
-      const weekDay = this.getWeekDayFromJSDay(jsDay)
-
-      // Verifica se este dia da semana está selecionado
-      if (sessionsMap.has(weekDay)) {
-        const sessionData = sessionsMap.get(weekDay)!
-        sessionDates.push({
-          date: new Date(currentDate),
-          sessions: sessionData.sessions,
-          startTime: sessionData.startTime,
-          endTime: sessionData.endTime,
-        })
-      }
-
-      // Move para o próximo dia
-      currentDate.setDate(currentDate.getDate() + 1)
-    }
-
-    return sessionDates
   }
 
   /**
