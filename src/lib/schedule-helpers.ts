@@ -27,16 +27,13 @@ export function weekdaySessionsToSchedules(sessions: WeekdaySession[]): WeekdayS
       }
     }
 
-    // Cria um array de horários baseado no número de sessões
     const sessionTimes: SessionTime[] = []
     if (session.startTime && session.endTime) {
-      // Se tem horário definido, replica para todas as sessões
-      for (let i = 0; i < session.sessions; i++) {
-        sessionTimes.push({
-          startTime: session.startTime,
-          endTime: session.endTime,
-        })
-      }
+      sessionTimes.push({
+        startTime: session.startTime,
+        endTime: session.endTime,
+        sessionCount: session.sessions,
+      })
     }
 
     return {
@@ -55,10 +52,11 @@ export function weekdaySchedulesToSessions(schedules: WeekdaySchedule[]): Weekda
     .filter(s => s.enabled)
     .map(schedule => {
       const firstSession = schedule.sessions[0]
+      const totalSessions = schedule.sessions.reduce((acc, current) => acc + (current.sessionCount || 0), 0)
 
       return {
         day: schedule.day,
-        sessions: schedule.sessions.length,
+        sessions: totalSessions || 1,
         startTime: firstSession?.startTime || undefined,
         endTime: firstSession?.endTime || undefined,
       }

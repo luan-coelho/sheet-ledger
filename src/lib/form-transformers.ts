@@ -33,7 +33,7 @@ export function transformFormDataToApi(
   const therapy = therapies?.find(t => t.id === values.therapyId)
 
   // Calcular horário mais cedo e mais tarde dos dias selecionados
-  const { earliestTime, latestTime } = calculateTimeRange(values.weekDaySessions)
+  const { earliestTime, latestTime } = calculateTimeRange(values.weekDaySessions, values.advancedSchedule)
 
   return {
     professional: professional?.name || '',
@@ -58,6 +58,7 @@ export function transformFormDataToApi(
     endDate: values.endDate,
     startTime: earliestTime,
     endTime: latestTime,
+    advancedSchedule: values.advancedSchedule,
   }
 }
 
@@ -66,7 +67,10 @@ export function transformFormDataToApi(
  * @param weekDaySessions Sessões da semana
  * @returns Objeto com earliestTime e latestTime
  */
-function calculateTimeRange(weekDaySessions: SpreadsheetFormValues['weekDaySessions']): {
+function calculateTimeRange(
+  weekDaySessions: SpreadsheetFormValues['weekDaySessions'],
+  advancedSchedule?: SpreadsheetFormValues['advancedSchedule'],
+): {
   earliestTime: string
   latestTime: string
 } {
@@ -84,6 +88,20 @@ function calculateTimeRange(weekDaySessions: SpreadsheetFormValues['weekDaySessi
         latestTime = session.endTime
       }
     }
+  })
+
+  advancedSchedule?.exceptions?.forEach(exception => {
+    exception.sessions.forEach(interval => {
+      if (interval.startTime && interval.endTime) {
+        hasValidTimes = true
+        if (interval.startTime < earliestTime) {
+          earliestTime = interval.startTime
+        }
+        if (interval.endTime > latestTime) {
+          latestTime = interval.endTime
+        }
+      }
+    })
   })
 
   // Se nenhum horário foi definido, use horários padrão

@@ -26,7 +26,6 @@ import { type SpreadsheetFormValues } from '@/lib/spreadsheet-schema'
 import { SpreadsheetCalendar } from './spreadsheet-calendar'
 import { Combobox } from './ui/combobox'
 import { Separator } from './ui/separator'
-import { WeekdaySessionSelector } from './weekday-session-selector'
 
 export function SpreadsheetForm() {
   // Estado local para os horários globais (não fazem parte do formulário)
@@ -382,21 +381,36 @@ export function SpreadsheetForm() {
           <FormField
             control={form.control}
             name="weekDaySessions"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="block text-center sm:flex sm:justify-center">
-                  Dias da semana, sessões e horários
-                </FormLabel>
-                <FormDescription className="text-center text-xs sm:text-sm">
-                  Selecione os dias de atendimento, configure a quantidade de sessões e opcionalmente os horários por
-                  dia
-                </FormDescription>
-                <FormControl>
-                  <WeekdaySessionSelector value={field.value} onChange={field.onChange} />
-                </FormControl>
-                <FormMessage className="text-center" />
-              </FormItem>
-            )}
+            render={({ field }) => {
+              const calendarFormData: SpreadsheetFormValues = {
+                ...formValues,
+                weekDaySessions: field.value ?? [],
+              }
+
+              return (
+                <FormItem>
+                  <FormLabel className="block text-center sm:flex sm:justify-center">
+                    Dias da semana, sessões e horários
+                  </FormLabel>
+                  <FormDescription className="text-center text-xs sm:text-sm">
+                    Defina os dias clicando no cabeçalho do calendário e ajuste sessões e horários em cada coluna.
+                  </FormDescription>
+                  <FormControl>
+                    <SpreadsheetCalendar
+                      formData={calendarFormData}
+                      onWeekDaySessionsChange={field.onChange}
+                      onAdvancedScheduleChange={config =>
+                        form.setValue('advancedSchedule', config, {
+                          shouldDirty: true,
+                          shouldTouch: true,
+                        })
+                      }
+                    />
+                  </FormControl>
+                  <FormMessage className="text-center" />
+                </FormItem>
+              )
+            }}
           />
 
           {/* Horários globais - aplicar a todos os dias */}
@@ -458,8 +472,6 @@ export function SpreadsheetForm() {
               </AlertDescription>
             </Alert>
           )}
-
-          <SpreadsheetCalendar formData={formValues} />
 
           <div className="flex justify-center">
             <Button type="submit" className="sm:flex-1" disabled={isLoading}>

@@ -3,7 +3,7 @@ import path from 'path'
 import ExcelJS from 'exceljs'
 
 import { createBrazilianDate, formatDateBrazilian, getMonthNameInPortuguese } from './date-utils'
-import { meses, WeekDays, WeekdaySession } from './spreadsheet-schema'
+import { meses, WeekDays, WeekdaySession, type AdvancedScheduleConfig, type SessionTime } from './spreadsheet-schema'
 import { formatCNPJ } from './utils'
 
 type SessionRecord = {
@@ -37,6 +37,7 @@ export class ExcelService {
     endDate?: string
     startTime?: string
     endTime?: string
+    advancedSchedule?: AdvancedScheduleConfig
     companyData?: {
       name: string
       cnpj: string
@@ -112,7 +113,12 @@ export class ExcelService {
         competencyText = `${startMonth.toUpperCase()}/${startYear} - ${endMonth.toUpperCase()}/${endYear}`
       }
 
-      records = this.generateRecordsForPeriodWithSessions(startDateObj, endDateObj, data.weekDaySessions)
+      records = this.generateRecordsForPeriodWithSessions(
+        startDateObj,
+        endDateObj,
+        data.weekDaySessions,
+        data.advancedSchedule,
+      )
     } else if (data.competency) {
       // Manter compatibilidade com o formato antigo
       const monthIndex = parseInt(data.competency.month)
@@ -121,7 +127,12 @@ export class ExcelService {
 
       const competencyMonth = parseInt(data.competency.month)
       const competencyYear = parseInt(data.competency.year)
-      records = this.generateRecordsForMonthWithSessions(competencyYear, competencyMonth, data.weekDaySessions)
+      records = this.generateRecordsForMonthWithSessions(
+        competencyYear,
+        competencyMonth,
+        data.weekDaySessions,
+        data.advancedSchedule,
+      )
     } else {
       throw new Error('É necessário informar a data de início e fim ou a competência')
     }
@@ -129,12 +140,24 @@ export class ExcelService {
     // Preenche o campo de competência na linha 18 (agora na coluna J)
     worksheet.getCell('C57').value = competencyText
 
-    // Linha inicial para os registros
+    // Linha inicial para os registros de atendimentos
     const startRow = 14
-    // Linha final para os registros (expandido para comportar até 31 dias)
-    const endRow = 44
+    const baseEndRow = 44
+    const baseTotalRow = 46
+    const baseRowCount = baseEndRow - startRow + 1
 
-    // Limpa as linhas de dados (da linha 12 até a 42 inclusive)
+    // Ajusta o número de linhas disponíveis quando existem mais registros (ex.: datas com múltiplos intervalos)
+    const additionalRowsNeeded = Math.max(0, records.length - baseRowCount)
+
+    if (additionalRowsNeeded > 0) {
+      // Duplica a última linha da área de dados para preservar formatação e insere novas linhas antes do total
+      worksheet.duplicateRow(baseEndRow, additionalRowsNeeded, true)
+    }
+
+    const endRow = baseEndRow + additionalRowsNeeded
+    const totalRowIndex = baseTotalRow + additionalRowsNeeded
+
+    // Limpa as linhas de dados
     for (let row = startRow; row <= endRow; row++) {
       worksheet.getCell(`A${row}`).value = null
       worksheet.getCell(`B${row}`).value = null
@@ -147,35 +170,32 @@ export class ExcelService {
     // Preenche os registros
     let totalSessions = 0
     records.forEach((record, index) => {
-      // Garante que não excedemos a linha 42
-      if (startRow + index <= endRow) {
-        const row = startRow + index
+      const row = startRow + index
 
-        // Número sequencial
-        worksheet.getCell(`A${row}`).value = index + 1
+      // Número sequencial
+      worksheet.getCell(`A${row}`).value = index + 1
 
-        // Data no formato DD/MM/YYYY
-        worksheet.getCell(`B${row}`).value = formatDateBrazilian(record.date)
+      // Data no formato DD/MM/YYYY
+      worksheet.getCell(`B${row}`).value = formatDateBrazilian(record.date)
 
-        // Horário de início (usa apenas o horário específico do dia, se disponível)
-        worksheet.getCell(`C${row}`).value = record.startTime || ''
+      // Horário de início (usa apenas o horário específico do dia, se disponível)
+      worksheet.getCell(`C${row}`).value = record.startTime || ''
 
-        // Horário de fim (usa apenas o horário específico do dia, se disponível)
-        worksheet.getCell(`D${row}`).value = record.endTime || ''
+      // Horário de fim (usa apenas o horário específico do dia, se disponível)
+      worksheet.getCell(`D${row}`).value = record.endTime || ''
 
-        // Sessões por dia (agora na coluna E)
-        worksheet.getCell(`E${row}`).value = record.sessions
-        totalSessions += record.sessions
+      // Sessões por intervalo (agora na coluna E)
+      worksheet.getCell(`E${row}`).value = record.sessions
+      totalSessions += record.sessions
 
-        // Valor fixo "Atendido" (agora na coluna F)
-        worksheet.getCell(`F${row}`).value = 'Atendido'
+      // Valor fixo "Atendido" (agora na coluna F)
+      worksheet.getCell(`F${row}`).value = 'Atendido'
 
-        // Coluna G fica em branco (assinatura)
-      }
+      // Coluna G permanece para assinatura
     })
 
-    // Preenche o total de sessões na célula E46
-    worksheet.getCell('E46').value = totalSessions
+    // Preenche o total de sessões na célula de total dinâmica
+    worksheet.getCell(`E${totalRowIndex}`).value = totalSessions
 
     // Gera o buffer da planilha
     return await workbook.xlsx.writeBuffer()
@@ -255,42 +275,11 @@ export class ExcelService {
     year: number,
     month: number,
     weekDaySessions: WeekdaySession[],
+    advancedSchedule?: AdvancedScheduleConfig,
   ): SessionRecord[] {
-    const sessionRecords: SessionRecord[] = []
     const startDate = new Date(year, month, 1)
     const endDate = new Date(year, month + 1, 0)
-
-    // Cria um mapa para busca rápida de sessões por dia
-    const sessionsMap = new Map<WeekDays, { sessions: number; startTime?: string; endTime?: string }>()
-    weekDaySessions.forEach(({ day, sessions, startTime, endTime }) => {
-      sessionsMap.set(day, { sessions, startTime, endTime })
-    })
-
-    // Garante que temos o ano correto para a competência
-    const currentYear = new Date().getFullYear()
-
-    // Se o ano solicitado for muito no futuro (mais de 10 anos), ajusta para o ano atual
-    if (year < currentYear - 10 || year > currentYear + 10) {
-      year = currentYear
-    }
-
-    for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
-      // Converte dia JS (0 = Domingo) para nosso enum de dia
-      const jsDay = d.getDay() // 0 = Domingo, 1 = Segunda, etc.
-      const ourDay = this.getWeekDayFromJSDay(jsDay)
-
-      if (sessionsMap.has(ourDay)) {
-        const sessionData = sessionsMap.get(ourDay)!
-        sessionRecords.push({
-          date: new Date(d),
-          sessions: sessionData.sessions,
-          startTime: sessionData.startTime,
-          endTime: sessionData.endTime,
-        })
-      }
-    }
-
-    return sessionRecords
+    return this.generateRecordsForPeriodWithSessions(startDate, endDate, weekDaySessions, advancedSchedule)
   }
 
   /**
@@ -304,6 +293,7 @@ export class ExcelService {
     startDate: Date,
     endDate: Date,
     weekDaySessions: WeekdaySession[],
+    advancedSchedule?: AdvancedScheduleConfig,
   ): SessionRecord[] {
     const records: SessionRecord[] = []
 
@@ -313,11 +303,34 @@ export class ExcelService {
       weekDaySessionMap.set(ws.day, { sessions: ws.sessions, startTime: ws.startTime, endTime: ws.endTime })
     })
 
+    const exceptionMap = new Map<string, SessionTime[]>()
+    if (advancedSchedule?.enabled) {
+      advancedSchedule.exceptions?.forEach(exception => {
+        exceptionMap.set(exception.date, exception.sessions)
+      })
+    }
+
     // Itera através de cada dia no período
     const currentDate = new Date(startDate)
     while (currentDate <= endDate) {
       const jsDay = currentDate.getDay()
       const weekDay = this.getWeekDayFromJSDay(jsDay)
+      const dateKey = currentDate.toISOString().slice(0, 10)
+
+      if (exceptionMap.has(dateKey)) {
+        const sessionsForDay = exceptionMap.get(dateKey) || []
+        sessionsForDay.forEach((session: SessionTime) => {
+          records.push({
+            date: new Date(currentDate),
+            sessions: session.sessionCount,
+            startTime: session.startTime,
+            endTime: session.endTime,
+          })
+        })
+
+        currentDate.setDate(currentDate.getDate() + 1)
+        continue
+      }
 
       // Verifica se este dia da semana está selecionado
       if (weekDaySessionMap.has(weekDay)) {

@@ -30,6 +30,10 @@ export function useSpreadsheetFormSetup() {
       weekDaySessions: [{ day: WeekDays.MONDAY, sessions: 4 }],
       startDate: formatDateISO(firstDayOfMonth),
       endDate: formatDateISO(lastDayOfMonth),
+      advancedSchedule: {
+        enabled: true,
+        exceptions: [],
+      },
     },
   })
 

@@ -6,6 +6,7 @@ import { WeekDays } from '@/lib/spreadsheet-schema'
 export type SessionTime = {
   startTime: string // formato: "HH:MM"
   endTime: string // formato: "HH:MM"
+  sessionCount: number
 }
 
 /**

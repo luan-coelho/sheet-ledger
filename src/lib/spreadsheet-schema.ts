@@ -37,6 +37,7 @@ export type WeekdaySession = {
 export type SessionTime = {
   startTime: string
   endTime: string
+  sessionCount: number
 }
 
 export type ScheduleException = {
@@ -129,6 +130,7 @@ export const spreadsheetFormSchema = z
                 z.object({
                   startTime: z.string(),
                   endTime: z.string(),
+                  sessionCount: z.number().min(1, 'Mínimo 1 sessão').max(10, 'Máximo 10 sessões'),
                 }),
               ),
             }),

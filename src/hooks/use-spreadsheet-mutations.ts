@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 
-import { WeekDays } from '@/lib/spreadsheet-schema'
+import { WeekDays, type AdvancedScheduleConfig } from '@/lib/spreadsheet-schema'
 
 // Types
 export interface TransformedFormData {
@@ -24,6 +24,7 @@ export interface TransformedFormData {
   endDate: string
   startTime: string
   endTime: string
+  advancedSchedule?: AdvancedScheduleConfig
 }
 
 export interface GenerateSpreadsheetResponse {

@@ -35,6 +35,7 @@ describe('ExcelService', () => {
         return mockCells[address]
       }),
       getRow: jest.fn().mockReturnValue({ height: undefined }),
+      duplicateRow: jest.fn(),
     }
 
     mockWorkbook = {
@@ -212,6 +213,94 @@ describe('ExcelService', () => {
 
       expect(mockWorksheet.getCell).toHaveBeenCalledWith('C57')
       expect(mockCells['C57'].value).toBe('SETEMBRO/2025 - OUTUBRO/2025')
+    })
+
+    it('deve criar uma linha por intervalo quando há múltiplos intervalos na mesma data', async () => {
+      const data = {
+        ...baseData,
+        weekDaySessions: [
+          {
+            day: WeekDays.MONDAY,
+            sessions: 1,
+            startTime: '08:00',
+            endTime: '09:00',
+          },
+          {
+            day: WeekDays.TUESDAY,
+            sessions: 1,
+            startTime: '14:00',
+            endTime: '15:00',
+          },
+        ] as WeekdaySession[],
+        startDate: '2025-09-01',
+        endDate: '2025-09-02',
+        advancedSchedule: {
+          enabled: true,
+          exceptions: [
+            {
+              date: '2025-09-01',
+              sessions: [
+                { startTime: '08:00', endTime: '09:00', sessionCount: 1 },
+                { startTime: '10:00', endTime: '11:00', sessionCount: 1 },
+              ],
+            },
+          ],
+        },
+      }
+
+      await ExcelService.generateAttendanceSheet(data)
+
+      expect(mockCells['B14'].value).toBe('01/09/2025')
+      expect(mockCells['C14'].value).toBe('08:00')
+      expect(mockCells['B15'].value).toBe('01/09/2025')
+      expect(mockCells['C15'].value).toBe('10:00')
+      expect(mockCells['B16'].value).toBe('02/09/2025')
+      expect(mockWorksheet.duplicateRow).not.toHaveBeenCalled()
+    })
+
+    it('deve expandir linhas quando a quantidade de registros excede a capacidade base', async () => {
+      const allWeekDays: WeekdaySession[] = [
+        WeekDays.MONDAY,
+        WeekDays.TUESDAY,
+        WeekDays.WEDNESDAY,
+        WeekDays.THURSDAY,
+        WeekDays.FRIDAY,
+        WeekDays.SATURDAY,
+        WeekDays.SUNDAY,
+      ].map(day => ({
+        day,
+        sessions: 1,
+        startTime: '08:00',
+        endTime: '09:00',
+      })) as WeekdaySession[]
+
+      const data = {
+        ...baseData,
+        weekDaySessions: allWeekDays,
+        startDate: '2025-01-01',
+        endDate: '2025-01-31',
+        advancedSchedule: {
+          enabled: true,
+          exceptions: [
+            {
+              date: '2025-01-15',
+              sessions: [
+                { startTime: '08:00', endTime: '09:00', sessionCount: 1 },
+                { startTime: '10:00', endTime: '11:00', sessionCount: 1 },
+              ],
+            },
+          ],
+        },
+      }
+
+      await ExcelService.generateAttendanceSheet(data)
+
+      expect(mockWorksheet.duplicateRow).toHaveBeenCalledWith(44, 1, true)
+      // Último registro deve estar na nova linha criada (linha 45)
+      expect(mockCells['A45'].value).toBe(32)
+      expect(mockCells['B45'].value).toBe('31/01/2025')
+      // Total deve ser preenchido na linha ajustada (46 + 1 = 47)
+      expect(mockCells['E47'].value).toBe(32)
     })
 
     it('deve calcular total de sessões corretamente', async () => {
