@@ -11,11 +11,10 @@ import {
   startOfWeek,
 } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Calendar, ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Plus, Trash2 } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -203,38 +202,43 @@ function SimpleCalendar({
   }
 
   return (
-    <div className="bg-background rounded-lg border">
+    <div className="bg-background rounded-lg border shadow-sm">
       {/* Header do calendário */}
-      <div className="flex items-center justify-center border-b px-4 py-2">
-        <div className="flex items-center gap-3">
+      <div className="bg-muted/30 relative flex min-h-[3.25rem] items-center justify-center border-b px-4 py-3">
+        <div className="flex items-center gap-2">
           {isMultipleMonths && (
             <Button
-              className="cursor-pointer"
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="icon"
               onClick={navigatePrevious}
-              disabled={!canNavigatePrevious}>
-              <ChevronLeft className="h-3 w-3" />
+              disabled={!canNavigatePrevious}
+              className="h-8 w-8 cursor-pointer disabled:opacity-40">
+              <ChevronLeft className="h-4 w-4" />
             </Button>
           )}
-          <h3 className="font-base font-medium">
-            {format(currentViewDate, 'MMMM', { locale: ptBR }).replace(/^[\wÀ-ÿ]/, c => c.toUpperCase())}
+          <h3 className="mx-2 text-base font-semibold tracking-tight select-none">
+            {format(currentViewDate, 'MMMM yyyy', { locale: ptBR }).replace(/^[\wÀ-ÿ]/, c => c.toUpperCase())}
           </h3>
           {isMultipleMonths && (
             <Button
-              className="cursor-pointer"
-              variant="outline"
-              size="sm"
+              variant="ghost"
+              size="icon"
               onClick={navigateNext}
-              disabled={!canNavigateNext}>
-              <ChevronRight className="h-3 w-3" />
+              disabled={!canNavigateNext}
+              className="h-8 w-8 cursor-pointer disabled:opacity-40">
+              <ChevronRight className="h-4 w-4" />
             </Button>
           )}
         </div>
+        {isMultipleMonths && (
+          <div className="text-muted-foreground absolute right-4 text-xs font-medium">
+            {currentMonthIndex + 1} / {monthsInPeriod.length}
+          </div>
+        )}
       </div>
 
       {/* Dias da semana */}
-      <div className="grid grid-cols-7 border-b">
+      <div className="bg-muted/20 grid grid-cols-7 border-b">
         {weekDayHeaderItems.map(item => {
           const isSelected = weekDaySessions.some(session => session.day === item.key)
           return (
@@ -244,16 +248,19 @@ function SimpleCalendar({
               onClick={() => onToggleWeekDay?.(item.key)}
               disabled={!onToggleWeekDay}
               className={cn(
-                'border-r p-2 text-center text-xs font-medium transition-colors last:border-r-0',
-                isSelected ? 'bg-primary/15 text-primary font-semibold' : 'text-muted-foreground hover:text-foreground',
+                'relative border-r py-3 text-center text-xs font-semibold tracking-wide uppercase transition-all duration-200 last:border-r-0',
+                isSelected
+                  ? 'bg-primary/10 text-primary'
+                  : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground',
                 onToggleWeekDay
-                  ? 'hover:bg-muted/60 focus-visible:ring-primary/40 cursor-pointer focus-visible:ring-2 focus-visible:outline-none'
-                  : 'cursor-default',
+                  ? 'focus-visible:ring-primary/40 cursor-pointer focus-visible:ring-2 focus-visible:outline-none'
+                  : 'cursor-default opacity-70',
               )}
               title={item.fullName}
               aria-pressed={isSelected}
               aria-label={item.fullName}>
               {item.label}
+              {isSelected && <div className="bg-primary absolute right-0 bottom-0 left-0 h-0.5" />}
             </button>
           )
         })}
@@ -289,48 +296,58 @@ function SimpleCalendar({
               onClick={handleDateClick}
               disabled={!isEditable}
               className={cn(
-                'h-20 border-r border-b p-1 text-left transition-colors last:border-r-0 disabled:cursor-default disabled:opacity-100',
-                !isCurrentMonth && 'bg-muted dark:bg-muted/30 text-muted-foreground',
-                isAttendance
-                  ? 'bg-primary/20 border-primary/30 text-foreground'
-                  : hasException
-                    ? 'bg-amber-50 dark:bg-amber-900/20'
+                'group relative min-h-24 border-r border-b p-2 text-left transition-all duration-200 last:border-r-0 disabled:cursor-default',
+                !isCurrentMonth && 'border-0 bg-zinc-100 text-zinc-400 dark:bg-zinc-900/60 dark:text-zinc-600',
+                isAttendance && isCurrentMonth
+                  ? 'bg-primary/10 border-primary/40 hover:bg-primary/15'
+                  : hasException && isCurrentMonth
+                    ? 'border-amber-200/50 bg-amber-50/50 dark:bg-amber-900/10'
                     : isWeekDaySelected && isCurrentMonth
-                      ? 'bg-primary/5'
+                      ? 'bg-primary/5 hover:bg-primary/10'
                       : isCurrentMonth
-                        ? 'bg-background hover:bg-background/50'
+                        ? 'bg-background hover:bg-muted/30'
                         : '',
-                isEditable && 'focus-visible:ring-primary/40 focus-visible:ring-2 focus-visible:outline-none',
+                isEditable &&
+                  'focus-visible:ring-primary/40 cursor-pointer focus-visible:z-10 focus-visible:ring-2 focus-visible:outline-none',
               )}>
-              <div className="flex h-full flex-col">
-                <div className="flex items-start justify-between">
-                  <span className="text-lg font-medium">{format(day, 'd')}</span>
-                  {hasException && <span className="text-primary text-[10px] font-semibold uppercase">Exceção</span>}
+              <div className="flex h-full min-h-[5rem] flex-col items-center justify-center text-center">
+                <div className="mb-2 flex items-center justify-center">
+                  <span className="text-2xl leading-none font-bold">{format(day, 'd')}</span>
+                  {hasException && (
+                    <span className="bg-primary/10 text-primary absolute top-1 right-1 rounded-sm px-1.5 py-0.5 text-[9px] leading-none font-bold uppercase">
+                      Exceção
+                    </span>
+                  )}
                 </div>
 
                 {isAttendance ? (
-                  <div className="mt-1 flex flex-1 flex-col gap-1 text-xs">
-                    <div className="bg-primary flex items-center justify-center gap-1 self-start rounded px-1 text-[11px] font-bold text-white">
-                      {totalSessions} {totalSessions > 1 ? 'sessões' : 'sessão'}
+                  <div className="flex flex-1 flex-col items-center gap-1.5 text-xs">
+                    <div className="bg-primary inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-bold text-white shadow-sm">
+                      <span className="leading-none">{totalSessions}</span>
+                      <span className="leading-none opacity-90">{totalSessions > 1 ? 'sessões' : 'sessão'}</span>
                     </div>
 
-                    {displayIntervals.map((interval, intervalIndex) => (
-                      <div
-                        key={`${dateKey}-${intervalIndex}`}
-                        className="flex items-center justify-between gap-1 text-[11px]">
-                        <span>{interval.startTime}</span>
-                        <span>-</span>
-                        <span>{interval.endTime}</span>
-                        <span className="text-muted-foreground">({interval.sessionCount})</span>
-                      </div>
-                    ))}
+                    <div className="w-full space-y-1">
+                      {displayIntervals.map((interval, intervalIndex) => (
+                        <div
+                          key={`${dateKey}-${intervalIndex}`}
+                          className="bg-background/60 flex items-center justify-center gap-1.5 rounded-sm px-1.5 py-1 text-[10px] leading-none font-medium">
+                          <span className="text-foreground">{interval.startTime}</span>
+                          <span className="text-muted-foreground">→</span>
+                          <span className="text-foreground">{interval.endTime}</span>
+                          <span className="text-muted-foreground">({interval.sessionCount})</span>
+                        </div>
+                      ))}
+                    </div>
 
                     {extraIntervalsCount > 0 && (
-                      <span className="text-muted-foreground text-[11px]">+{extraIntervalsCount} intervalo(s)</span>
+                      <span className="text-muted-foreground text-[10px] leading-none font-medium">
+                        +{extraIntervalsCount} mais
+                      </span>
                     )}
                   </div>
                 ) : hasException ? (
-                  <div className="text-muted-foreground mt-2 flex flex-1 items-center justify-center text-[11px] font-medium">
+                  <div className="text-muted-foreground flex flex-1 items-center justify-center text-center text-[10px] leading-tight font-medium">
                     Sem atendimento
                   </div>
                 ) : null}
@@ -340,19 +357,21 @@ function SimpleCalendar({
         })}
       </div>
 
-      {/* Indicador de múltiplos meses */}
-      {isMultipleMonths && (
-        <div className="text-muted-foreground p-3 text-center text-sm">
-          Período abrange {monthsInPeriod.length} mês{monthsInPeriod.length > 1 ? 'es' : ''}. Use as setas para navegar.
-        </div>
-      )}
+      {/* Indicador de múltiplos meses e legenda */}
+      <div className="bg-muted/20 p-4">
+        {isMultipleMonths && (
+          <p className="text-muted-foreground text-center text-xs">
+            Período com {monthsInPeriod.length} {monthsInPeriod.length > 1 ? 'meses' : 'mês'}. Use as setas para
+            navegar.
+          </p>
+        )}
+      </div>
     </div>
   )
 }
 
 export function SpreadsheetCalendar({
   formData,
-  onClose,
   onWeekDaySessionsChange,
   onAdvancedScheduleChange,
 }: SpreadsheetCalendarProps) {
@@ -660,10 +679,6 @@ export function SpreadsheetCalendar({
     return total
   }, [dailySessions])
 
-  const weeklySessionsCount = useMemo(() => {
-    return weekDaySessions.reduce((total, session) => total + session.sessions, 0)
-  }, [weekDaySessions])
-
   const totalSessionsForSelectedDate = useMemo(
     () => editingSessions.reduce((sum, session) => sum + (session.sessionCount ?? 0), 0),
     [editingSessions],
@@ -677,17 +692,9 @@ export function SpreadsheetCalendar({
   const canRestoreDefault = defaultSessionsPreview.length > 0
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
-          Calendário de Atendimentos
-        </CardTitle>
-        {onClose && (
-          <Button className="cursor-pointer" variant="ghost" size="sm" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
-        )}
+    <Card className="mt-3">
+      <CardHeader className="flex flex-row items-center justify-center">
+        <CardTitle className="text-center">Calendário de Atendimentos</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Resumo */}
@@ -891,12 +898,7 @@ export function SpreadsheetCalendar({
               </p>
             ) : (
               <>
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-medium">Configuração por dia</Label>
-                  <Badge variant="secondary" className="px-2 py-0.5 text-xs">
-                    {weeklySessionsCount} sessão{weeklySessionsCount > 1 ? 's' : ''} por semana
-                  </Badge>
-                </div>
+                <h3 className="text-center text-sm font-medium">Configuração por dia</h3>
 
                 <div className="grid grid-cols-1 gap-3 xl:grid-cols-2">
                   {weekDaySessions.map(({ day, sessions, startTime, endTime }) => {
@@ -946,7 +948,7 @@ export function SpreadsheetCalendar({
 
                         {/* Desktop layout */}
                         <div className="hidden items-center justify-center gap-4 sm:flex">
-                          <Label className="w-20 flex-shrink-0 text-sm font-medium">{weekDayInfo?.fullName}</Label>
+                          <Label className="text-sm font-medium">{weekDayInfo?.fullName}</Label>
 
                           <div className="flex items-center gap-1">
                             <Label className="text-muted-foreground text-xs">Sessões:</Label>

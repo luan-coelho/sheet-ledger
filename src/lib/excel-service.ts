@@ -258,8 +258,9 @@ export class ExcelService {
     const sortedSessions = [...weekDaySessions].sort((a, b) => this.getDayIndex(a.day) - this.getDayIndex(b.day))
 
     return sortedSessions
-      .map(({ day, sessions }) => {
-        return `${dayAbbreviations[day]}(${sessions})`
+      .map(({ day }) => {
+        return `${dayAbbreviations[day]}`
+        // return `${dayAbbreviations[day]}(${sessions})`
       })
       .join(', ')
   }

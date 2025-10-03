@@ -20,7 +20,7 @@ function createLocalPostgresConnection() {
 }
 
 function createDatabase() {
-  if (isDevelopment) {
+  if (false) {
     // Configuração para desenvolvimento local (PostgreSQL com Docker)
     return createLocalPostgresConnection()
   } else {
