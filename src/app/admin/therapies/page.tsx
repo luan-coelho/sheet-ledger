@@ -7,6 +7,7 @@ import { Therapy } from '@/app/db/schemas/therapy-schema'
 
 import { createColumns, DataTable } from '@/components/data-tables/therapies'
 import { TherapyForm } from '@/components/therapy-form'
+import { TherapyPriceHistoryList } from '@/components/therapy-price-history-list'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,6 +28,7 @@ function TerapiasPageContent() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingTherapy, setEditingTherapy] = useState<Therapy | undefined>()
   const [deletingTherapy, setDeletingTherapy] = useState<Therapy | null>(null)
+  const [managingPricesTherapy, setManagingPricesTherapy] = useState<Therapy | null>(null)
 
   const { data: therapies, isLoading, error } = useTherapies()
   const deleteMutation = useDeleteTherapy()
@@ -47,6 +49,10 @@ function TerapiasPageContent() {
     }
   }
 
+  const handleManagePrices = (therapy: Therapy) => {
+    setManagingPricesTherapy(therapy)
+  }
+
   const handleNewTherapy = () => {
     setEditingTherapy(undefined)
     setIsModalOpen(true)
@@ -61,6 +67,7 @@ function TerapiasPageContent() {
   const columns = createColumns({
     onEdit: handleEdit,
     onDelete: setDeletingTherapy,
+    onManagePrices: handleManagePrices,
   })
 
   if (error) {
@@ -115,6 +122,21 @@ function TerapiasPageContent() {
           </DialogHeader>
 
           <TherapyForm therapy={editingTherapy} onSuccess={handleModalClose} onCancel={handleModalClose} />
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!managingPricesTherapy} onOpenChange={() => setManagingPricesTherapy(null)}>
+        <DialogContent className="max-h-[80vh] overflow-y-auto sm:max-w-[900px]">
+          <DialogHeader>
+            <DialogTitle>Gerenciar Valores</DialogTitle>
+            <DialogDescription>
+              Configure o histórico de valores da terapia &quot;{managingPricesTherapy?.name}&quot;
+            </DialogDescription>
+          </DialogHeader>
+
+          {managingPricesTherapy && (
+            <TherapyPriceHistoryList therapyId={managingPricesTherapy.id} therapyName={managingPricesTherapy.name} />
+          )}
         </DialogContent>
       </Dialog>
 

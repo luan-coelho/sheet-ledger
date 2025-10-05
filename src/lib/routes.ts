@@ -53,6 +53,11 @@ export const routes = {
         create: '/admin/therapies/novo',
         edit: (id: string) => `/admin/therapies/${validateId(id)}/editar`,
       },
+      billings: {
+        index: '/admin/billings',
+        create: '/admin/billings/novo',
+        edit: (id: string) => `/admin/billings/${validateId(id)}/editar`,
+      },
       googleDrive: {
         index: '/admin/google-drive',
         folder: (folderId: string) => `/admin/google-drive/pasta/${validateId(folderId)}`,
@@ -95,6 +100,10 @@ export const routes = {
     therapies: {
       base: '/api/therapies',
       byId: (id: string) => `/api/therapies/${validateId(id)}`,
+    },
+    billings: {
+      base: '/api/billings',
+      byId: (id: string) => `/api/billings/${validateId(id)}`,
     },
     users: {
       base: '/api/users',

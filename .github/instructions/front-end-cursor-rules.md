@@ -111,3 +111,5 @@ Always use the following library versions:
 - TypeScript: 5
 - TailwindCSS: 4
 - shadcn/ui: latest compatible with Tailwind 4
+
+Do not create markdown .md files without an explicit request.

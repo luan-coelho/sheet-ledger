@@ -1,7 +1,7 @@
 'use client'
 
 import { ColumnDef } from '@tanstack/react-table'
-import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, DollarSign, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 
 import { Therapy } from '@/app/db/schemas/therapy-schema'
 
@@ -23,34 +23,44 @@ interface ColumnActionsProps {
   therapy: Therapy
   onEdit: (therapy: Therapy) => void
   onDelete: (therapy: Therapy) => void
+  onManagePrices?: (therapy: Therapy) => void
 }
 
-function ColumnActions({ therapy, onEdit, onDelete }: ColumnActionsProps) {
+function ColumnActions({ therapy, onEdit, onDelete, onManagePrices }: ColumnActionsProps) {
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="h-8 w-8 p-0">
-          <span className="sr-only">Abrir menu</span>
-          <MoreHorizontal className="h-4 w-4" />
+    <div className="flex items-center justify-end gap-2">
+      {onManagePrices && (
+        <Button variant="outline" size="sm" onClick={() => onManagePrices(therapy)} className="gap-2">
+          <DollarSign className="h-4 w-4" />
+          Valores
         </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => onEdit(therapy)}>
-          <Pencil className="mr-2 h-4 w-4" />
-          Editar
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => onDelete(therapy)} className="text-destructive focus:text-destructive">
-          <Trash2 className="mr-2 h-4 w-4" />
-          Excluir
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+      )}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Abrir menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <DropdownMenuItem onClick={() => onEdit(therapy)}>
+            <Pencil className="mr-2 h-4 w-4" />
+            Editar
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onDelete(therapy)} className="text-destructive focus:text-destructive">
+            <Trash2 className="mr-2 h-4 w-4" />
+            Excluir
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </div>
   )
 }
 
 export function createColumns(actions: {
   onEdit: (therapy: Therapy) => void
   onDelete: (therapy: Therapy) => void
+  onManagePrices?: (therapy: Therapy) => void
 }): ColumnDef<Therapy>[] {
   return [
     {
@@ -149,7 +159,14 @@ export function createColumns(actions: {
       cell: ({ row }) => {
         const therapy = row.original
 
-        return <ColumnActions therapy={therapy} onEdit={actions.onEdit} onDelete={actions.onDelete} />
+        return (
+          <ColumnActions
+            therapy={therapy}
+            onEdit={actions.onEdit}
+            onDelete={actions.onDelete}
+            onManagePrices={actions.onManagePrices}
+          />
+        )
       },
     },
   ]

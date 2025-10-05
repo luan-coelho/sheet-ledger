@@ -1,7 +1,7 @@
 'use client'
 
 import IconeEstimulos from '@/images/icone-estimulos.png'
-import { Building2, CreditCard, FileText, Settings, Users } from 'lucide-react'
+import { Building2, CreditCard, FileText, Receipt, Settings, Users } from 'lucide-react'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 
@@ -30,6 +30,11 @@ const items = [
     title: 'Planilhas',
     url: routes.frontend.admin.sheets,
     icon: FileText,
+  },
+  {
+    title: 'Faturamentos',
+    url: routes.frontend.admin.billings.index,
+    icon: Receipt,
   },
   {
     title: 'Profissionais',
