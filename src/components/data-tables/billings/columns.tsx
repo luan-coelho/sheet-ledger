@@ -3,7 +3,7 @@
 import { ColumnDef } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Trash2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -31,11 +31,10 @@ function getSortIcon(sortDirection: false | 'asc' | 'desc') {
 
 interface ColumnActionsProps {
   billing: BillingWithRelations
-  onEdit: (billing: BillingWithRelations) => void
   onDelete: (billing: BillingWithRelations) => void
 }
 
-function ColumnActions({ billing, onEdit, onDelete }: ColumnActionsProps) {
+function ColumnActions({ billing, onDelete }: ColumnActionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -45,10 +44,6 @@ function ColumnActions({ billing, onEdit, onDelete }: ColumnActionsProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => onEdit(billing)}>
-          <Pencil className="mr-2 h-4 w-4" />
-          Editar
-        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onDelete(billing)} className="text-destructive focus:text-destructive">
           <Trash2 className="mr-2 h-4 w-4" />
           Excluir
@@ -59,7 +54,6 @@ function ColumnActions({ billing, onEdit, onDelete }: ColumnActionsProps) {
 }
 
 export function createColumns(actions: {
-  onEdit: (billing: BillingWithRelations) => void
   onDelete: (billing: BillingWithRelations) => void
 }): ColumnDef<BillingWithRelations>[] {
   return [
@@ -231,7 +225,7 @@ export function createColumns(actions: {
       id: 'actions',
       cell: ({ row }) => {
         const billing = row.original
-        return <ColumnActions billing={billing} onEdit={actions.onEdit} onDelete={actions.onDelete} />
+        return <ColumnActions billing={billing} onDelete={actions.onDelete} />
       },
     },
   ]

@@ -9,7 +9,6 @@ export interface BillingWithRelations {
   customTherapyName: string | null
   healthPlanId: string | null
   healthPlanName: string | null
-  billingCycle: string | null
   sessionValueCents: number
   grossAmountCents: number
   netAmountCents: number | null
@@ -18,11 +17,11 @@ export interface BillingWithRelations {
   invoiceNumber: string | null
   competenceDate: string | null
   billerName: string | null
-  status: 'pending' | 'scheduled' | 'sent' | 'paid' | 'cancelled'
+  status: string
   isBilled: boolean
   notes: string | null
-  createdAt: Date
-  updatedAt: Date
+  createdAt: string
+  updatedAt: string
 }
 
 export interface BillingSummary {

@@ -15,7 +15,6 @@ export const billingsTable = pgTable('billings', {
   therapyId: uuid('therapy_id').references(() => therapiesTable.id, { onDelete: 'set null' }),
   customTherapyName: text('custom_therapy_name'),
   healthPlanId: uuid('health_plan_id').references(() => healthPlansTable.id, { onDelete: 'set null' }),
-  billingCycle: text('billing_cycle'),
   sessionValueCents: integer('session_value_cents').notNull().default(0),
   grossAmountCents: integer('gross_amount_cents').notNull().default(0),
   netAmountCents: integer('net_amount_cents'),
@@ -44,7 +43,6 @@ const billingFormBaseSchema = z.object({
     .optional()
     .nullable(),
   healthPlanId: z.string().uuid().optional().nullable(),
-  billingCycle: z.string().trim().max(50).optional().nullable(),
   sessionValue: currencyField,
   grossAmount: currencyField,
   netAmount: currencyField.optional(),
@@ -133,7 +131,6 @@ export const selectBillingSchema = z.object({
   therapyId: z.string().uuid().nullable(),
   customTherapyName: z.string().nullable(),
   healthPlanId: z.string().uuid().nullable(),
-  billingCycle: z.string().nullable(),
   sessionValueCents: z.number(),
   grossAmountCents: z.number(),
   netAmountCents: z.number().nullable(),

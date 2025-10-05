@@ -48,6 +48,26 @@ export function useCreateBilling() {
   })
 }
 
+// Hook para criar múltiplos faturamentos de uma vez
+export function useCreateMultipleBillings() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async (billings: BillingFormValues[]) => {
+      const results = await Promise.all(billings.map(billing => createBilling(billing)))
+      return results
+    },
+    onSuccess: results => {
+      queryClient.invalidateQueries({ queryKey: billingQueryKeys.all })
+      const count = results.length
+      toast.success(`${count} faturamento${count > 1 ? 's' : ''} criado${count > 1 ? 's' : ''} com sucesso!`)
+    },
+    onError: (error: Error) => {
+      toast.error(`Erro ao criar faturamentos: ${error.message}`)
+    },
+  })
+}
+
 // Hook para atualizar um faturamento
 export function useUpdateBilling() {
   const queryClient = useQueryClient()
