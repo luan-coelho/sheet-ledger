@@ -79,17 +79,17 @@ export class ExcelService {
     worksheet.getCell('C3').value = data.professional
     worksheet.getCell('C4').value = data.therapy
     worksheet.getCell('C5').value = data.licenseNumber
-    worksheet.getCell('C7').value = data.patientName
-    worksheet.getCell('C8').value = data.responsible
-    worksheet.getCell('C9').value = data.healthPlan
-    worksheet.getCell('C10').value = data.cardNumber || ''
-    worksheet.getCell('C11').value = data.guideNumber || ''
+    worksheet.getCell('C6').value = data.patientName
+    worksheet.getCell('C7').value = data.responsible
+    worksheet.getCell('C8').value = data.healthPlan
+    worksheet.getCell('C9').value = data.cardNumber || ''
+    worksheet.getCell('C10').value = data.guideNumber || ''
 
     // Formata os dias da semana para o formato SEG Á SEX
     const weekDaysString = this.formatWeekDaysRangeWithSessions(data.weekDaySessions)
 
     // Preenche a linha 15 com os dias da semana (agora na coluna J)
-    worksheet.getCell('C54').value = weekDaysString
+    worksheet.getCell('C53').value = weekDaysString
 
     let records: SessionRecord[]
     let competencyText: string
@@ -136,12 +136,12 @@ export class ExcelService {
     }
 
     // Preenche o campo de competência na linha 18 (agora na coluna J)
-    worksheet.getCell('C57').value = competencyText
+    worksheet.getCell('C56').value = competencyText
 
     // Linha inicial para os registros de atendimentos
-    const startRow = 14
-    const baseEndRow = 44
-    const baseTotalRow = 46
+    const startRow = 13
+    const baseEndRow = 43
+    const baseTotalRow = 45
     const baseRowCount = baseEndRow - startRow + 1
 
     // Ajusta o número de linhas disponíveis quando existem mais registros (ex.: datas com múltiplos intervalos)
