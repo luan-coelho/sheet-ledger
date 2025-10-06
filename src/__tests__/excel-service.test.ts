@@ -141,7 +141,6 @@ describe('ExcelService', () => {
         ...baseData,
         startDate: '2025-09-01',
         endDate: '2025-09-30',
-        authorizedSession: 'Autorização 123',
         cardNumber: 'CARD123456',
         guideNumber: 'GUIDE789',
         startTime: '09:00',
@@ -150,7 +149,6 @@ describe('ExcelService', () => {
 
       await ExcelService.generateAttendanceSheet(data)
 
-      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C6') // authorizedSession
       expect(mockWorksheet.getCell).toHaveBeenCalledWith('C10') // cardNumber
       expect(mockWorksheet.getCell).toHaveBeenCalledWith('C11') // guideNumber
     })
@@ -185,8 +183,8 @@ describe('ExcelService', () => {
       await ExcelService.generateAttendanceSheet(data)
 
       expect(mockWorksheet.getCell).toHaveBeenCalledWith('C54')
-      // Verifica se o valor contém o formato esperado: SEG(2), TER(3), SEX(4)
-      expect(mockCells['C54'].value).toBe('SEG(2), TER(3), SEX(4)')
+      // Verifica se o valor contém o formato esperado: SEG, TER, SEX
+      expect(mockCells['C54'].value).toBe('SEG, TER, SEX')
     })
 
     it('deve gerar competência correta para período de um mês', async () => {

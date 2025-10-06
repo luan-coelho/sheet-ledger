@@ -112,7 +112,6 @@ describe('ExcelService - Testes Básicos', () => {
         ...baseData,
         startDate: '2025-09-01',
         endDate: '2025-09-30',
-        authorizedSession: 'Autorização 123',
         cardNumber: 'CARD123456',
         guideNumber: 'GUIDE789',
         startTime: '09:00',

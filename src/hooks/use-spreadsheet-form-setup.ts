@@ -19,7 +19,6 @@ export function useSpreadsheetFormSetup() {
     defaultValues: {
       professionalId: '',
       licenseNumber: '',
-      authorizedSession: '',
       patientId: '',
       guardian: '',
       companyId: '',

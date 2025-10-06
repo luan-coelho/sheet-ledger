@@ -68,7 +68,7 @@ describe('ExcelService - Testes Unitários dos Métodos Privados', () => {
       await ExcelService.generateAttendanceSheet(testData)
 
       // Verifica se os dias foram formatados na ordem correta na célula C54: SEG(2), QUA(4), SEX(3)
-      expect(mockCells['C54'].value).toBe('SEG(2), QUA(4), SEX(3)')
+      expect(mockCells['C54'].value).toBe('SEG, QUA, SEX')
     })
 
     it('deve retornar string vazia quando não há sessões', async () => {
@@ -336,7 +336,7 @@ describe('ExcelService - Testes Unitários dos Métodos Privados', () => {
       expect(mockCells['E46'].value).toBe(14)
 
       // Verifica formatação dos dias da semana na célula C54
-      expect(mockCells['C54'].value).toBe('SEG(1), TER(1), QUA(1)')
+      expect(mockCells['C54'].value).toBe('SEG, TER, QUA')
     })
   })
 })

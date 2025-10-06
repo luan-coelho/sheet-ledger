@@ -25,7 +25,6 @@ export class ExcelService {
   static async generateAttendanceSheet(data: {
     professional: string
     licenseNumber: string
-    authorizedSession?: string
     patientName: string
     responsible: string
     healthPlan: string
@@ -80,7 +79,6 @@ export class ExcelService {
     worksheet.getCell('C3').value = data.professional
     worksheet.getCell('C4').value = data.therapy
     worksheet.getCell('C5').value = data.licenseNumber
-    worksheet.getCell('C6').value = data.authorizedSession || ''
     worksheet.getCell('C7').value = data.patientName
     worksheet.getCell('C8').value = data.responsible
     worksheet.getCell('C9').value = data.healthPlan

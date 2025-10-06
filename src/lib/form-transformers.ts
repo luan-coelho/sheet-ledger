@@ -38,7 +38,6 @@ export function transformFormDataToApi(
   return {
     professional: professional?.name || '',
     licenseNumber: values.licenseNumber,
-    authorizedSession: values.authorizedSession || undefined,
     patientName: patient?.name || '',
     responsible: values.guardian,
     healthPlan: healthPlan?.name || '',

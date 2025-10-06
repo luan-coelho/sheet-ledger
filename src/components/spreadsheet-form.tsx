@@ -197,25 +197,6 @@ export function SpreadsheetForm() {
 
             <FormField
               control={form.control}
-              name="authorizedSession"
-              render={({ field }) => (
-                <FormItem className="sm:col-span-2 xl:col-span-2">
-                  <FormLabel>Sessão autorizada (opcional)</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Tipo de sessão autorizada"
-                      {...field}
-                      showValidationIcon
-                      error={form.formState.errors.authorizedSession}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
               name="patientId"
               render={({ field }) => (
                 <FormItem className="sm:col-span-2 xl:col-span-2">
