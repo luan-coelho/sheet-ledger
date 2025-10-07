@@ -63,9 +63,10 @@ interface BillingFormProps {
   onOpenChange: (open: boolean) => void
   onSubmit: (data: z.infer<typeof insertBillingSchema>[]) => void | Promise<void>
   mode?: 'create'
+  isSubmitting?: boolean
 }
 
-export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: BillingFormProps) {
+export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create', isSubmitting = false }: BillingFormProps) {
   const { data: therapies } = useTherapies()
 
   // Função para obter competência atual no formato MM/yyyy
@@ -244,6 +245,14 @@ export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: B
       return
     }
 
+    // Função para converter data dd/MM/yyyy para Date
+    const parseDate = (dateStr: string | undefined): Date | null => {
+      if (!dateStr || !dateStr.trim()) return null
+      const [day, month, year] = dateStr.split('/')
+      if (!day || !month || !year) return null
+      return new Date(parseInt(year), parseInt(month) - 1, parseInt(day))
+    }
+
     // Criar um billing para cada terapia com sessões
     const billings = validSessions.map(session => ({
       patientId: data.patientId,
@@ -254,8 +263,8 @@ export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: B
       sessionValue: session.sessionValue,
       grossAmount: session.totalValue,
       netAmount: session.netAmount,
-      dueDate: data.dueDate || null,
-      invoiceIssuedAt: data.invoiceIssuedAt || null,
+      dueDate: parseDate(data.dueDate),
+      invoiceIssuedAt: parseDate(data.invoiceIssuedAt),
       invoiceNumber: data.invoiceNumber || null,
       billerName: data.billerName || null,
       status: data.status,
@@ -268,11 +277,10 @@ export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: B
     // Reset form
     form.reset({
       patientId: '',
-      competenceDate: new Date(),
+      competence: getCurrentCompetence(),
       healthPlanId: '',
       selectedTherapyIds: [],
       therapySessions: [],
-      billingCycle: '',
       dueDate: undefined,
       invoiceIssuedAt: undefined,
       invoiceNumber: '',
@@ -287,47 +295,92 @@ export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: B
   const totalAmount = therapySessions.reduce((sum, session) => sum + session.totalValue, 0)
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] min-w-7xl overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Novo Faturamento</DialogTitle>
-          <DialogDescription>Selecione as terapias e informe o número de sessões para cada uma</DialogDescription>
-        </DialogHeader>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
+        {/* Grid principal para todos os campos do topo */}
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+          {/* Paciente */}
+          <FormField
+            control={form.control}
+            name="patientId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Paciente *</FormLabel>
+                <FormControl>
+                  <PatientSelector value={field.value} onValueChange={field.onChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-            {/* Patient Selector */}
+          {/* Plano de Saúde */}
+          <FormField
+            control={form.control}
+            name="healthPlanId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Plano de Saúde</FormLabel>
+                <FormControl>
+                  <HealthPlanSelector value={field.value || undefined} onValueChange={field.onChange} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Competência */}
+          <FormField
+            control={form.control}
+            name="competence"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Competência *</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="dia/mês/ano"
+                    maxLength={7}
+                    value={field.value}
+                    onChange={e => {
+                      let v = e.target.value.replace(/\D/g, '')
+                      if (v.length > 6) v = v.slice(0, 6)
+                      let masked = v
+                      if (v.length > 2) {
+                        masked = v.slice(0, 2) + '/' + v.slice(2)
+                      }
+                      field.onChange(masked)
+                    }}
+                    onBlur={field.onBlur}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        <div className="space-y-4">
+          {/* Grid com 3 campos em uma linha */}
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+            {/* Data de Vencimento */}
             <FormField
               control={form.control}
-              name="patientId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Paciente *</FormLabel>
-                  <FormControl>
-                    <PatientSelector value={field.value} onValueChange={field.onChange} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {/* Competence Input MM/yyyy */}
-            <FormField
-              control={form.control}
-              name="competence"
+              name="dueDate"
               render={({ field }) => (
                 <FormItem className="flex flex-col">
-                  <FormLabel>Competência *</FormLabel>
+                  <FormLabel>Data de Vencimento</FormLabel>
                   <FormControl>
                     <Input
                       placeholder="dia/mês/ano"
-                      maxLength={7}
-                      value={field.value}
+                      maxLength={10}
+                      value={field.value || ''}
                       onChange={e => {
                         let v = e.target.value.replace(/\D/g, '')
-                        if (v.length > 6) v = v.slice(0, 6)
+                        if (v.length > 8) v = v.slice(0, 8)
                         let masked = v
-                        if (v.length > 2) {
+                        if (v.length > 4) {
+                          masked = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
+                        } else if (v.length > 2) {
                           masked = v.slice(0, 2) + '/' + v.slice(2)
                         }
                         field.onChange(masked)
@@ -340,22 +393,55 @@ export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: B
               )}
             />
 
-            {/* Health Plan Selector */}
+            {/* Data de Emissão da NF */}
             <FormField
               control={form.control}
-              name="healthPlanId"
+              name="invoiceIssuedAt"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Plano de Saúde</FormLabel>
+                <FormItem className="flex flex-col">
+                  <FormLabel>Data de Emissão da NF</FormLabel>
                   <FormControl>
-                    <HealthPlanSelector value={field.value || undefined} onValueChange={field.onChange} />
+                    <Input
+                      placeholder="dia/mês/ano"
+                      maxLength={10}
+                      value={field.value || ''}
+                      onChange={e => {
+                        let v = e.target.value.replace(/\D/g, '')
+                        if (v.length > 8) v = v.slice(0, 8)
+                        let masked = v
+                        if (v.length > 4) {
+                          masked = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
+                        } else if (v.length > 2) {
+                          masked = v.slice(0, 2) + '/' + v.slice(2)
+                        }
+                        field.onChange(masked)
+                      }}
+                      onBlur={field.onBlur}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
 
-            {/* Multiple Therapy Selector */}
+            {/* Número da Nota Fiscal */}
+            <FormField
+              control={form.control}
+              name="invoiceNumber"
+              render={({ field }) => (
+                <FormItem className="flex flex-col">
+                  <FormLabel>Número da Nota Fiscal</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: NF-12345" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          {/* Terapias */}
+          <div className="w-full">
             <FormField
               control={form.control}
               name="selectedTherapyIds"
@@ -378,293 +464,212 @@ export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: B
                 </FormItem>
               )}
             />
+          </div>
 
-            {/* Therapy Sessions List */}
-            {therapySessions.length > 0 && (
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-lg font-medium">Sessões por Terapia</h3>
-                  <p className="text-muted-foreground text-sm">
-                    Informe o número de sessões para cada terapia selecionada
-                  </p>
-                </div>
+          {/* Therapy Sessions List */}
+          {therapySessions.length > 0 && (
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-medium">Sessões por Terapia</h3>
+                <p className="text-muted-foreground text-sm">
+                  Informe o número de sessões para cada terapia selecionada
+                </p>
+              </div>
 
-                <div className="space-y-3">
-                  {therapySessions.map((session, index) => {
-                    const priceInfo = therapyPrices?.find(p => p.therapyId === session.therapyId)
-                    const hasPrice = !!priceInfo
+              <div className="space-y-3">
+                {therapySessions.map((session, index) => {
+                  const priceInfo = therapyPrices?.find(p => p.therapyId === session.therapyId)
+                  const hasPrice = !!priceInfo
 
-                    return (
-                      <div key={session.therapyId} className="space-y-3 rounded-lg border p-4">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <h4 className="font-medium">{session.therapyName}</h4>
-                            <p className="text-muted-foreground text-sm">
-                              {hasPrice
-                                ? `Valor por sessão: R$ ${session.sessionValue.toFixed(2)}`
-                                : 'Valor não encontrado para esta competência'}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-medium">Total Bruto: R$ {session.totalValue.toFixed(2)}</p>
-                          </div>
+                  return (
+                    <div key={session.therapyId} className="space-y-3 rounded-lg border p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h4 className="font-medium">{session.therapyName}</h4>
+                          <p className="text-muted-foreground text-sm">
+                            {hasPrice
+                              ? `Valor por sessão: R$ ${session.sessionValue.toFixed(2)}`
+                              : 'Valor não encontrado para esta competência'}
+                          </p>
                         </div>
-
-                        <div className="flex items-center space-x-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => updateSessionCount(index, Math.max(0, session.sessionsCount - 1))}
-                            disabled={session.sessionsCount <= 0 || !hasPrice}>
-                            <Minus className="h-4 w-4" />
-                          </Button>
-
-                          <Input
-                            type="number"
-                            min="0"
-                            value={session.sessionsCount}
-                            onChange={e => updateSessionCount(index, Math.max(0, parseInt(e.target.value) || 0))}
-                            className="w-20 text-center"
-                            disabled={!hasPrice}
-                          />
-
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => updateSessionCount(index, session.sessionsCount + 1)}
-                            disabled={!hasPrice}>
-                            <Plus className="h-4 w-4" />
-                          </Button>
-
-                          <span className="text-muted-foreground ml-2 text-sm">sessões</span>
+                        <div className="text-right">
+                          <p className="font-medium">Total Bruto: R$ {session.totalValue.toFixed(2)}</p>
                         </div>
+                      </div>
 
-                        <div className="space-y-2">
-                          <label className="text-sm font-medium">Valor Líquido (opcional)</label>
-                          <Input
-                            type="text"
-                            placeholder="0,00"
-                            value={formatCurrencyInput(session.netAmount)}
-                            onChange={e => {
-                              const value = e.target.value.replace(/[^\d,]/g, '')
-                              updateNetAmount(index, value)
-                            }}
-                            disabled={!hasPrice}
-                            className={
-                              session.netAmount && session.netAmount > session.totalValue ? 'border-destructive' : ''
-                            }
-                          />
-                          {session.netAmount && session.netAmount > session.totalValue ? (
-                            <p className="text-destructive text-xs">
-                              ⚠️ Valor líquido não pode ser maior que o valor bruto (R$ {session.totalValue.toFixed(2)})
-                            </p>
-                          ) : (
-                            <p className="text-muted-foreground text-xs">
-                              Informe o valor líquido se for diferente do bruto (máximo: R${' '}
-                              {session.totalValue.toFixed(2)})
-                            </p>
-                          )}
-                        </div>
+                      <div className="flex items-center space-x-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => updateSessionCount(index, Math.max(0, session.sessionsCount - 1))}
+                          disabled={session.sessionsCount <= 0 || !hasPrice}>
+                          <Minus className="h-4 w-4" />
+                        </Button>
 
-                        {!hasPrice && (
-                          <p className="text-destructive text-sm">
-                            ⚠️ Não foi possível encontrar o valor desta terapia para a competência selecionada
+                        <Input
+                          type="number"
+                          min="0"
+                          value={session.sessionsCount}
+                          onChange={e => updateSessionCount(index, Math.max(0, parseInt(e.target.value) || 0))}
+                          className="w-20 text-center"
+                          disabled={!hasPrice}
+                        />
+
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => updateSessionCount(index, session.sessionsCount + 1)}
+                          disabled={!hasPrice}>
+                          <Plus className="h-4 w-4" />
+                        </Button>
+
+                        <span className="text-muted-foreground ml-2 text-sm">sessões</span>
+                      </div>
+
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium">Valor Líquido (opcional)</label>
+                        <Input
+                          type="text"
+                          placeholder="0,00"
+                          value={formatCurrencyInput(session.netAmount)}
+                          onChange={e => {
+                            const value = e.target.value.replace(/[^\d,]/g, '')
+                            updateNetAmount(index, value)
+                          }}
+                          disabled={!hasPrice}
+                          className={
+                            session.netAmount && session.netAmount > session.totalValue ? 'border-destructive' : ''
+                          }
+                        />
+                        {session.netAmount && session.netAmount > session.totalValue ? (
+                          <p className="text-destructive text-xs">
+                            ⚠️ Valor líquido não pode ser maior que o valor bruto (R$ {session.totalValue.toFixed(2)})
+                          </p>
+                        ) : (
+                          <p className="text-muted-foreground text-xs">
+                            Informe o valor líquido se for diferente do bruto (máximo: R${' '}
+                            {session.totalValue.toFixed(2)})
                           </p>
                         )}
                       </div>
-                    )
-                  })}
-                </div>
 
-                {totalAmount > 0 && (
-                  <div className="border-t pt-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-medium">Total Geral:</span>
-                      <span className="text-lg font-bold">R$ {totalAmount.toFixed(2)}</span>
+                      {!hasPrice && (
+                        <p className="text-destructive text-sm">
+                          ⚠️ Não foi possível encontrar o valor desta terapia para a competência selecionada
+                        </p>
+                      )}
                     </div>
+                  )
+                })}
+              </div>
+
+              {totalAmount > 0 && (
+                <div className="border-t pt-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-lg font-medium">Total Geral:</span>
+                    <span className="text-lg font-bold">R$ {totalAmount.toFixed(2)}</span>
                   </div>
-                )}
-              </div>
-            )}
-
-            {loadingPrices && therapySessions.length > 0 && (
-              <div className="py-4 text-center">
-                <p className="text-muted-foreground text-sm">Carregando valores das terapias...</p>
-              </div>
-            )}
-
-            {/* Additional Fields */}
-            <div className="space-y-4">
-              {/* Dates */}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <FormField
-                  control={form.control}
-                  name="dueDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Data de Vencimento</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="dia/mês/ano"
-                          maxLength={10}
-                          value={field.value || ''}
-                          onChange={e => {
-                            let v = e.target.value.replace(/\D/g, '')
-                            if (v.length > 8) v = v.slice(0, 8)
-                            let masked = v
-                            if (v.length > 4) {
-                              masked = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
-                            } else if (v.length > 2) {
-                              masked = v.slice(0, 2) + '/' + v.slice(2)
-                            }
-                            field.onChange(masked)
-                          }}
-                          onBlur={field.onBlur}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="invoiceIssuedAt"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Data de Emissão da NF</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="dia/mês/ano"
-                          maxLength={10}
-                          value={field.value || ''}
-                          onChange={e => {
-                            let v = e.target.value.replace(/\D/g, '')
-                            if (v.length > 8) v = v.slice(0, 8)
-                            let masked = v
-                            if (v.length > 4) {
-                              masked = v.slice(0, 2) + '/' + v.slice(2, 4) + '/' + v.slice(4)
-                            } else if (v.length > 2) {
-                              masked = v.slice(0, 2) + '/' + v.slice(2)
-                            }
-                            field.onChange(masked)
-                          }}
-                          onBlur={field.onBlur}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              {/* Invoice Number */}
-              <FormField
-                control={form.control}
-                name="invoiceNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Número da Nota Fiscal</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Ex: NF-12345" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Biller Name */}
-              <FormField
-                control={form.control}
-                name="billerName"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nome do Faturista</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Nome da pessoa responsável" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Status */}
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status *</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Selecione o status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="pending">Pendente</SelectItem>
-                        <SelectItem value="scheduled">Agendado</SelectItem>
-                        <SelectItem value="sent">Enviado</SelectItem>
-                        <SelectItem value="paid">Pago</SelectItem>
-                        <SelectItem value="cancelled">Cancelado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {/* Is Billed */}
-              <FormField
-                control={form.control}
-                name="isBilled"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">Faturado?</FormLabel>
-                      <FormDescription>Marque se o faturamento já foi realizado</FormDescription>
-                    </div>
-                    <FormControl>
-                      <Switch checked={field.value} onCheckedChange={field.onChange} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              {/* Notes */}
-              <FormField
-                control={form.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Observações</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Informações adicionais sobre o faturamento"
-                        className="min-h-[100px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                </div>
+              )}
             </div>
+          )}
 
-            {/* Form Actions */}
-            <div className="flex justify-end gap-4">
-              <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={totalAmount === 0}>
-                Criar Faturamentos
-              </Button>
+          {loadingPrices && therapySessions.length > 0 && (
+            <div className="py-4 text-center">
+              <p className="text-muted-foreground text-sm">Carregando valores das terapias...</p>
             </div>
-          </form>
-        </Form>
-      </DialogContent>
-    </Dialog>
+          )}
+
+          {/* Biller Name */}
+          <FormField
+            control={form.control}
+            name="billerName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome do Faturista</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nome da pessoa responsável" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Status */}
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status *</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione o status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="pending">Pendente</SelectItem>
+                    <SelectItem value="scheduled">Agendado</SelectItem>
+                    <SelectItem value="sent">Enviado</SelectItem>
+                    <SelectItem value="paid">Pago</SelectItem>
+                    <SelectItem value="cancelled">Cancelado</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Is Billed */}
+          <FormField
+            control={form.control}
+            name="isBilled"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                <div className="space-y-0.5">
+                  <FormLabel className="text-base">Faturado?</FormLabel>
+                  <FormDescription>Marque se o faturamento já foi realizado</FormDescription>
+                </div>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
+
+          {/* Notes */}
+          <FormField
+            control={form.control}
+            name="notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Observações</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Informações adicionais sobre o faturamento"
+                    className="min-h-[100px]"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+
+        {/* Form Actions */}
+        <div className="flex justify-end gap-4">
+          <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+            Cancelar
+          </Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Criando...' : 'Criar Faturamentos'}
+          </Button>
+        </div>
+      </form>
+    </Form>
   )
 }

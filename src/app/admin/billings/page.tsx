@@ -2,44 +2,32 @@
 
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { Receipt } from 'lucide-react'
+import { Plus, Receipt } from 'lucide-react'
+import Link from 'next/link'
 import { useState } from 'react'
 
-import { insertBillingSchema } from '@/app/db/schemas/billing-schema'
-
 import { BillingEditForm } from '@/components/billing-edit-form'
-import { BillingForm } from '@/components/billing-form'
 import { createColumns } from '@/components/data-tables/billings/columns'
 import { DataTable } from '@/components/data-tables/data-table'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { useBillings, useCreateMultipleBillings, useDeleteBilling, useUpdateBilling } from '@/hooks/use-billings'
+import { useBillings, useDeleteBilling, useUpdateBilling } from '@/hooks/use-billings'
 
 import { centsToDecimal, formatCurrency } from '@/lib/billing-utils'
 
 export default function BillingsPage() {
-  const [isFormOpen, setIsFormOpen] = useState(false)
   const [isEditFormOpen, setIsEditFormOpen] = useState(false)
   const [editingBilling, setEditingBilling] = useState<any>(null)
 
   const { data, isLoading } = useBillings()
-  const createMultipleMutation = useCreateMultipleBillings()
   const updateMutation = useUpdateBilling()
   const deleteMutation = useDeleteBilling()
 
+  // Dados já vêm ordenados do backend
   const billings = data?.billings || []
   const summary = data?.summary
-
-  const handleCreate = async (billings: Array<ReturnType<typeof insertBillingSchema.parse>>) => {
-    try {
-      await createMultipleMutation.mutateAsync(billings)
-      setIsFormOpen(false)
-    } catch (error) {
-      console.error('Error creating billings:', error)
-    }
-  }
 
   const handleEdit = (billing: any) => {
     setEditingBilling(billing)
@@ -69,10 +57,6 @@ export default function BillingsPage() {
     } catch (error) {
       console.error('Error deleting billing:', error)
     }
-  }
-
-  const handleCloseForm = () => {
-    setIsFormOpen(false)
   }
 
   const handleCloseEditForm = () => {
@@ -118,16 +102,18 @@ export default function BillingsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Faturamentos</h1>
           <p className="text-muted-foreground">Gerencie os faturamentos e controle os prazos</p>
         </div>
-        <Button onClick={() => setIsFormOpen(true)} size="default">
-          <Receipt className="mr-2 h-4 w-4" />
-          Novo Faturamento
-        </Button>
+        <Link href="/admin/billings/new">
+          <Button size="default">
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Faturamento
+          </Button>
+        </Link>
       </div>
 
       {/* Summary Cards */}
       {isLoading ? (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          {[...Array(4)].map((_, i) => (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          {[...Array(5)].map((_, i) => (
             <Card key={i}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <Skeleton className="h-4 w-[100px]" />
@@ -139,48 +125,91 @@ export default function BillingsPage() {
           ))}
         </div>
       ) : (
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Valor Bruto Total</CardTitle>
-              <Receipt className="text-muted-foreground h-4 w-4" />
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+          <Card className="gap-2 overflow-hidden border-none shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-red-100 p-2 dark:bg-red-950/30">
+                  <Receipt className="h-4 w-4 text-red-600 dark:text-red-400" />
+                </div>
+                <CardTitle className="text-muted-foreground text-sm font-medium">Atrasados</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(summary?.totalGrossCents || 0)}</div>
-              <p className="text-muted-foreground text-xs">Soma de todos os faturamentos</p>
+            <CardContent className="space-y-1">
+              <div className="text-3xl font-bold tracking-tight">{summary?.overdueCount || 0}</div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-end rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700 dark:bg-red-950/50 dark:text-red-400">
+                  Urgente
+                </span>
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Valor Líquido Total</CardTitle>
-              <Receipt className="text-muted-foreground h-4 w-4" />
+          <Card className="gap-2 overflow-hidden border-none shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-yellow-100 p-2 dark:bg-yellow-950/30">
+                  <Receipt className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+                </div>
+                <CardTitle className="text-muted-foreground text-sm font-medium">Pendentes</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(summary?.totalNetCents || 0)}</div>
-              <p className="text-muted-foreground text-xs">Valor após descontos</p>
+            <CardContent className="space-y-1">
+              <div className="text-3xl font-bold tracking-tight">{summary?.pendingCount || 0}</div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-medium text-yellow-700 dark:bg-yellow-950/50 dark:text-yellow-400">
+                  Em andamento
+                </span>
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pendentes</CardTitle>
-              <Receipt className="h-4 w-4 text-yellow-500" />
+          <Card className="gap-2 overflow-hidden border-none shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-green-100 p-2 dark:bg-green-950/30">
+                  <Receipt className="h-4 w-4 text-green-600 dark:text-green-400" />
+                </div>
+                <CardTitle className="text-muted-foreground text-sm font-medium">Pagos</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary?.pendingCount || 0}</div>
-              <p className="text-muted-foreground text-xs">Faturamentos não pagos</p>
+            <CardContent className="space-y-1">
+              <div className="text-3xl font-bold tracking-tight">{summary?.paidCount || 0}</div>
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-950/50 dark:text-green-400">
+                  Concluído
+                </span>
+              </div>
             </CardContent>
           </Card>
 
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Pagos</CardTitle>
-              <Receipt className="h-4 w-4 text-green-500" />
+          <Card className="gap-2 overflow-hidden border-none shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-blue-100 p-2 dark:bg-blue-950/30">
+                  <Receipt className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+                </div>
+                <CardTitle className="text-muted-foreground text-sm font-medium">Valor Bruto</CardTitle>
+              </div>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{summary?.paidCount || 0}</div>
-              <p className="text-muted-foreground text-xs">Faturamentos concluídos</p>
+            <CardContent className="space-y-1">
+              <div className="text-3xl font-bold tracking-tight">{formatCurrency(summary?.totalGrossCents || 0)}</div>
+              <p className="text-muted-foreground text-xs">Total faturado</p>
+            </CardContent>
+          </Card>
+
+          <Card className="gap-2 overflow-hidden border-none shadow-sm">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="rounded-lg bg-purple-100 p-2 dark:bg-purple-950/30">
+                  <Receipt className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+                </div>
+                <CardTitle className="text-muted-foreground text-sm font-medium">Valor Líquido</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-1">
+              <div className="text-3xl font-bold tracking-tight">{formatCurrency(summary?.totalNetCents || 0)}</div>
+              <p className="text-muted-foreground text-xs">Após descontos</p>
             </CardContent>
           </Card>
         </div>
@@ -210,9 +239,6 @@ export default function BillingsPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* Billing Form Dialog */}
-      <BillingForm open={isFormOpen} onOpenChange={handleCloseForm} onSubmit={handleCreate} mode="create" />
 
       {/* Billing Edit Form Dialog */}
       <BillingEditForm

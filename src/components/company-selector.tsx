@@ -2,10 +2,10 @@
 
 import { FieldError } from 'react-hook-form'
 
-import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
+import { Combobox, ComboboxOption } from '@/components/ui/combobox'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { useCompanies, useCreateCompany } from '@/hooks/use-companies'
+import { useCompanies } from '@/hooks/use-companies'
 
 interface CompanySelectorProps {
   value?: string
@@ -27,7 +27,6 @@ export function CompanySelector({
   error,
 }: CompanySelectorProps) {
   const { data: companies, isLoading, error: fetchError } = useCompanies()
-  const createCompany = useCreateCompany()
 
   if (isLoading) {
     return <Skeleton className="h-9 w-full" />
@@ -37,37 +36,20 @@ export function CompanySelector({
     return <div className="text-destructive text-sm">Erro ao carregar empresas</div>
   }
 
-  const options: CreatableComboboxOption[] =
+  const options: ComboboxOption[] =
     companies?.map(company => ({
       value: company.id,
       label: company.name,
     })) || []
 
-  const handleCreate = async (name: string) => {
-    const result = await createCompany.mutateAsync({
-      name,
-      cnpj: '00000000000000', // CNPJ temporário - deve ser editado posteriormente
-      address: 'Endereço não informado', // Valor padrão temporário
-    })
-    return result.id
-  }
-
-  // Validação baseada no schema: nome deve ter pelo menos 3 caracteres
-  const validateInput = (input: string) => {
-    return input.length >= 3
-  }
-
   return (
-    <CreatableCombobox
+    <Combobox
       options={options}
       value={value}
       onValueChange={onValueChange}
-      onCreate={handleCreate}
-      validate={validateInput}
       placeholder={placeholder}
       searchPlaceholder="Pesquisar empresas..."
       emptyText="Nenhuma empresa encontrada"
-      createText="Criar empresa"
       className={className}
       disabled={disabled}
       showValidationIcon={showValidationIcon}

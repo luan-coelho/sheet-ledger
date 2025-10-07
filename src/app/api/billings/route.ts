@@ -65,13 +65,28 @@ export async function GET(request: NextRequest) {
       query = query.where(sql`${sql.join(conditions, sql` AND `)}`) as any
     }
 
-    const allBillings = await query.orderBy(desc(billingsTable.createdAt))
+    // Order by priority: 1=overdue, 2=pending, 3=paid/cancelled
+    // Then by due date (closest first)
+    const allBillings = await query.orderBy(
+      sql`
+        CASE
+          WHEN ${billingsTable.dueDate} < CURRENT_DATE
+            AND ${billingsTable.status} NOT IN ('paid', 'cancelled')
+          THEN 1
+          WHEN ${billingsTable.status} IN ('pending', 'scheduled', 'sent')
+          THEN 2
+          ELSE 3
+        END ASC,
+        ${billingsTable.dueDate} ASC NULLS LAST
+      `,
+    )
 
     // Calculate summary
     const summary = await db
       .select({
         totalGrossCents: sql<number>`COALESCE(SUM(${billingsTable.grossAmountCents}), 0)`,
         totalNetCents: sql<number>`COALESCE(SUM(${billingsTable.netAmountCents}), 0)`,
+        overdueCount: sql<number>`COUNT(CASE WHEN ${billingsTable.dueDate} < CURRENT_DATE AND ${billingsTable.status} NOT IN ('paid', 'cancelled') THEN 1 END)`,
         pendingCount: sql<number>`COUNT(CASE WHEN ${billingsTable.status} = 'pending' THEN 1 END)`,
         paidCount: sql<number>`COUNT(CASE WHEN ${billingsTable.status} = 'paid' THEN 1 END)`,
       })
@@ -86,6 +101,7 @@ export async function GET(request: NextRequest) {
       summary: summary[0] || {
         totalGrossCents: 0,
         totalNetCents: 0,
+        overdueCount: 0,
         pendingCount: 0,
         paidCount: 0,
       },

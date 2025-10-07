@@ -2,10 +2,10 @@
 
 import { FieldError } from 'react-hook-form'
 
-import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
+import { Combobox, ComboboxOption } from '@/components/ui/combobox'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { useCreateHealthPlan, useHealthPlans } from '@/hooks/use-health-plans'
+import { useHealthPlans } from '@/hooks/use-health-plans'
 
 interface HealthPlanSelectorProps {
   value?: string
@@ -27,7 +27,6 @@ export function HealthPlanSelector({
   error,
 }: HealthPlanSelectorProps) {
   const { data: healthPlans, isLoading, error: fetchError } = useHealthPlans()
-  const createHealthPlan = useCreateHealthPlan()
 
   if (isLoading) {
     return <Skeleton className="h-9 w-full" />
@@ -37,36 +36,22 @@ export function HealthPlanSelector({
     return <div className="text-destructive text-sm">Erro ao carregar planos de saúde</div>
   }
 
-  const options: CreatableComboboxOption[] =
+  const options: ComboboxOption[] =
     healthPlans?.map(healthPlan => ({
       value: healthPlan.id,
       label: healthPlan.name,
     })) || []
 
-  const handleCreate = async (name: string) => {
-    const result = await createHealthPlan.mutateAsync({ name })
-    return result.id
-  }
-
-  // Validação baseada no schema: nome deve ter pelo menos 3 caracteres
-  const validateName = (name: string) => {
-    return name.trim().length >= 3
-  }
-
   return (
-    <CreatableCombobox
+    <Combobox
       options={options}
       value={value}
       onValueChange={onValueChange}
-      onCreate={handleCreate}
-      validate={validateName}
       placeholder={placeholder}
       searchPlaceholder="Buscar plano de saúde..."
       emptyText="Nenhum plano de saúde encontrado."
-      createText="Criar plano de saúde"
       className={className}
       disabled={disabled}
-      isCreating={createHealthPlan.isPending}
       showValidationIcon={showValidationIcon}
       error={error}
     />

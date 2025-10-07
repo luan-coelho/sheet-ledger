@@ -27,6 +27,7 @@ export interface BillingWithRelations {
 export interface BillingSummary {
   totalGrossCents: number
   totalNetCents: number
+  overdueCount: number
   pendingCount: number
   paidCount: number
 }
@@ -96,6 +97,7 @@ export async function getAllBillings(filters?: BillingFilters): Promise<{
     summary: response.summary || {
       totalGrossCents: 0,
       totalNetCents: 0,
+      overdueCount: 0,
       pendingCount: 0,
       paidCount: 0,
     },

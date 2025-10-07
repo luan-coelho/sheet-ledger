@@ -19,13 +19,23 @@ import {
 
 import { BillingWithRelations } from '@/services/billing-service'
 
-function getRowClassName(status: string): string {
+function getRowClassName(billing: BillingWithRelations): string {
+  const { status, dueDate } = billing
+
+  // Verificar se está atrasado
+  const isOverdue = dueDate && new Date(dueDate) < new Date()
+
+  // Cores mais fortes baseadas no status e prazo
+  if (isOverdue && status !== 'paid' && status !== 'cancelled') {
+    return 'bg-red-100 hover:bg-red-200 dark:bg-red-950/50 dark:hover:bg-red-950/70 border-l-4 border-l-red-500'
+  }
+
   const statusColors: Record<string, string> = {
-    pending: 'bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-950/20 dark:hover:bg-yellow-950/30',
-    scheduled: 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/20 dark:hover:bg-blue-950/30',
-    sent: 'bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/20 dark:hover:bg-purple-950/30',
-    paid: 'bg-green-50 hover:bg-green-100 dark:bg-green-950/20 dark:hover:bg-green-950/30',
-    cancelled: 'bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/30',
+    pending: 'bg-yellow-100 hover:bg-yellow-200 dark:bg-yellow-950/50 dark:hover:bg-yellow-950/70',
+    scheduled: 'bg-blue-100 hover:bg-blue-200 dark:bg-blue-950/50 dark:hover:bg-blue-950/70',
+    sent: 'bg-purple-100 hover:bg-purple-200 dark:bg-purple-950/50 dark:hover:bg-purple-950/70',
+    paid: 'bg-green-100 hover:bg-green-200 dark:bg-green-950/50 dark:hover:bg-green-950/70',
+    cancelled: 'bg-gray-100 hover:bg-gray-200 dark:bg-gray-950/50 dark:hover:bg-gray-950/70',
   }
   return statusColors[status] || ''
 }
@@ -89,6 +99,7 @@ export function createColumns(actions: {
         filterOptions: {
           placeholder: 'Filtrar por paciente...',
         },
+        getRowClassName: (row: Row<BillingWithRelations>) => getRowClassName(row.original),
       },
       cell: ({ row }) => {
         return <span className="font-medium">{row.original.patientName || 'N/A'}</span>
@@ -245,7 +256,7 @@ export function createColumns(actions: {
         return <ColumnActions billing={billing} onEdit={actions.onEdit} onDelete={actions.onDelete} />
       },
       meta: {
-        getRowClassName: (row: Row<BillingWithRelations>) => getRowClassName(row.original.status),
+        getRowClassName: (row: Row<BillingWithRelations>) => getRowClassName(row.original),
       },
     },
   ]

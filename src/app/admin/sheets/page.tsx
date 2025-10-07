@@ -16,7 +16,7 @@ export default async function SheetsPage() {
       </div>
 
       <Card>
-        <CardHeader className="h-14">
+        <CardHeader>
           <CardTitle>Preencha os dados para gerar a planilha de atendimento.</CardTitle>
         </CardHeader>
         <CardContent>

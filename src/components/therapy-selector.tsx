@@ -2,10 +2,10 @@
 
 import { FieldError } from 'react-hook-form'
 
-import { CreatableCombobox, CreatableComboboxOption } from '@/components/ui/creatable-combobox'
+import { Combobox, ComboboxOption } from '@/components/ui/combobox'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { useCreateTherapy, useTherapies } from '@/hooks/use-therapies'
+import { useTherapies } from '@/hooks/use-therapies'
 
 interface TherapySelectorProps {
   value?: string
@@ -27,7 +27,6 @@ export function TherapySelector({
   error,
 }: TherapySelectorProps) {
   const { data: therapies, isLoading, error: fetchError } = useTherapies()
-  const createTherapy = useCreateTherapy()
 
   if (isLoading) {
     return <Skeleton className="h-9 w-full" />
@@ -40,35 +39,21 @@ export function TherapySelector({
   // Filtrar apenas terapias ativas
   const activeTherapies = therapies?.filter(therapy => therapy.active) || []
 
-  const options: CreatableComboboxOption[] = activeTherapies.map(therapy => ({
+  const options: ComboboxOption[] = activeTherapies.map(therapy => ({
     value: therapy.id,
     label: therapy.name,
   }))
 
-  const handleCreate = async (name: string) => {
-    const result = await createTherapy.mutateAsync({ name, active: true })
-    return result.id
-  }
-
-  // Validação baseada no schema: nome deve ter pelo menos 3 caracteres
-  const validateName = (name: string) => {
-    return name.trim().length >= 3
-  }
-
   return (
-    <CreatableCombobox
+    <Combobox
       options={options}
       value={value}
       onValueChange={onValueChange}
-      onCreate={handleCreate}
-      validate={validateName}
       placeholder={placeholder}
       searchPlaceholder="Buscar terapia..."
       emptyText="Nenhuma terapia encontrada."
-      createText="Criar terapia"
       className={className}
       disabled={disabled}
-      isCreating={createTherapy.isPending}
       showValidationIcon={showValidationIcon}
       error={error}
     />
