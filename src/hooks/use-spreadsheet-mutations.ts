@@ -6,7 +6,6 @@ import { WeekDays, type AdvancedScheduleConfig } from '@/lib/spreadsheet-schema'
 export interface TransformedFormData {
   professional: string
   licenseNumber: string
-  authorizedSession?: string
   patientName: string
   responsible: string
   healthPlan: string

@@ -113,7 +113,7 @@ describe('ExcelService', () => {
       const result = await ExcelService.generateAttendanceSheet(data)
 
       expect(Buffer.isBuffer(result)).toBe(true)
-      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C57') // competency text
+      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C56') // competency text
     })
 
     it('deve preencher informações da empresa quando fornecidas', async () => {
@@ -141,7 +141,6 @@ describe('ExcelService', () => {
         ...baseData,
         startDate: '2025-09-01',
         endDate: '2025-09-30',
-        authorizedSession: 'Autorização 123',
         cardNumber: 'CARD123456',
         guideNumber: 'GUIDE789',
         startTime: '09:00',
@@ -150,9 +149,8 @@ describe('ExcelService', () => {
 
       await ExcelService.generateAttendanceSheet(data)
 
-      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C6') // authorizedSession
-      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C10') // cardNumber
-      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C11') // guideNumber
+      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C9') // cardNumber
+      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C10') // guideNumber
     })
 
     it('deve formatar dias da semana corretamente', async () => {
@@ -184,9 +182,9 @@ describe('ExcelService', () => {
 
       await ExcelService.generateAttendanceSheet(data)
 
-      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C54')
-      // Verifica se o valor contém o formato esperado: SEG(2), TER(3), SEX(4)
-      expect(mockCells['C54'].value).toBe('SEG(2), TER(3), SEX(4)')
+      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C53')
+      // Verifica se o valor contém o formato esperado: SEG, TER, SEX
+      expect(mockCells['C53'].value).toBe('SEG, TER, SEX')
     })
 
     it('deve gerar competência correta para período de um mês', async () => {
@@ -198,8 +196,8 @@ describe('ExcelService', () => {
 
       await ExcelService.generateAttendanceSheet(data)
 
-      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C57')
-      expect(mockCells['C57'].value).toBe('SETEMBRO/2025')
+      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C56')
+      expect(mockCells['C56'].value).toBe('SETEMBRO/2025')
     })
 
     it('deve gerar competência correta para período entre meses', async () => {
@@ -211,8 +209,8 @@ describe('ExcelService', () => {
 
       await ExcelService.generateAttendanceSheet(data)
 
-      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C57')
-      expect(mockCells['C57'].value).toBe('SETEMBRO/2025 - OUTUBRO/2025')
+      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C56')
+      expect(mockCells['C56'].value).toBe('SETEMBRO/2025 - OUTUBRO/2025')
     })
 
     it('deve criar uma linha por intervalo quando há múltiplos intervalos na mesma data', async () => {
@@ -250,11 +248,11 @@ describe('ExcelService', () => {
 
       await ExcelService.generateAttendanceSheet(data)
 
+      expect(mockCells['B13'].value).toBe('01/09/2025')
+      expect(mockCells['C13'].value).toBe('08:00')
       expect(mockCells['B14'].value).toBe('01/09/2025')
-      expect(mockCells['C14'].value).toBe('08:00')
-      expect(mockCells['B15'].value).toBe('01/09/2025')
-      expect(mockCells['C15'].value).toBe('10:00')
-      expect(mockCells['B16'].value).toBe('02/09/2025')
+      expect(mockCells['C14'].value).toBe('10:00')
+      expect(mockCells['B15'].value).toBe('02/09/2025')
       expect(mockWorksheet.duplicateRow).not.toHaveBeenCalled()
     })
 
@@ -295,12 +293,12 @@ describe('ExcelService', () => {
 
       await ExcelService.generateAttendanceSheet(data)
 
-      expect(mockWorksheet.duplicateRow).toHaveBeenCalledWith(44, 1, true)
-      // Último registro deve estar na nova linha criada (linha 45)
-      expect(mockCells['A45'].value).toBe(32)
-      expect(mockCells['B45'].value).toBe('31/01/2025')
-      // Total deve ser preenchido na linha ajustada (46 + 1 = 47)
-      expect(mockCells['E47'].value).toBe(32)
+      expect(mockWorksheet.duplicateRow).toHaveBeenCalledWith(43, 1, true)
+      // Último registro deve estar na linha criada (linha 13 + 31 = 44)
+      expect(mockCells['A44'].value).toBe(32)
+      expect(mockCells['B44'].value).toBe('31/01/2025')
+      // Total deve ser preenchido na linha ajustada (45 + 1 = 46)
+      expect(mockCells['E46'].value).toBe(32)
     })
 
     it('deve calcular total de sessões corretamente', async () => {
@@ -333,8 +331,8 @@ describe('ExcelService', () => {
       await ExcelService.generateAttendanceSheet(data)
 
       // Verifica se o total de sessões foi preenchido (2 + 3 + 4 = 9)
-      expect(mockWorksheet.getCell).toHaveBeenCalledWith('E46')
-      expect(mockCells['E46'].value).toBe(9)
+      expect(mockWorksheet.getCell).toHaveBeenCalledWith('E45')
+      expect(mockCells['E45'].value).toBe(9)
     })
 
     it('deve lançar erro quando worksheet não é encontrada', async () => {
@@ -371,8 +369,8 @@ describe('ExcelService', () => {
 
       await ExcelService.generateAttendanceSheet(data)
 
-      // Verifica se as células foram limpas (linha 14 até 44)
-      for (let row = 14; row <= 44; row++) {
+      // Verifica se as células foram limpas (linha 13 até 43)
+      for (let row = 13; row <= 43; row++) {
         expect(mockWorksheet.getCell).toHaveBeenCalledWith(`A${row}`)
         expect(mockWorksheet.getCell).toHaveBeenCalledWith(`B${row}`)
         expect(mockWorksheet.getCell).toHaveBeenCalledWith(`C${row}`)
@@ -416,13 +414,13 @@ describe('ExcelService', () => {
       await ExcelService.generateAttendanceSheet(data)
 
       // Deve ter apenas um registro (segunda-feira)
-      expect(mockCells['A14'].value).toBe(1) // Primeiro registro
-      expect(mockCells['B14'].value).toBe('01/09/2025') // Data do primeiro registro
-      expect(mockCells['C14'].value).toBe('08:00') // Horário início
-      expect(mockCells['D14'].value).toBe('17:00') // Horário fim
-      expect(mockCells['E14'].value).toBe(4) // Sessões
-      expect(mockCells['F14'].value).toBe('Atendido') // Status
-      expect(mockCells['A15'].value).toBeNull() // Não deve ter segundo registro
+      expect(mockCells['A13'].value).toBe(1) // Primeiro registro
+      expect(mockCells['B13'].value).toBe('01/09/2025') // Data do primeiro registro
+      expect(mockCells['C13'].value).toBe('08:00') // Horário início
+      expect(mockCells['D13'].value).toBe('17:00') // Horário fim
+      expect(mockCells['E13'].value).toBe(4) // Sessões
+      expect(mockCells['F13'].value).toBe('Atendido') // Status
+      expect(mockCells['A14'].value).toBeNull() // Não deve ter segundo registro
     })
 
     it('deve usar horários específicos do dia quando fornecidos', async () => {
@@ -450,10 +448,10 @@ describe('ExcelService', () => {
       await ExcelService.generateAttendanceSheet(data)
 
       // Deve usar o horário específico do dia (08:00/17:00) em vez do padrão (10:00/19:00)
-      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C14') // Start time
-      expect(mockWorksheet.getCell).toHaveBeenCalledWith('D14') // End time
-      expect(mockCells['C14'].value).toBe('08:00') // Horário específico
-      expect(mockCells['D14'].value).toBe('17:00') // Horário específico
+      expect(mockWorksheet.getCell).toHaveBeenCalledWith('C13') // Start time
+      expect(mockWorksheet.getCell).toHaveBeenCalledWith('D13') // End time
+      expect(mockCells['C13'].value).toBe('08:00') // Horário específico
+      expect(mockCells['D13'].value).toBe('17:00') // Horário específico
     })
   })
 })

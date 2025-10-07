@@ -67,8 +67,8 @@ describe('ExcelService - Testes Unitários dos Métodos Privados', () => {
 
       await ExcelService.generateAttendanceSheet(testData)
 
-      // Verifica se os dias foram formatados na ordem correta na célula C54: SEG(2), QUA(4), SEX(3)
-      expect(mockCells['C54'].value).toBe('SEG(2), QUA(4), SEX(3)')
+      // Verifica se os dias foram formatados na ordem correta na célula C53: SEG(2), QUA(4), SEX(3)
+      expect(mockCells['C53'].value).toBe('SEG, QUA, SEX')
     })
 
     it('deve retornar string vazia quando não há sessões', async () => {
@@ -108,8 +108,8 @@ describe('ExcelService - Testes Unitários dos Métodos Privados', () => {
 
       await ExcelService.generateAttendanceSheet(testData)
 
-      // Deve ser string vazia para array vazio de sessões na célula C54
-      expect(mockCells['C54'].value).toBe('')
+      // Deve ser string vazia para array vazio de sessões na célula C53
+      expect(mockCells['C53'].value).toBe('')
     })
   })
 
@@ -183,15 +183,15 @@ describe('ExcelService - Testes Unitários dos Métodos Privados', () => {
       await ExcelService.generateAttendanceSheet(testData)
 
       // Deve ter exatamente 5 registros (segunda a sexta)
-      expect(mockCells['A14'].value).toBe(1) // Primeiro registro
-      expect(mockCells['A15'].value).toBe(2) // Segundo registro
-      expect(mockCells['A16'].value).toBe(3) // Terceiro registro
-      expect(mockCells['A17'].value).toBe(4) // Quarto registro
-      expect(mockCells['A18'].value).toBe(5) // Quinto registro
-      expect(mockCells['A19'].value).toBeNull() // Não deve ter sexto registro
+      expect(mockCells['A13'].value).toBe(1) // Primeiro registro
+      expect(mockCells['A14'].value).toBe(2) // Segundo registro
+      expect(mockCells['A15'].value).toBe(3) // Terceiro registro
+      expect(mockCells['A16'].value).toBe(4) // Quarto registro
+      expect(mockCells['A17'].value).toBe(5) // Quinto registro
+      expect(mockCells['A18'].value).toBeNull() // Não deve ter sexto registro
 
       // Verifica o total de sessões (5 dias × 1 sessão = 5)
-      expect(mockCells['E46'].value).toBe(5)
+      expect(mockCells['E45'].value).toBe(5)
     })
   })
 
@@ -241,9 +241,9 @@ describe('ExcelService - Testes Unitários dos Métodos Privados', () => {
       await ExcelService.generateAttendanceSheet(testData)
 
       // Não deve ter nenhum registro (valor deve ser null após limpeza)
-      expect(mockCells['A14'].value).toBeNull()
+      expect(mockCells['A13'].value).toBeNull()
       // Total de sessões deve ser 0
-      expect(mockCells['E46'].value).toBe(0)
+      expect(mockCells['E45'].value).toBe(0)
     })
 
     it('deve gerar apenas as datas corretas para setembro 2025 (seg, ter, qua)', async () => {
@@ -322,7 +322,7 @@ describe('ExcelService - Testes Unitários dos Métodos Privados', () => {
 
       // Verifica se temos exatamente 14 registros
       for (let i = 0; i < expectedDates.length; i++) {
-        const row = 14 + i
+        const row = 13 + i
         expect(mockCells[`A${row}`].value).toBe(i + 1) // Número sequencial
         expect(mockCells[`B${row}`].value).toBe(expectedDates[i]) // Data esperada
         expect(mockCells[`E${row}`].value).toBe(1) // 1 sessão por dia
@@ -330,13 +330,13 @@ describe('ExcelService - Testes Unitários dos Métodos Privados', () => {
       }
 
       // Não deve ter mais registros além dos 14 esperados
-      expect(mockCells['A28'].value).toBeNull() // Linha 28 (14 + 14) deve estar vazia
+      expect(mockCells['A27'].value).toBeNull() // Linha 27 (13 + 14) deve estar vazia
 
       // Total de sessões deve ser 14 (14 dias × 1 sessão cada)
-      expect(mockCells['E46'].value).toBe(14)
+      expect(mockCells['E45'].value).toBe(14)
 
-      // Verifica formatação dos dias da semana na célula C54
-      expect(mockCells['C54'].value).toBe('SEG(1), TER(1), QUA(1)')
+      // Verifica formatação dos dias da semana na célula C53
+      expect(mockCells['C53'].value).toBe('SEG, TER, QUA')
     })
   })
 })
