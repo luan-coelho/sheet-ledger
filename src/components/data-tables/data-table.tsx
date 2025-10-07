@@ -438,15 +438,25 @@ export function DataTable<TData, TValue>({ columns, data, config: userConfig }: 
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map(row => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                  {row.getVisibleCells().map(cell => (
-                    <TableCell className="px-4" key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map(row => {
+                // Buscar getRowClassName do meta da primeira coluna que tiver
+                const getRowClassName = row
+                  .getVisibleCells()
+                  .map(cell => (cell.column.columnDef.meta as any)?.getRowClassName)
+                  .find(fn => typeof fn === 'function')
+
+                const rowClassName = getRowClassName ? getRowClassName(row) : ''
+
+                return (
+                  <TableRow key={row.id} data-state={row.getIsSelected() && 'selected'} className={rowClassName}>
+                    {row.getVisibleCells().map(cell => (
+                      <TableCell className="px-4" key={cell.id}>
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                )
+              })
             ) : (
               <TableRow>
                 <TableCell colSpan={columns.length} className="h-24 text-center">

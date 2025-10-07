@@ -19,7 +19,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         customTherapyName: billingsTable.customTherapyName,
         healthPlanId: billingsTable.healthPlanId,
         healthPlanName: healthPlansTable.name,
-        billingCycle: billingsTable.billingCycle,
         sessionValueCents: billingsTable.sessionValueCents,
         grossAmountCents: billingsTable.grossAmountCents,
         netAmountCents: billingsTable.netAmountCents,
@@ -103,7 +102,6 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (validatedData.customTherapyName !== undefined)
       updateData.customTherapyName = validatedData.customTherapyName || null
     if (validatedData.healthPlanId !== undefined) updateData.healthPlanId = validatedData.healthPlanId || null
-    if (validatedData.billingCycle !== undefined) updateData.billingCycle = validatedData.billingCycle || null
 
     if (validatedData.sessionValue !== undefined) {
       updateData.sessionValueCents = Math.round(validatedData.sessionValue * 100)

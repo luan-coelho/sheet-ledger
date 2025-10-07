@@ -7,6 +7,7 @@ import { useState } from 'react'
 
 import { insertBillingSchema } from '@/app/db/schemas/billing-schema'
 
+import { BillingEditForm } from '@/components/billing-edit-form'
 import { BillingForm } from '@/components/billing-form'
 import { createColumns } from '@/components/data-tables/billings/columns'
 import { DataTable } from '@/components/data-tables/data-table'
@@ -14,15 +15,18 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
 
-import { useBillings, useCreateMultipleBillings, useDeleteBilling } from '@/hooks/use-billings'
+import { useBillings, useCreateMultipleBillings, useDeleteBilling, useUpdateBilling } from '@/hooks/use-billings'
 
-import { formatCurrency } from '@/lib/billing-utils'
+import { centsToDecimal, formatCurrency } from '@/lib/billing-utils'
 
 export default function BillingsPage() {
   const [isFormOpen, setIsFormOpen] = useState(false)
+  const [isEditFormOpen, setIsEditFormOpen] = useState(false)
+  const [editingBilling, setEditingBilling] = useState<any>(null)
 
   const { data, isLoading } = useBillings()
   const createMultipleMutation = useCreateMultipleBillings()
+  const updateMutation = useUpdateBilling()
   const deleteMutation = useDeleteBilling()
 
   const billings = data?.billings || []
@@ -34,6 +38,26 @@ export default function BillingsPage() {
       setIsFormOpen(false)
     } catch (error) {
       console.error('Error creating billings:', error)
+    }
+  }
+
+  const handleEdit = (billing: any) => {
+    setEditingBilling(billing)
+    setIsEditFormOpen(true)
+  }
+
+  const handleUpdate = async (formData: any) => {
+    if (!editingBilling?.id) return
+
+    try {
+      await updateMutation.mutateAsync({
+        id: editingBilling.id,
+        data: formData,
+      })
+      setEditingBilling(null)
+      setIsEditFormOpen(false)
+    } catch (error) {
+      console.error('Error updating billing:', error)
     }
   }
 
@@ -50,6 +74,41 @@ export default function BillingsPage() {
   const handleCloseForm = () => {
     setIsFormOpen(false)
   }
+
+  const handleCloseEditForm = () => {
+    setIsEditFormOpen(false)
+    setEditingBilling(null)
+  }
+
+  // Preparar dados para edição
+  const editFormValues = editingBilling
+    ? {
+        patientId: editingBilling.patientId,
+        therapyId: editingBilling.therapyId || '',
+        healthPlanId: editingBilling.healthPlanId || '',
+        competence: editingBilling.competenceDate
+          ? format(new Date(editingBilling.competenceDate), 'MM/yyyy', { locale: ptBR })
+          : '',
+        sessionValue: editingBilling.sessionValueCents
+          ? centsToDecimal(editingBilling.sessionValueCents).toFixed(2).replace('.', ',')
+          : '',
+        grossAmount: editingBilling.grossAmountCents
+          ? centsToDecimal(editingBilling.grossAmountCents).toFixed(2).replace('.', ',')
+          : '',
+        netAmount: editingBilling.netAmountCents
+          ? centsToDecimal(editingBilling.netAmountCents).toFixed(2).replace('.', ',')
+          : '',
+        dueDate: editingBilling.dueDate ? format(new Date(editingBilling.dueDate), 'dd/MM/yyyy', { locale: ptBR }) : '',
+        invoiceIssuedAt: editingBilling.invoiceIssuedAt
+          ? format(new Date(editingBilling.invoiceIssuedAt), 'dd/MM/yyyy', { locale: ptBR })
+          : '',
+        invoiceNumber: editingBilling.invoiceNumber || '',
+        billerName: editingBilling.billerName || '',
+        status: editingBilling.status,
+        isBilled: editingBilling.isBilled,
+        notes: editingBilling.notes || '',
+      }
+    : undefined
 
   return (
     <div className="flex flex-col gap-6">
@@ -143,6 +202,7 @@ export default function BillingsPage() {
           ) : (
             <DataTable
               columns={createColumns({
+                onEdit: handleEdit,
                 onDelete: handleDelete,
               })}
               data={billings}
@@ -153,6 +213,14 @@ export default function BillingsPage() {
 
       {/* Billing Form Dialog */}
       <BillingForm open={isFormOpen} onOpenChange={handleCloseForm} onSubmit={handleCreate} mode="create" />
+
+      {/* Billing Edit Form Dialog */}
+      <BillingEditForm
+        open={isEditFormOpen}
+        onOpenChange={handleCloseEditForm}
+        onSubmit={handleUpdate}
+        defaultValues={editFormValues}
+      />
     </div>
   )
 }

@@ -1,9 +1,9 @@
 'use client'
 
-import { ColumnDef } from '@tanstack/react-table'
+import { ColumnDef, Row } from '@tanstack/react-table'
 import { format } from 'date-fns'
 import { ptBR } from 'date-fns/locale'
-import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Trash2 } from 'lucide-react'
+import { ArrowDown, ArrowUp, ArrowUpDown, MoreHorizontal, Pencil, Trash2 } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -19,6 +19,17 @@ import {
 
 import { BillingWithRelations } from '@/services/billing-service'
 
+function getRowClassName(status: string): string {
+  const statusColors: Record<string, string> = {
+    pending: 'bg-yellow-50 hover:bg-yellow-100 dark:bg-yellow-950/20 dark:hover:bg-yellow-950/30',
+    scheduled: 'bg-blue-50 hover:bg-blue-100 dark:bg-blue-950/20 dark:hover:bg-blue-950/30',
+    sent: 'bg-purple-50 hover:bg-purple-100 dark:bg-purple-950/20 dark:hover:bg-purple-950/30',
+    paid: 'bg-green-50 hover:bg-green-100 dark:bg-green-950/20 dark:hover:bg-green-950/30',
+    cancelled: 'bg-red-50 hover:bg-red-100 dark:bg-red-950/20 dark:hover:bg-red-950/30',
+  }
+  return statusColors[status] || ''
+}
+
 function getSortIcon(sortDirection: false | 'asc' | 'desc') {
   if (sortDirection === 'asc') {
     return <ArrowUp className="ml-2 h-4 w-4" />
@@ -31,10 +42,11 @@ function getSortIcon(sortDirection: false | 'asc' | 'desc') {
 
 interface ColumnActionsProps {
   billing: BillingWithRelations
+  onEdit: (billing: BillingWithRelations) => void
   onDelete: (billing: BillingWithRelations) => void
 }
 
-function ColumnActions({ billing, onDelete }: ColumnActionsProps) {
+function ColumnActions({ billing, onEdit, onDelete }: ColumnActionsProps) {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -44,6 +56,10 @@ function ColumnActions({ billing, onDelete }: ColumnActionsProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={() => onEdit(billing)}>
+          <Pencil className="mr-2 h-4 w-4" />
+          Editar
+        </DropdownMenuItem>
         <DropdownMenuItem onClick={() => onDelete(billing)} className="text-destructive focus:text-destructive">
           <Trash2 className="mr-2 h-4 w-4" />
           Excluir
@@ -54,6 +70,7 @@ function ColumnActions({ billing, onDelete }: ColumnActionsProps) {
 }
 
 export function createColumns(actions: {
+  onEdit: (billing: BillingWithRelations) => void
   onDelete: (billing: BillingWithRelations) => void
 }): ColumnDef<BillingWithRelations>[] {
   return [
@@ -109,10 +126,10 @@ export function createColumns(actions: {
         },
       },
       cell: ({ row }) => {
-        return row.original.healthPlanName || row.original.billingCycle || '-'
+        return row.original.healthPlanName || '-'
       },
       filterFn: (row, id, value) => {
-        const planName = (row.original.healthPlanName || row.original.billingCycle || '').toLowerCase()
+        const planName = (row.original.healthPlanName || '').toLowerCase()
         return planName.includes(value.toLowerCase())
       },
     },
@@ -225,7 +242,10 @@ export function createColumns(actions: {
       id: 'actions',
       cell: ({ row }) => {
         const billing = row.original
-        return <ColumnActions billing={billing} onDelete={actions.onDelete} />
+        return <ColumnActions billing={billing} onEdit={actions.onEdit} onDelete={actions.onDelete} />
+      },
+      meta: {
+        getRowClassName: (row: Row<BillingWithRelations>) => getRowClassName(row.original.status),
       },
     },
   ]

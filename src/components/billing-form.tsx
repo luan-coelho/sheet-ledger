@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Minus, Plus } from 'lucide-react'
 import * as React from 'react'
 import { useFieldArray, useForm } from 'react-hook-form'
-import InputMask from 'react-input-mask'
 import { z } from 'zod'
 
 import { insertBillingSchema } from '@/app/db/schemas/billing-schema'
@@ -13,7 +12,6 @@ import { HealthPlanSelector } from '@/components/health-plan-selector'
 import { MultipleTherapySelector } from '@/components/multiple-therapy-selector'
 import { PatientSelector } from '@/components/patient-selector'
 import { Button } from '@/components/ui/button'
-import { DatePicker } from '@/components/ui/date-picker'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
@@ -24,8 +22,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { useTherapies } from '@/hooks/use-therapies'
 import { useTherapyPricesByCompetence } from '@/hooks/use-therapy-price-by-competence'
 
-import { centsToDecimal, decimalToCents } from '@/lib/billing-utils'
-
 // Schema para sessão de terapia
 const therapySessionSchema = z.object({
   therapyId: z.string().uuid(),
@@ -33,6 +29,7 @@ const therapySessionSchema = z.object({
   sessionValue: z.number().min(0, 'Valor deve ser positivo'),
   sessionsCount: z.number().min(0, 'Número de sessões deve ser positivo').int(),
   totalValue: z.number().min(0),
+  netAmount: z.number().optional(),
 })
 
 // Schema principal do formulário
@@ -135,6 +132,7 @@ export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: B
           sessionValue: priceInfo?.value || 0,
           sessionsCount,
           totalValue: (priceInfo?.value || 0) * sessionsCount,
+          netAmount: existingSession?.netAmount,
         }
       })
 
@@ -161,6 +159,7 @@ export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: B
           ...session,
           sessionValue: newValue,
           totalValue: newValue * session.sessionsCount,
+          netAmount: session.netAmount,
         }
       }
       return session
@@ -193,10 +192,32 @@ export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: B
           ...updatedSessions[index],
           sessionsCount: count,
           totalValue: updatedSessions[index].sessionValue * count,
+          netAmount: updatedSessions[index].netAmount,
         }
         form.setValue('therapySessions', updatedSessions, { shouldValidate: true })
       }
     }
+  }
+
+  const updateNetAmount = (index: number, value: string) => {
+    const currentSessions = form.getValues('therapySessions')
+    const updatedSessions = [...currentSessions]
+
+    if (updatedSessions[index]) {
+      // Converter string formatada para número
+      const numValue = value ? parseFloat(value.replace(',', '.')) : undefined
+
+      updatedSessions[index] = {
+        ...updatedSessions[index],
+        netAmount: numValue,
+      }
+      form.setValue('therapySessions', updatedSessions, { shouldValidate: true })
+    }
+  }
+
+  const formatCurrencyInput = (value: number | undefined): string => {
+    if (value === undefined || value === null) return ''
+    return value.toFixed(2).replace('.', ',')
   }
 
   const handleSubmit = async (data: BillingFormValues) => {
@@ -211,20 +232,31 @@ export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: B
       return
     }
 
+    // Validar que valores líquidos não sejam maiores que brutos
+    const invalidNetAmount = validSessions.find(
+      session => session.netAmount !== undefined && session.netAmount > session.totalValue,
+    )
+    if (invalidNetAmount) {
+      form.setError('therapySessions', {
+        type: 'manual',
+        message: 'Valor líquido não pode ser maior que o valor bruto',
+      })
+      return
+    }
+
     // Criar um billing para cada terapia com sessões
     const billings = validSessions.map(session => ({
       patientId: data.patientId,
       therapyId: session.therapyId,
       customTherapyName: null,
       healthPlanId: data.healthPlanId || null,
-      billingCycle: data.billingCycle || null,
+      billingCycle: null,
       sessionValue: session.sessionValue,
       grossAmount: session.totalValue,
-      netAmount: undefined,
+      netAmount: session.netAmount,
       dueDate: data.dueDate || null,
       invoiceIssuedAt: data.invoiceIssuedAt || null,
       invoiceNumber: data.invoiceNumber || null,
-      competenceDate: data.competenceDate,
       billerName: data.billerName || null,
       status: data.status,
       isBilled: data.isBilled,
@@ -374,7 +406,7 @@ export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: B
                             </p>
                           </div>
                           <div className="text-right">
-                            <p className="font-medium">Total: R$ {session.totalValue.toFixed(2)}</p>
+                            <p className="font-medium">Total Bruto: R$ {session.totalValue.toFixed(2)}</p>
                           </div>
                         </div>
 
@@ -409,9 +441,36 @@ export function BillingForm({ open, onOpenChange, onSubmit, mode = 'create' }: B
                           <span className="text-muted-foreground ml-2 text-sm">sessões</span>
                         </div>
 
+                        <div className="space-y-2">
+                          <label className="text-sm font-medium">Valor Líquido (opcional)</label>
+                          <Input
+                            type="text"
+                            placeholder="0,00"
+                            value={formatCurrencyInput(session.netAmount)}
+                            onChange={e => {
+                              const value = e.target.value.replace(/[^\d,]/g, '')
+                              updateNetAmount(index, value)
+                            }}
+                            disabled={!hasPrice}
+                            className={
+                              session.netAmount && session.netAmount > session.totalValue ? 'border-destructive' : ''
+                            }
+                          />
+                          {session.netAmount && session.netAmount > session.totalValue ? (
+                            <p className="text-destructive text-xs">
+                              ⚠️ Valor líquido não pode ser maior que o valor bruto (R$ {session.totalValue.toFixed(2)})
+                            </p>
+                          ) : (
+                            <p className="text-muted-foreground text-xs">
+                              Informe o valor líquido se for diferente do bruto (máximo: R${' '}
+                              {session.totalValue.toFixed(2)})
+                            </p>
+                          )}
+                        </div>
+
                         {!hasPrice && (
                           <p className="text-destructive text-sm">
-                            Não foi possível encontrar o valor desta terapia para a competência selecionada
+                            ⚠️ Não foi possível encontrar o valor desta terapia para a competência selecionada
                           </p>
                         )}
                       </div>
